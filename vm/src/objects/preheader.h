@@ -26,6 +26,15 @@ struct Preheader {
   oop_int_t extra_preheader_word;
 # endif
   
+# if Include_Domain_In_Object_Header
+  typedef union domain_header {
+    u_oop_int_t value;
+    struct {
+      
+    } domain;
+  } domain_header_t;
+# endif
+  
   static oop_int_t* backpointer_address_from_header_address(void* p) { return &((Preheader*)p)[-1].backpointer; }
   
   oop_int_t* extra_preheader_word_address() {

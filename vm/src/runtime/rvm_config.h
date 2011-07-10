@@ -120,7 +120,10 @@
   template(Hammer_Safepoints) /* for debugging */ \
   \
   template(Dump_Bytecode_Cycles) \
-  template(Dont_Dump_Primitive_Cycles)
+  template(Dont_Dump_Primitive_Cycles) \
+  \
+  /* Project Omni aka ÜberVM */ \
+  template(Include_Domain_In_Object_Header)
 
 
 
@@ -395,6 +398,15 @@
 # define Multiple_Tileras On_Tilera
 # endif
 
+/* Project Omni aka ÜberVM
+ * 
+ * The following flags are used to enable my experiments
+ * to enable customization of VM mechanisms to enforce various
+ * concurrency model guarantees on the VM level. STEFAN: 2011-07-10
+ */
+# ifndef Include_Domain_In_Object_Header
+  # define Include_Domain_In_Object_Header 1
+# endif
 
 
 // Macro to ensure that the compiler does inlining
