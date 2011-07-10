@@ -111,7 +111,7 @@ public:
       set_backpointer_word(backpointer_from_oop(x));
   }
    void set_preheader(Oop x) { 
-     init_extra_preheader_word();
+     initialize_preheader();
      set_backpointer(x); 
    }
 
@@ -140,7 +140,7 @@ public:
    oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
    inline void set_extra_preheader_word(oop_int_t w);
 
-   void init_extra_preheader_word() { preheader()->init_extra_preheader_word(); }
+   void initialize_preheader() { preheader()->initialize_preheader(); }
 
 
 public:

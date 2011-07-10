@@ -20,34 +20,47 @@
 // -- dmu 3/2010
 
 struct Preheader {
-  public:
+public:
   oop_int_t backpointer; // must be first, for instance for free chuck this is set to give the length
+
 # if Extra_Preheader_Word_Experiment
-  oop_int_t extra_preheader_word;
+  /* This word is used to do the dispatch of example messages send to an object */
+  // STEFAN: was named extra_preheader_word before. Did not refactor everything, just the name here
+  //         since the original name does not tell what it is used for, 
+  //         but is consistent in the image and all over the VM.
+  oop_int_t ensemble_pointer; /* was: extra_preheader_word */
 # endif
-  
+
 # if Include_Domain_In_Object_Header
   typedef union domain_header {
     u_oop_int_t value;
     struct {
-      
+      unsigned int_tag; /* Seems to be necessary, according to David's comment at the top, should verify that, STEFAN 2011-07-10 */
     } domain;
   } domain_header_t;
+  
+  domain_header_t domain;
 # endif
   
-  static oop_int_t* backpointer_address_from_header_address(void* p) { return &((Preheader*)p)[-1].backpointer; }
+  static oop_int_t* backpointer_address_from_header_address(void* p) {
+    return &((Preheader*)p)[-1].backpointer;
+  }
   
   oop_int_t* extra_preheader_word_address() {
 # if Extra_Preheader_Word_Experiment
-      return &extra_preheader_word;
+      return &ensemble_pointer;
 # else
       return NULL;
 # endif
   }
   
-  void init_extra_preheader_word() {
+  /* Does take care of everything but the backpointer */
+  void initialize_preheader() {
 # if Extra_Preheader_Word_Experiment
-    extra_preheader_word = (0 << Tag_Size) | Int_Tag;
+    ensemble_pointer = (0 << Tag_Size) | Int_Tag;
+# endif
+# if Include_Domain_In_Object_Header
+    domain.value = (0 << Tag_Size) | Int_Tag;
 # endif
   }
 };
