@@ -28,15 +28,40 @@ public:
   // STEFAN: was named extra_preheader_word before. Did not refactor everything, just the name here
   //         since the original name does not tell what it is used for, 
   //         but is consistent in the image and all over the VM.
-  oop_int_t ensemble_pointer; /* was: extra_preheader_word */
+  oop_int_t sly_ensemble_pointer; /* was: extra_preheader_word */
 # endif
 
 # if Include_Domain_In_Object_Header
+  typedef enum foreign_access_policy { 
+    UNSPECIFIED  = 0, /* Has not been set (not sure yet how to proceed here, probably just ignore and handle as local) */
+    SYNCHRONOUS  = 1, /* Synchronous direct access is allowed from foreign domains */
+    ASYNCHRONOUS = 2, /* Access has to be transformed into an asynchronous one, but is allowed then. */
+    NO_ACCESS    = 3  /* No access allowed */
+  } foreign_access_policy_t;
+  
+  static const size_t foreign_access_policy_bits = 2;
+  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - (3 * foreign_access_policy_bits  + Tag_Size); 
+  
+  // STEFAN: TODO: figure out whether we need to have an exception mechnanism directly specified here,
+  //               or whether it is ok to have it in the domain object
+  
   typedef union domain_header {
-    u_oop_int_t value;
+    oop_int_t raw_value;
     struct {
-      unsigned int_tag; /* Seems to be necessary, according to David's comment at the top, should verify that, STEFAN 2011-07-10 */
-    } domain;
+      unsigned                int_tag  : Tag_Size; /* Seems to be necessary, according to David's comment at the top,
+                                                      should verify that.
+                                                      But anyway, if this preheader word is treated as a normal slot,
+                                                      when saving such objects, then it is important to treat
+                                                      it as a normal SmallInteger. 
+                                                      This way, I do not have to be careful, but can just use the int
+                                                      to encode all the interesting information.
+                                                      STEFAN 2011-07-10 */
+      unsigned logic_id : logic_id_bits;
+      foreign_access_policy_t read     : foreign_access_policy_bits;
+      foreign_access_policy_t write    : foreign_access_policy_bits;
+      foreign_access_policy_t execute  : foreign_access_policy_bits;
+
+    } __attribute__ ((__packed__)) bits;
   } domain_header_t;
   
   domain_header_t domain;
@@ -48,19 +73,35 @@ public:
   
   oop_int_t* extra_preheader_word_address() {
 # if Extra_Preheader_Word_Experiment
-      return &ensemble_pointer;
+      return &sly_ensemble_pointer;
 # else
       return NULL;
 # endif
   }
   
+  oop_int_t* domain_header_address() {
+# if Include_Domain_In_Object_Header
+    return &domain.raw_value;
+# else
+    return NULL;
+# endif
+  }
+  
+  domain_header_t domain_header() {
+# if Include_Domain_In_Object_Header
+    return domain;
+# else
+    return (domain_header_t)0; //STEFAN: this does not work..., won't compile
+# endif  
+  }
+  
   /* Does take care of everything but the backpointer */
   void initialize_preheader() {
 # if Extra_Preheader_Word_Experiment
-    ensemble_pointer = (0 << Tag_Size) | Int_Tag;
+    sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
 # endif
 # if Include_Domain_In_Object_Header
-    domain.value = (0 << Tag_Size) | Int_Tag;
+    domain.raw_value = (0 << Tag_Size) | Int_Tag;
 # endif
   }
 };

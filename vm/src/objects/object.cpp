@@ -36,7 +36,7 @@ bool Object::verify_address() {
 
 
 bool Object::verify_preheader() {
-  return verify_extra_preheader_word() && verify_backpointer();
+  return verify_preheader_words() && verify_backpointer();
 }
 
 
@@ -46,8 +46,9 @@ bool Object::verify_backpointer() {
   return true;
 }
 
-bool Object::verify_extra_preheader_word() {
-  return  !Extra_Preheader_Word_Experiment || Oop::from_bits(get_extra_preheader_word()).verify_oop();
+bool Object::verify_preheader_words() {
+  return  (    (!Extra_Preheader_Word_Experiment || Oop::from_bits(get_extra_preheader_word()).verify_oop())
+           &&  (!Include_Domain_In_Object_Header || Oop::from_bits(*preheader()->domain_header_address()).is_int()));
 }
 
 

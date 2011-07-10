@@ -145,6 +145,11 @@ Obsolete_Named_Primitive_Table::entry Obsolete_Named_Primitive_Table::contents[]
   { "primitiveCycleCounter",              "RVMPlugin", "primitiveCycleCounter",              false },
   
   { "primitiveRunsHeadless",              "RVMPlugin", "primitiveRunsHeadless",              false },
+  
+  /* Project-Omni-related primitives */
+  { "primitiveGetDomainPreheaderWord",    "RVMPlugin", "primitiveGetDomainPreheaderWord",    false },
+  { "primitiveSetDomainPreheaderWord",    "RVMPlugin", "primitiveSetDomainPreheaderWord",    false },
+
 
 
   // Local versions of bitBlt primitives; don't use when blitting to the screen

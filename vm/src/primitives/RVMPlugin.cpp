@@ -641,6 +641,70 @@ static int primitiveSetExtraWordSelector() {
 }
 
 
+/** Primitives for Project Omni **/
+
+/** RVMOperations class>>primitiveGetDomainPreheaderWord: anObject
+    ^ { #DomainId, #ForeignAccessPolicyRead, #ForeignAccessPolicyWrite, #ForeignAccessPolicyExecute } */
+static int primitiveGetDomainPreheaderWord() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  if (interp->get_argumentCount() != 1) {
+    interp->primitiveFail();
+    return 0;
+  }
+
+  Oop x = interp->stackObjectValue(0);
+  if (interp->failed())
+    return 0;
+  
+  Preheader::domain_header_t domain = x.as_object()->domain_header();
+  
+  int s = interp->makeArrayStart();
+  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.logic_id);
+  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.read);
+  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.write);
+  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.execute);
+  interp->popThenPush(2, interp->makeArray(s));
+  
+  return 0;
+}
+
+/** RVMOperations class>>primitiveSetDomainPreheaderWordFor: anObject to: aDomainId with: aReadPolicy and: aWritePolicy and: aExecutePolicy */
+static int primitiveSetDomainPreheaderWord() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  if (interp->get_argumentCount() != 5) {
+    interp->primitiveFail();
+    return 0;
+  }
+  
+  oop_int_t  execute_policy = interp->stackIntegerValue(0);
+  oop_int_t    write_policy = interp->stackIntegerValue(1);
+  oop_int_t     read_policy = interp->stackIntegerValue(2);
+  oop_int_t logic_domain_id = interp->stackIntegerValue(3);
+  
+  Oop target = interp->stackValue(4);
+
+  if (interp->failed())
+    return 0;
+
+  Preheader::domain_header_t domain_header;
+  domain_header.bits.logic_id = logic_domain_id;
+  domain_header.bits.read     = (Preheader::foreign_access_policy_t)read_policy;
+  domain_header.bits.write    = (Preheader::foreign_access_policy_t)write_policy;
+  domain_header.bits.execute  = (Preheader::foreign_access_policy_t)execute_policy;
+  
+  domain_header.bits.int_tag  = Int_Tag;
+  
+  target.as_object()->set_domain_header(domain_header);
+  The_Squeak_Interpreter()->pop(5);
+  return 0;
+}
+
+/*********************************/
+
+
+
 static int primitiveEmergencySemaphore() {
   int ac = The_Squeak_Interpreter()->get_argumentCount();
   if (ac == 0) {

@@ -143,6 +143,13 @@ public:
   oop_int_t* domain_header_address() {
     return preheader()->domain_header_address();
   }
+   
+  Preheader::domain_header_t domain_header() {
+    return preheader()->domain_header();
+  }
+   
+  inline void set_domain_header(Preheader::domain_header_t header);
+   
 
   void initialize_preheader() { preheader()->initialize_preheader(); }
 
@@ -556,7 +563,7 @@ public:
   bool verify();
   bool verify_address();
   bool verify_preheader();
-  bool verify_extra_preheader_word();
+  bool verify_preheader_words();
   bool verify_backpointer();
   bool okayOop();
   bool hasOkayClass();
