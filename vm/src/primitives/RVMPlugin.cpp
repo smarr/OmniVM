@@ -583,7 +583,6 @@ static int primitiveGetExtraPreheaderWord() {
   return 0;
 }
 
-
 // for compatability's sake, if one arg, set the extra word in the arg to the value of the receiver
 // Newer form: if two args, set the extra word in arg 1 to the value of arg2 -- dmu 6/10
 static int primitiveSetExtraPreheaderWord() {

@@ -108,12 +108,12 @@ public:
   Oop backpointer() { return oop_from_backpointer(get_backpointer_word()); }
 
   void set_backpointer(Oop x) {
-      set_backpointer_word(backpointer_from_oop(x));
+    set_backpointer_word(backpointer_from_oop(x));
   }
-   void set_preheader(Oop x) { 
-     initialize_preheader();
-     set_backpointer(x); 
-   }
+  void set_preheader(Oop x) { 
+    initialize_preheader();
+    set_backpointer(x); 
+  }
 
   static Oop oop_from_backpointer(oop_int_t bp) {
     return Oop::from_mem_bits(u_oop_int_t(bp) >> Header_Type::Width);
@@ -137,10 +137,14 @@ public:
     return preheader()->extra_preheader_word_address();
   }
    
-   oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
-   inline void set_extra_preheader_word(oop_int_t w);
+  oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
+  inline void set_extra_preheader_word(oop_int_t w);
+  
+  oop_int_t* domain_header_address() {
+    return preheader()->domain_header_address();
+  }
 
-   void initialize_preheader() { preheader()->initialize_preheader(); }
+  void initialize_preheader() { preheader()->initialize_preheader(); }
 
 
 public:

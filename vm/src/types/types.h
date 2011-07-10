@@ -42,9 +42,9 @@ class typedefs {
  public:
   static void check_typedefs() {
     assert_eq(sizeof(u_int32), 4, "");
-    assert_eq(sizeof(int32), 4, "");
-    assert_eq(sizeof(int16), 2, "");
-    assert_eq(sizeof(int64), 8, "");
+    assert_eq(sizeof(  int32), 4, "");
+    assert_eq(sizeof(  int16), 2, "");
+    assert_eq(sizeof(  int64), 8, "");
     assert_eq(sizeof(u_int64), 8, "");
     debug_printer->printf("typedefs::check_assertions passed\n");
   }
