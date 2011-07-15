@@ -508,6 +508,9 @@ OBJS = \
   abstract_os_interface.opt \
   logical_core.opt \
   debug_helper.opt \
+  \
+  OmniPlugin.opt \
+
 
 
 ifeq "$(PLATFORM)" "Intel"

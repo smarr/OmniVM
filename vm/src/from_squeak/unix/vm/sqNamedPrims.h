@@ -26,12 +26,13 @@ extern sqExport XDisplayControlPlugin_exports[];
 extern sqExport FilePlugin_exports[]; // xxx_dmu
 extern sqExport RVMPlugin_exports[]; // xxx_dmu
 extern sqExport SocketPlugin_exports[]; // xxx_dmu
+extern sqExport OmniPlugin_exports[]; // STEFAN
 
 sqExport *pluginExports[] = {
 	vm_exports,
 	os_exports,
 
-FilePlugin_exports, // xxx_dmu
+  FilePlugin_exports, // xxx_dmu
 	ADPCMCodecPlugin_exports,
 	BMPReadWriterPlugin_exports,
 	B2DPlugin_exports,
@@ -51,5 +52,6 @@ FilePlugin_exports, // xxx_dmu
 	XDisplayControlPlugin_exports,
   RVMPlugin_exports,
   SocketPlugin_exports, // xxx_dmu
+  OmniPlugin_exports,   // STEFAN
 	NULL
 };

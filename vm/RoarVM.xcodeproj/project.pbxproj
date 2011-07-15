@@ -119,6 +119,8 @@
 		0ADA26E612EF642C009404B0 /* cacheline_alignment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0ADA26B912EF5C00009404B0 /* cacheline_alignment.cpp */; };
 		0AEC1186128DF0A000EFF6D1 /* debug_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0AEC1185128DF0A000EFF6D1 /* debug_helper.cpp */; };
 		3411741113C9ACB200CE97B6 /* preheader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3411740F13C9ACB200CE97B6 /* preheader.cpp */; };
+		3414CB6D13D03C56008A6866 /* OmniPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3414CB6C13D03C56008A6866 /* OmniPlugin.cpp */; };
+		3414CB6E13D03C56008A6866 /* OmniPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3414CB6C13D03C56008A6866 /* OmniPlugin.cpp */; };
 		341ED2D513C9B4190030BE29 /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 341ED2D413C9B4190030BE29 /* gtest.framework */; };
 		341ED2D613C9B4410030BE29 /* error_handling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784E4128DBF7400336BDE /* error_handling.cpp */; };
 		341ED2D713C9B4560030BE29 /* abstract_object_heap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A278446128DBF7300336BDE /* abstract_object_heap.cpp */; };
@@ -528,6 +530,7 @@
 		0AEC1185128DF0A000EFF6D1 /* debug_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_helper.cpp; sourceTree = "<group>"; };
 		3411740F13C9ACB200CE97B6 /* preheader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = preheader.cpp; sourceTree = "<group>"; };
 		3411742113C9B27E00CE97B6 /* gtest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gtest.xcodeproj; path = googletest/xcode/gtest.xcodeproj; sourceTree = "<group>"; };
+		3414CB6C13D03C56008A6866 /* OmniPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OmniPlugin.cpp; sourceTree = "<group>"; };
 		341ED2D413C9B4190030BE29 /* gtest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = gtest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -1075,6 +1078,7 @@
 		0A2784D5128DBF7400336BDE /* primitives */ = {
 			isa = PBXGroup;
 			children = (
+				3414CB6C13D03C56008A6866 /* OmniPlugin.cpp */,
 				0A2784D6128DBF7400336BDE /* RVMPlugin.cpp */,
 				0A2784D7128DBF7400336BDE /* RVMPlugin.h */,
 			);
@@ -1496,6 +1500,7 @@
 				0A5D7C99135CC84700D13E53 /* sqUnixSound.c in Sources */,
 				0A5D7C9C135CC86800D13E53 /* sqUnixSocket.c in Sources */,
 				0A87AD8A1379573F00337878 /* performance_counters.cpp in Sources */,
+				3414CB6D13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1591,6 +1596,7 @@
 				0A4D8256135C523B00CD74D8 /* sqUnixExternalPrims.c in Sources */,
 				0A4D825B135C526100CD74D8 /* sqUnixX11.c in Sources */,
 				3411741113C9ACB200CE97B6 /* preheader.cpp in Sources */,
+				3414CB6E13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

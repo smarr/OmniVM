@@ -144,11 +144,16 @@ public:
     return preheader()->domain_header_address();
   }
    
+  Oop domain_header_oop() {
+    return Oop::from_bits(*preheader()->domain_header_address());
+  }
+   
   Preheader::domain_header_t domain_header() {
     return preheader()->domain_header();
   }
    
   inline void set_domain_header(Preheader::domain_header_t header);
+  inline void set_domain_header(Oop domain_info);
    
 
   void initialize_preheader() { preheader()->initialize_preheader(); }
