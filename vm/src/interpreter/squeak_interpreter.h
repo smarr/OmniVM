@@ -644,6 +644,10 @@ public:
     assertClass(x, splObj(Special_Indices::ClassFloat));
     return successFlag ? x->fetchFloatAtinto() : 0.0;
   }
+  
+  bool stackBooleanValue(oop_int_t offset) {
+    return booleanValueOf(stackPointer()[-offset]);
+  }
 
 
   Oop literal(oop_int_t offset) {
