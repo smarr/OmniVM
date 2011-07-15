@@ -49,14 +49,24 @@ public:
   Roots roots;
   Method_Cache methodCache;
   At_Cache atCache;
- private:
+private:
   friend class Interpreter_Subset_For_Control_Transfer;
   // these get send for control transfer
   Object_p _activeContext_obj;  //STEFAN TODO come back here and think about the exact meaning and whether we want Object* here
   Object_p _method_obj;
   Object_p _theHomeContext_obj;
- public:
-  u_char* _instructionPointer; u_char* instructionPointer() { assert_external(); return _instructionPointer; }  void set_instructionPointer(u_char* x) { registers_unstored(); uninternalized(); _instructionPointer = x; }
+public:
+  u_char* _instructionPointer;
+  u_char* instructionPointer() {
+    assert_external();
+    return _instructionPointer;
+  }
+  void set_instructionPointer(u_char* x) {
+    registers_unstored();
+    uninternalized();
+    _instructionPointer = x;
+  }
+  
   Oop*    _stackPointer;  Oop* stackPointer() { assert_external(); return _stackPointer; } void set_stackPointer(Oop* x) { registers_unstored(); uninternalized(); _stackPointer = x; }
   u_char currentBytecode; // interp version is out of order
   bool   have_executed_currentBytecode;
@@ -212,18 +222,18 @@ public:
   void assert_registers_unstored() { assert(!are_registers_stored); }
   void assert_stored_if_no_proc() { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
 # else
-  void registers_unstored() {}
-  void registers_stored() {}
-  void externalized() { }
-  void internalized() { }
-  void unexternalized() {}
-  void uninternalized() { }
+  void registers_unstored()        {}
+  void registers_stored()          {}
+  void externalized()              {}
+  void internalized()              {}
+  void unexternalized()            {}
+  void uninternalized()            {}
 
-  void assert_internal() {  }
-  void assert_external() { }
-  void assert_registers_stored() { }
-  void assert_registers_unstored() {  }
-  void assert_stored_if_no_proc() { }
+  void assert_internal()           {}
+  void assert_external()           {}
+  void assert_registers_stored()   {}
+  void assert_registers_unstored() {}
+  void assert_stored_if_no_proc()  {}
 # endif
 
 
