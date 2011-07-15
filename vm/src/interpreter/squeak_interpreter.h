@@ -645,6 +645,10 @@ public:
       x == roots.falseObj ? false :
       (successFlag = false);
   }
+  
+  bool stackBooleanValue(oop_int_t offset) {
+    return booleanValueOf(stackPointer()[-offset]);
+  }
 
   double floatValueOf(Oop x) {
     return x.is_mem() ? floatValueOf(x.as_object())
@@ -653,10 +657,6 @@ public:
   double floatValueOf(Object_p x) {
     assertClass(x, splObj(Special_Indices::ClassFloat));
     return successFlag ? x->fetchFloatAtinto() : 0.0;
-  }
-  
-  bool stackBooleanValue(oop_int_t offset) {
-    return booleanValueOf(stackPointer()[-offset]);
   }
 
 
