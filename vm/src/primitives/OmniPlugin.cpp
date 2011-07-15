@@ -116,7 +116,7 @@ static int primitiveGetDomainInfo() {
     return 0;
   }
   
-  interp->popThenPush(1, o.as_object()->domain_header_oop());
+  interp->popThenPush(2, o.as_object()->domain_header_oop());
   
   return 0;
 }
