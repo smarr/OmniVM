@@ -32,15 +32,17 @@ public:
 # endif
 
 # if Include_Domain_In_Object_Header
-  typedef enum foreign_access_policy { 
-    UNSPECIFIED  = 0, /* Has not been set (not sure yet how to proceed here, probably just ignore and handle as local) */
-    SYNCHRONOUS  = 1, /* Synchronous direct access is allowed from foreign domains */
-    ASYNCHRONOUS = 2, /* Access has to be transformed into an asynchronous one, but is allowed then. */
-    NO_ACCESS    = 3  /* No access allowed */
-  } foreign_access_policy_t;
+  // typedef enum foreign_access_policy { 
+  //  UNSPECIFIED  = 0, /* Has not been set (not sure yet how to proceed here, probably just ignore and handle as local) */
+  //  SYNCHRONOUS  = 1, /* Synchronous direct access is allowed from foreign domains */
+  //  ASYNCHRONOUS = 2, /* Access has to be transformed into an asynchronous one, but is allowed then. */
+  //  NO_ACCESS    = 3  /* No access allowed */
+  // } foreign_access_policy_t;
   
-  static const size_t foreign_access_policy_bits = 2;
-  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - (3 * foreign_access_policy_bits  + Tag_Size); 
+  // static const size_t foreign_access_policy_bits = 2;
+  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - (  3 /*read|write*/
+                                                                   * 2 /*sync|async*/
+                                                                   * 1 /*bit*/  + Tag_Size); 
   
   // STEFAN: TODO: figure out whether we need to have an exception mechnanism directly specified here,
   //               or whether it is ok to have it in the domain object
@@ -57,10 +59,14 @@ public:
                                                       to encode all the interesting information.
                                                       STEFAN 2011-07-10 */
       unsigned logic_id : logic_id_bits;
-      foreign_access_policy_t read     : foreign_access_policy_bits;
-      foreign_access_policy_t write    : foreign_access_policy_bits;
-      foreign_access_policy_t execute  : foreign_access_policy_bits;
-
+      
+      bool foreign_sync_read     : 1;
+      bool foreign_sync_write    : 1;
+      bool foreign_sync_execute  : 1;
+      bool foreign_async_read    : 1;
+      bool foreign_async_write   : 1;
+      bool foreign_async_execute : 1;
+      
     } __attribute__ ((__packed__)) bits;
   } domain_header_t;
   

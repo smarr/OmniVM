@@ -643,9 +643,11 @@ static int primitiveSetExtraWordSelector() {
 
 /** Primitives for Project Omni **/
 
-/** RVMOperations class>>primitiveGetDomainPreheaderWord: anObject
-    ^ { #DomainId, #ForeignAccessPolicyRead, #ForeignAccessPolicyWrite, #ForeignAccessPolicyExecute } */
-static int primitiveGetDomainPreheaderWord() {
+/** RVMOperations class>>primitiveGetDomainInfoFor: anObject
+    ^ { #DomainId.
+        #ForeignSyncRead. #ForeignSyncWrite. #ForeignSyncExecute.
+        #ForeignAsyncRead. #ForeignAsyncWrite. #ForeignAsyncExecute.} */
+static int primitiveGetDomainInfo() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
   if (interp->get_argumentCount() != 1) {
@@ -661,43 +663,59 @@ static int primitiveGetDomainPreheaderWord() {
   
   int s = interp->makeArrayStart();
   PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.logic_id);
-  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.read);
-  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.write);
-  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.execute);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_read);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_write);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_execute);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_read);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_write);
+  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_execute);
+
   interp->popThenPush(2, interp->makeArray(s));
   
   return 0;
 }
 
-/** RVMOperations class>>primitiveSetDomainPreheaderWordFor: anObject to: aDomainId with: aReadPolicy and: aWritePolicy and: aExecutePolicy */
-static int primitiveSetDomainPreheaderWord() {
+/** RVMOperations class>>primitiveSetDomainInfoFor: anObject 
+        to: aDomainId
+        foreignSyncRead:  aBool foreignSyncWrite:  aBool foreignSyncExecute:  aBool 
+        foreignAsyncRead: aBool foreignAsyncWrite: aBool foreignAsyncExecute: aBool */
+static int primitiveSetDomainInfo() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  const int ARG_CNT = 7;
   
-  if (interp->get_argumentCount() != 5) {
+  if (interp->get_argumentCount() != ARG_CNT) {
     interp->primitiveFail();
     return 0;
   }
   
-  oop_int_t  execute_policy = interp->stackIntegerValue(0);
-  oop_int_t    write_policy = interp->stackIntegerValue(1);
-  oop_int_t     read_policy = interp->stackIntegerValue(2);
-  oop_int_t logic_domain_id = interp->stackIntegerValue(3);
+  bool async_execute = interp->stackBooleanValue(0);
+  bool async_write   = interp->stackBooleanValue(1);
+  bool async_read    = interp->stackBooleanValue(2);
   
-  Oop target = interp->stackValue(4);
+  bool sync_execute  = interp->stackBooleanValue(3);
+  bool sync_write    = interp->stackBooleanValue(4);
+  bool sync_read     = interp->stackBooleanValue(5);
+
+  bool logic_domain_id = interp->stackIntegerValue(6);
+  
+  Oop target = interp->stackObjectValue(7);
 
   if (interp->failed())
     return 0;
 
-  Preheader::domain_header_t domain_header;
-  domain_header.bits.logic_id = logic_domain_id;
-  domain_header.bits.read     = (Preheader::foreign_access_policy_t)read_policy;
-  domain_header.bits.write    = (Preheader::foreign_access_policy_t)write_policy;
-  domain_header.bits.execute  = (Preheader::foreign_access_policy_t)execute_policy;
+  Preheader::domain_header_t domain;
+  domain.bits.logic_id       = logic_domain_id;
+  domain.bits.foreign_sync_read     = sync_read;
+  domain.bits.foreign_sync_write    = sync_write;
+  domain.bits.foreign_sync_execute  = sync_execute;
+  domain.bits.foreign_async_read    = async_read;
+  domain.bits.foreign_async_write   = async_write;
+  domain.bits.foreign_async_execute = async_execute;
+    
+  domain.bits.int_tag  = Int_Tag;
   
-  domain_header.bits.int_tag  = Int_Tag;
-  
-  target.as_object()->set_domain_header(domain_header);
-  The_Squeak_Interpreter()->pop(5);
+  target.as_object()->set_domain_header(domain);
+  The_Squeak_Interpreter()->pop(ARG_CNT);
   return 0;
 }
 

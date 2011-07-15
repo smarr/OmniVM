@@ -56,14 +56,23 @@ TEST(Preheader, DomainHeaderLayout) {
   ASSERT_EQ(0xFFFFFFFF, h.domain_header().raw_value);
   ASSERT_EQ(0x01FFFFFF, h.domain_header().bits.logic_id);  // That is the max value for the logic id
   
-  ASSERT_EQ(Preheader::NO_ACCESS, h.domain_header().bits.read);    // NO_ACCESS corresponds to all bits set
-  ASSERT_EQ(Preheader::NO_ACCESS, h.domain_header().bits.write);   // NO_ACCESS corresponds to all bits set
-  ASSERT_EQ(Preheader::NO_ACCESS, h.domain_header().bits.execute); // NO_ACCESS corresponds to all bits set
+  ASSERT_TRUE(h.domain_header().bits.foreign_sync_read);
+  ASSERT_TRUE(h.domain_header().bits.foreign_sync_write);
+  ASSERT_TRUE(h.domain_header().bits.foreign_sync_execute);
 
+  ASSERT_TRUE(h.domain_header().bits.foreign_async_read);
+  ASSERT_TRUE(h.domain_header().bits.foreign_async_write);
+  ASSERT_TRUE(h.domain_header().bits.foreign_async_execute);
+
+  
   // Now clear the bits and verify the resulting raw_value
-  h.domain.bits.read    = Preheader::UNSPECIFIED;
-  h.domain.bits.write   = Preheader::UNSPECIFIED;
-  h.domain.bits.execute = Preheader::UNSPECIFIED;  
+  h.domain.bits.foreign_sync_read    = false;
+  h.domain.bits.foreign_sync_write   = false;
+  h.domain.bits.foreign_sync_execute = false;
+
+  h.domain.bits.foreign_async_read    = false;
+  h.domain.bits.foreign_async_write   = false;
+  h.domain.bits.foreign_async_execute = false;
   
   ASSERT_EQ(0x3FFFFFF, h.domain_header().raw_value);   // This basically says, that the policy flags are the highest (most significant)
   ASSERT_EQ(0x1FFFFFF, h.domain_header().bits.logic_id);
