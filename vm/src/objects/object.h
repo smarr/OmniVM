@@ -151,7 +151,7 @@ public:
   
   oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
   
-  void init_extra_preheader_word() { preheader()->init_extra_preheader_word(); }
+  void init_extra_preheader_word() { preheader()->initialize_preheader(); }
 
    void set_preheader(Oop x) { 
      initialize_preheader();

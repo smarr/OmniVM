@@ -40,7 +40,50 @@ public:
   //         but is consistent in the image and all over the VM.
   oop_int_t sly_ensemble_pointer; /* was: extra_preheader_word */
 # endif
-    
+
+# if Include_Domain_In_Object_Header
+  // typedef enum foreign_access_policy { 
+  //  UNSPECIFIED  = 0, /* Has not been set (not sure yet how to proceed here, probably just ignore and handle as local) */
+  //  SYNCHRONOUS  = 1, /* Synchronous direct access is allowed from foreign domains */
+  //  ASYNCHRONOUS = 2, /* Access has to be transformed into an asynchronous one, but is allowed then. */
+  //  NO_ACCESS    = 3  /* No access allowed */
+  // } foreign_access_policy_t;
+  
+  // static const size_t foreign_access_policy_bits = 2;
+  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - (  3 /*read|write*/
+                                                                   * 2 /*sync|async*/
+                                                                   * 1 /*bit*/  + Tag_Size); 
+  
+  // STEFAN: TODO: figure out whether we need to have an exception mechnanism directly specified here,
+  //               or whether it is ok to have it in the domain object
+  
+  typedef union domain_header {
+    oop_int_t raw_value;
+    struct {
+      unsigned                int_tag  : Tag_Size; /* Seems to be necessary, according to David's comment at the top,
+                                                      should verify that.
+                                                      But anyway, if this preheader word is treated as a normal slot,
+                                                      when saving such objects, then it is important to treat
+                                                      it as a normal SmallInteger. 
+                                                      This way, I do not have to be careful, but can just use the int
+                                                      to encode all the interesting information.
+                                                      STEFAN 2011-07-10 */
+      unsigned logic_id : logic_id_bits;
+      
+      bool foreign_sync_read     : 1;
+      bool foreign_sync_write    : 1;
+      bool foreign_sync_execute  : 1;
+      bool foreign_async_read    : 1;
+      bool foreign_async_write   : 1;
+      bool foreign_async_execute : 1;
+      
+    } __attribute__ ((__packed__)) bits;
+  } domain_header_t;
+  
+  domain_header_t domain;
+# endif
+  
+  
   oop_int_t* extra_preheader_word_address() {
 # if Extra_Preheader_Word_Experiment
       return &sly_ensemble_pointer;
@@ -82,7 +125,7 @@ public:
       # endif
       
       # if Extra_Preheader_Word_Experiment
-      extra_preheader_word = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
+      sly_ensemble_pointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
       # endif
     }
   }
