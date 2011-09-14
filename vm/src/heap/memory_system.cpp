@@ -94,7 +94,12 @@ bool Memory_System::verify_if(bool condition) {
 
   verifyInterpreterAndHeapMessage_class().send_to_all_cores();
 
-  return object_table->verify();
+  if (object_table != NULL)
+    return object_table->verify();
+  else {
+    assert(not Use_Object_Table);
+    return true;
+  }
 }
 
 
@@ -118,6 +123,7 @@ Oop Memory_System::get_stats(int what_to_sample) {
 
 
 void Memory_System::fullGC(const char* why) {
+# if Use_Object_Table
   Squeak_Interpreter * const interp = The_Squeak_Interpreter();
   if (interp->am_receiving_objects_from_snapshot())
     fatal("cannot gc now");
@@ -140,6 +146,10 @@ void Memory_System::fullGC(const char* why) {
   global_GC_values->mutator_start_time = interp->ioWhicheverMSecs();
 
   level_out_heaps_if_needed();
+# else
+  # warning STEFAN: The GC is currently disabled, since it is not adapted to \
+                    work without object table.
+# endif
 }
 
 
@@ -160,10 +170,12 @@ void Memory_System::level_out_heaps_if_needed() {
       Safepoint_Ability sa(false);
 
       Object* first = biggest->firstAccessibleObject();
-      Object* first_object_to_spread = first;
-      for ( ; 
-           first_object_to_spread  &&  (char*)first_object_to_spread - (char*)first  <  smallest->bytesUsed();  
+      Object* first_object_to_spread;
+      
+      for (first_object_to_spread = first; 
+           first_object_to_spread  &&  ((char*)first_object_to_spread - (char*)first)  <  smallest->bytesUsed();  
            first_object_to_spread = biggest->accessibleObjectAfter(first_object_to_spread)) {}
+      
       if (first_object_to_spread) {
         lprintf("Spreading objects around to prevent GC storms\n"); // by spreading only excess if needed
         The_Squeak_Interpreter()->preGCAction_everywhere(false); // false because caches are oop-based, and we just move objs
@@ -195,6 +207,7 @@ void Memory_System::finalize_weak_arrays_since_we_dont_do_incrementalGC() {
 
 
 void Memory_System::swapOTEs(Oop* o1, Oop* o2, int len) {
+# if Use_Object_Table
   for (int i = 0;  i < len;  ++i) {
     Object_p obj1 = o1[i].as_object();
     Object_p obj2 = o2[i].as_object();
@@ -202,6 +215,9 @@ void Memory_System::swapOTEs(Oop* o1, Oop* o2, int len) {
     obj2->set_object_address_and_backpointer(o1[i]  COMMA_TRUE_OR_NOTHING);
     obj1->set_object_address_and_backpointer(o2[i]  COMMA_TRUE_OR_NOTHING);
   }
+# else
+  fatal("Currently not supported without an object_table.");
+# endif
 }
 
 
@@ -638,7 +654,7 @@ void Memory_System::initialize_from_snapshot(int32 snapshot_bytes, int32 sws, in
   
   log_memory_per_read_write_heap = log_of_power_of_two(memory_per_read_write_heap);
   log_memory_per_read_mostly_heap = log_of_power_of_two(memory_per_read_mostly_heap);
-  object_table = new Multicore_Object_Table();
+  object_table = new Object_Table();
 
   init_buf ib = {
     snapshot_bytes, sws, fsf, lastHash,
@@ -828,6 +844,9 @@ void Memory_System::init_values_from_buffer(init_buf* ib) {
   read_write_memory_base = ib->read_write_memory_base;
   read_mostly_memory_base = ib->read_mostly_memory_base;
   object_table = ib->object_table;
+  
+  assert(   ( Use_Object_Table && object_table)
+         || (!Use_Object_Table && object_table == NULL));
 
   snapshot_window_size.initialize(ib->sws, ib->fsf);
 
@@ -1135,7 +1154,7 @@ void Memory_System::pre_cohere(void* start, int nbytes) {
   if (The_Squeak_Interpreter()->am_receiving_objects_from_snapshot()) return; // will be done at higher level
   // lprintf("pre_cohere start 0x%x %d\n", start, nbytes);
 
-  if (!contains(start) && !object_table->probably_contains(start)) {
+  if (!contains(start) && object_table->probably_contains_not(start)) {
     lprintf("pid %d, about_to_write_read_mostly_memory to bad address 0x%x 0x%x\n", getpid(), start, nbytes);
     fatal();
   }

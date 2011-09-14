@@ -13,7 +13,14 @@
 
 
 /*
+ Pointer and Object Representation
+ =================================
+
  This class describes a 32-bit direct-pointer object memory for Smalltalk.
+
+ Pointer
+ -------
+ 
  The model is very simple in principle:  
      a pointer is either a SmallInteger 
      or a 32-bit direct object pointer.
@@ -21,9 +28,27 @@
  SmallIntegers are tagged with a low-order bit equal to 1,
   and an immediate 31-bit 2s-complement signed value in the rest of the word.
 
- All object pointers point to a header, which may be followed by a number of data fields.
+ All object pointers point to a header, which may be followed by a number of 
+ data fields.
+ 
+ Thus, the pointer to an object always points at the begin of the _base header_,
+ which is after additional variable-sized _extra headers_, and the RoarVM
+ specific _preheaders_.
+
+ 
+ Object Representation
+ ---------------------
+ 
+        === Object Representation in Memory, Including all Headers ===
+ +-------------+-----------------+--------------------+---------------------+
+ |Pre (k words)|Extra (0-2 words)|Base Header (1 word)|Data/Fields (n words)|
+ +-------------+-----------------+--------------------+---------------------+
+                                 ↑
+                                 Target of Object*|Object_p|Oop
+ 
  This object memory achieves considerable compactness by using
  a variable header size (the one complexity of the design).
+
 
  The format of the 0th header word is as follows:
 
@@ -47,6 +72,10 @@
  formatOf: method (including isPointers, isVariable, isBytes,
  and the low 2 size bits of byte-sized objects).
 
+ 
+ Note on the original Squeak VM Garbage Collector
+ ------------------------------------------------
+ 
  Note: the following two lines were true of the original Squeak VM, 
  but are not true in this this VM as of 11/15/10. -- dmu & sm
  
@@ -65,8 +94,8 @@ class Object
 # endif
 
  {
-   # if Work_Around_Extra_Words_In_Classes
-  WORD_CONTAINING_OBJECT_TYPE_MEMBERS
+  # if Work_Around_Extra_Words_In_Classes
+    # include "word_containing_object_type.h"
   # endif
 
 public:
@@ -90,13 +119,18 @@ public:
   int32*     as_int32_p()    { return (int32*)this; }
   Oop*       as_oop_p()      { return (Oop*)this; }
 
-  bool contains_sizeHeader() { return Header_Type::contains_sizeHeader(baseHeader); }
+  bool contains_sizeHeader() {
+    return Header_Type::contains_sizeHeader(baseHeader);
+  }
   oop_int_t& sizeHeader() {
     assert(contains_sizeHeader());
-    return as_oop_int_p()[-2];
+    return as_oop_int_p()[-2];  // -2: See comment at the top, it is the extra header for which we need to adjust
   }
-  bool contains_class_and_type_word() { return Header_Type::contains_class_and_type_word(baseHeader); }
-  oop_int_t& class_and_type_word() { return as_oop_int_p()[-1]; }
+  bool contains_class_and_type_word() {
+    return Header_Type::contains_class_and_type_word(baseHeader);
+  }
+  oop_int_t& class_and_type_word() { return as_oop_int_p()[-1]; } // -1: See comment at the top, it is the extra header for which we need to adjust
+   
   Oop  get_class_oop() {
     Oop r = Oop::from_bits(Header_Type::without_type(class_and_type_word()));
     if (check_many_assertions)
@@ -105,25 +139,53 @@ public:
   }
   void set_class_oop(Oop x);
   void set_class_oop_no_barrier(Oop);
-  Oop backpointer() { return oop_from_backpointer(get_backpointer_word()); }
 
-  void set_backpointer(Oop x) {
-    set_backpointer_word(backpointer_from_oop(x));
+# if Has_Preheader
+  Preheader* preheader() { 
+    return  (Preheader*)&as_oop_int_p()[-extra_header_oops()];
   }
-  void set_preheader(Oop x) { 
-    initialize_preheader();
-    set_backpointer(x); 
+  
+  oop_int_t* extra_preheader_word() {
+    return preheader()->extra_preheader_word_address();
   }
+  
+  oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
+  
+  void init_extra_preheader_word() { preheader()->init_extra_preheader_word(); }
 
+   void set_preheader(Oop x) { 
+     initialize_preheader();
+    # if Enforce_Backpointer || Use_Object_Table
+     set_backpointer(x); 
+    # endif
+   }
+
+# else // !Has_Preheader
+  inline void set_preheader(Oop)          const {}
+  inline void init_extra_preheader_word() const {}
+  oop_int_t* extra_preheader_word()       const { return NULL; }
+  oop_int_t  get_extra_preheader_word()   const { return -1; }
+   
+# endif // Has_Preheader
+   
+  inline void set_extra_preheader_word(oop_int_t w);
+   
+   
+# if Enforce_Backpointer || Use_Object_Table   
+   Oop backpointer() { return oop_from_backpointer(get_backpointer_word()); }
+   
+   void set_backpointer(Oop x) {
+     set_backpointer_word(backpointer_from_oop(x));
+   }
+   
   static Oop oop_from_backpointer(oop_int_t bp) {
     return Oop::from_mem_bits(u_oop_int_t(bp) >> Header_Type::Width);
   }
+   
   oop_int_t backpointer_from_oop(Oop x) {
     return (x.mem_bits() << Header_Type::Width) | (headerType() << Header_Type::Shift);
   }
    
-  Preheader* preheader() { return  (Preheader*)&as_oop_int_p()[-extra_header_oops()]; }
-
   oop_int_t get_backpointer_word() { return *backpointer_word(); }
 
   inline void set_backpointer_word(oop_int_t w);
@@ -131,14 +193,10 @@ public:
   oop_int_t* backpointer_word() {
     return &preheader()->backpointer;
   }
+# else
+  inline void set_backpointer(Oop) const {}
    
-  
-  oop_int_t* extra_preheader_word() {
-    return preheader()->extra_preheader_word_address();
-  }
-   
-  oop_int_t get_extra_preheader_word() { return *extra_preheader_word(); }
-  inline void set_extra_preheader_word(oop_int_t w);
+# endif
   
   oop_int_t* domain_header_address() {
     return preheader()->domain_header_address();
@@ -370,11 +428,6 @@ public:
   void do_all_oops_of_object_for_reading_snapshot(Squeak_Image_Reader* r);
   void do_all_oops_of_object_for_marking(Abstract_Mark_Sweep_Collector*, bool do_checks = check_assertions);
 
-  // ObjectMemory allocation
-  Object_p fill_in_after_allocate(oop_int_t byteSize, oop_int_t hdrSize,
-                                  oop_int_t baseHeader, Oop classOop, oop_int_t extendedSize,
-                                  bool doFill = false,
-                                  bool fillWithNil = false);
   Oop clone();
 
   // ObjectMemory interpreter access
@@ -486,8 +539,9 @@ public:
   Object_p instantiateClass(oop_int_t sizeInBytes, Logical_Core* where = NULL);
   oop_int_t instanceSizeOfClass();
 
+# if Enforce_Backpointer || Use_Object_Table
   inline void set_object_address_and_backpointer(Oop x  COMMA_DCL_ESB);
-
+# endif
 
   inline bool isCompiledMethod();
 
@@ -542,6 +596,15 @@ public:
   bool isEmptyList();
   inline static Oop floatObject(double);
   inline void storeFloat(double);
+
+   /** Floats are stored in platform order in Cog images.
+    This function here is used during image load to make sure that
+    the floats are stored in normalized, i.e., swaped order, since
+    the standard interpreter and the RoarVM do not use platform order.
+    
+    REM: should NOT be called in normal operation. */
+  inline void swapFloatParts_for_cog_compatibility();
+   
   void storeStackPointerValue(oop_int_t v) {
     storePointerUnchecked(Object_Indices::StackPointerIndex, Oop::from_int(v));
   }
@@ -569,7 +632,11 @@ public:
   bool verify_address();
   bool verify_preheader();
   bool verify_preheader_words();
+  
+# if Enforce_Backpointer || Use_Object_Table
   bool verify_backpointer();
+# endif
+  
   bool okayOop();
   bool hasOkayClass();
 

@@ -12,8 +12,13 @@ echo_usage () {
     echo "    --debug"
     echo "    --enforce-opt       Should be used together with --debug to enforce full optimization"
     echo "    --enable-native-opt Enable optimization for current native architecture"
+    echo
+    echo "Advanced configuration values:"
     echo "    --show-cmds         Show the command invocations"
     echo "    --enable-perfcnt    Enable internal performance counters"
+    echo "    --without-obj-table Disables the object-table"
+    echo "    --enforce-backptr   Keep backpointer field in preheader (for testing purpose)"
+    echo "    --without-preheader Disables the preheader word per object (required for Sly)"
     echo
     echo "Libraries:"
     echo "    --x11-lib <path>    Path to the X11 lib folder"
@@ -37,12 +42,32 @@ DEBUG=0
 ENFORCE_OPT=0
 SUPPRESS_CMD_OUTPUT=1
 PERF_COUNTERS=0
+
+
+PREHEADER=1
+OBJECT_TABLE=1
+ENFORCE_BACKPTR=0
+
+
 #CC=
 #CXX=
 CONFIGURE_ARGS="$@"
 CONFIG_FLAGS="-m32 -Wextra -Wno-write-strings"
 PWD=`pwd`
-SRC_DIR=`dirname $PWD`/src
+
+# Not sure whether we need absolute file names, but will preserve it for now.
+# However, spaces do break things, so, try to use relative pathes
+# instead if there is a space in the path.
+case "$PWD" in
+    *\ * )
+        SRC_DIR=../src
+        ;;
+    *)
+        SRC_DIR=`dirname $PWD`/src
+        ;;
+esac
+
+
 #SYSCTL="/sbin/sysctl"
 #if [ ! -e $SYSCTL ] then SYSCTL="/usr$SYSCTL" fi
 #number_of_cores=`$SYSCTL `
@@ -76,6 +101,18 @@ do
     ;;
     --show-cmds)
       SUPPRESS_CMD_OUTPUT=0
+      shift 1
+    ;;
+    --without-obj-table)
+      OBJECT_TABLE=0
+      shift 1
+    ;;
+    --enforce-backptr)
+      ENFORCE_BACKPTR=1
+      shift 1
+    ;;
+    --without-preheader)
+      PREHEADER=0
       shift 1
     ;;
     --x11-lib)
@@ -112,6 +149,20 @@ else
 	    -DCHECK_FOR_PROBLEMATIC_COMPILER=0"
 fi
 
+if [ $OBJECT_TABLE -eq 1 ]
+then
+  CONFIG_FLAGS="$CONFIG_FLAGS -DUse_Mark_Sweep_GC_With_Object_Table=1"
+else
+  CONFIG_FLAGS="$CONFIG_FLAGS -DUse_Mark_Sweep_GC_With_Object_Table=0"
+fi
+
+if [ $ENFORCE_BACKPTR -eq 1 ]
+then
+  CONFIG_FLAGS="$CONFIG_FLAGS -DEnforce_Backpointer=1"
+else
+  CONFIG_FLAGS="$CONFIG_FLAGS -DEnforce_Backpointer=0"
+fi
+
 if [ $DEBUG -eq 0 ]
 then
     CONFIG_FLAGS="$CONFIG_FLAGS"
@@ -132,13 +183,13 @@ if [ $USE_TILERA -eq 0 ]
 then
   case $OPERATING_SYSTEM in
     Darwin)
-        LDFLAGS="$LDFLAGS -lX11 -lXext -framework CoreFoundation -lGL -framework CoreServices -framework IOKit"
+        LDFLAGS="$LDFLAGS -lX11 -lXext -framework CoreFoundation -lGL -framework CoreServices -framework IOKit -Wl,-no_pie"
         X11_PATH="/Developer/SDKs/MacOSX10.6.sdk/usr/X11R6/lib"
         Xext_PATH="/Developer/SDKs/MacOSX10.6.sdk/usr/X11R6/lib"
 		if [ -z "$CXX" ]
 		then
-        	CC=gcc-4.2
-        	CXX=g++-4.2
+        	CC=gcc
+        	CXX=g++
 		fi
         CONFIG_FLAGS="$CONFIG_FLAGS -I/Developer/SDKs/MacOSX10.6.sdk/usr/X11/include/"
 
@@ -248,6 +299,7 @@ echo "SRC_DIR=$SRC_DIR"        >> Makefile
 echo "LOW_OPTIMIZE_LEVEL = $LOW_OPTIMIZE_LEVEL"  >> Makefile
 echo "HIGH_OPTIMIZE_LEVEL= $HIGH_OPTIMIZE_LEVEL" >> Makefile
 echo "SUPPRESS_CMD_OUTPUT= $SUPPRESS_CMD_OUTPUT" >> Makefile
+echo "PREHEADER= $PREHEADER"   >> Makefile
 
 echo "include $SRC_DIR/makefiles/Makefile.common" >> Makefile
 

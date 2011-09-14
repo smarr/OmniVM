@@ -129,12 +129,12 @@ public:
     u_int32 log_memory_per_read_mostly_heap;
     int32 page_size;
     int32 main_pid;
-    Multicore_Object_Table* object_table;
+    Object_Table* object_table;
     struct global_GC_values* global_GC_values;
   };
 
 
-  Multicore_Object_Table* object_table;   // threadsafe readonly
+  Object_Table* object_table;   // threadsafe readonly
 
 
 
@@ -229,14 +229,22 @@ public:
 
 
   Object*  object_for_unchecked(Oop x) {
-    Object* r = object_table->object_for(x);
-    assert(!object_table->probably_contains(r));
-    return r;
+    if (Use_Object_Table) {
+      Object* r = object_table->object_for(x);
+      assert(object_table->probably_contains_not(r));
+      return r;
+    }
+    else {
+      return object_for(x);
+    }
   }
 
 
   Object*  object_for(Oop x) {
-    return object_table->object_for(x);
+    if (Use_Object_Table)
+      return object_table->object_for(x);
+    else
+      return x.as_object();
   }
 
 

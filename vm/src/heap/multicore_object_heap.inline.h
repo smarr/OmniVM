@@ -51,7 +51,7 @@ inline Object_p Multicore_Object_Heap::allocate(oop_int_t byteSize, oop_int_t hd
   oop_int_t hdrSize_with_preheader = hdrSize + preheader_oop_size ;
   int total_bytes = byteSize  +  (hdrSize_with_preheader - 1) * bytesPerWord;
   
-  Object* chunk = (Object*)allocateChunk_for_a_new_object_and_safepoint_if_needed(total_bytes);
+  Chunk* chunk = allocateChunk_for_a_new_object_and_safepoint_if_needed(total_bytes);
   
   Safepoint_Ability sa(false); // from here on, no GCs!
   
@@ -98,7 +98,7 @@ inline Object_p Multicore_Object_Heap::object_address_unchecked(Oop x) {
 }
 
 
-
+# if Use_Object_Table
 
 inline bool Multicore_Object_Table::Entry::is_used() {
   Object* ow = word()->obj();
@@ -112,4 +112,6 @@ inline bool Multicore_Object_Table::probably_contains(void* p) const {
       return true;
   return false;
 }
+
+# endif
 

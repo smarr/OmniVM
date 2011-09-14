@@ -75,6 +75,9 @@ bool Abstract_Object_Heap::verify() {
     }
     if (!obj->isFreeObject() &&  obj->is_current_copy())
       ok = obj->verify() && ok;
+    
+    if (!ok) dittoing_stdout_printer->printf("Failed to verify obj at %p\n", obj);
+    
     prev_prev_obj = prev_obj;
     prev_obj = obj;
   }
@@ -163,7 +166,11 @@ void Abstract_Object_Heap::scan_compact_or_make_free_objects(bool compacting, Ab
       dst_chunk = next_src_chunk;
 
     else {
-      The_Memory_System()->object_table->set_object_for(oop, new_obj_addr  COMMA_FALSE_OR_NOTHING); // noop unless indirect oops
+      if (Use_Object_Table)
+        The_Memory_System()->object_table->set_object_for(oop, new_obj_addr  COMMA_FALSE_OR_NOTHING); // noop unless indirect oops
+      else
+        fatal("GC is currently not supported, and this should never happen.");
+      
       int n_oops = (Oop*)next_src_chunk - (Oop*)src_chunk;
       // no mutability barrier wanted here, may need generational store barrier in the future
       

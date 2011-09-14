@@ -187,8 +187,11 @@
 
 
 
+# include "object_table.h"
 # include "abstract_object_table.h"
+# include "segmented_object_table.h"
 # include "multicore_object_table.h"
+# include "dummy_object_table.h"
 
 # include "memory_system.h"
 
@@ -222,6 +225,7 @@
 # include "abstract_object_heap.inline.h"
 # include "multicore_object_heap.inline.h"
 # include "multicore_object_table.inline.h"
+# include "segmented_object_table.inline.h"
 # include "memory_system.inline.h"
 
 # include "debug_helper.h"

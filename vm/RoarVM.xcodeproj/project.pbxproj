@@ -55,7 +55,6 @@
 		0A27855B128DBF7400336BDE /* oop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784B3128DBF7400336BDE /* oop.cpp */; };
 		0A27855C128DBF7400336BDE /* abstract_os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784BB128DBF7400336BDE /* abstract_os_interface.cpp */; };
 		0A27855D128DBF7400336BDE /* dummy_cpu_coordinate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784BE128DBF7400336BDE /* dummy_cpu_coordinate.cpp */; };
-		0A278561128DBF7400336BDE /* osx_os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784C9128DBF7400336BDE /* osx_os_interface.cpp */; };
 		0A278562128DBF7400336BDE /* posix_os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784CB128DBF7400336BDE /* posix_os_interface.cpp */; };
 		0A278564128DBF7400336BDE /* shared_memory_message_queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784CF128DBF7400336BDE /* shared_memory_message_queue.cpp */; };
 		0A278565128DBF7400336BDE /* thread_memory_semantics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784D1128DBF7400336BDE /* thread_memory_semantics.cpp */; };
@@ -195,6 +194,8 @@
 		3450742713C9F46700D31C15 /* externals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2783F6128DBF7300336BDE /* externals.cpp */; };
 		3450742813C9F4DC00D31C15 /* sqUnixSoundNull.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A278442128DBF7300336BDE /* sqUnixSoundNull.c */; };
 		34C2158813C9F35100105A5B /* sqUnixSocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A5D7C9B135CC86800D13E53 /* sqUnixSocket.c */; };
+		34B7135713E1E58B00FA911F /* dummy_object_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 34B7135613E1E58B00FA911F /* dummy_object_table.cpp */; };
+		34B7135A13E1E7E500FA911F /* segmented_object_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 34B7135813E1E7E400FA911F /* segmented_object_table.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -528,6 +529,12 @@
 		0ADA271212EF66EC009404B0 /* cacheline_aligned.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cacheline_aligned.h; sourceTree = "<group>"; };
 		0AEC1184128DF02F00EFF6D1 /* debug_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug_helper.h; sourceTree = "<group>"; };
 		0AEC1185128DF0A000EFF6D1 /* debug_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = debug_helper.cpp; sourceTree = "<group>"; };
+		3406F42613E0C59D00CFD9FA /* dummy_object_table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dummy_object_table.h; sourceTree = "<group>"; };
+		3406F42813E0C5F600CFD9FA /* object_table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = object_table.h; sourceTree = "<group>"; };
+		34B7135613E1E58B00FA911F /* dummy_object_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dummy_object_table.cpp; sourceTree = "<group>"; };
+		34B7135813E1E7E400FA911F /* segmented_object_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = segmented_object_table.cpp; sourceTree = "<group>"; };
+		34B7135913E1E7E400FA911F /* segmented_object_table.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = segmented_object_table.h; sourceTree = "<group>"; };
+		34B7135B13E2035900FA911F /* segmented_object_table.inline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = segmented_object_table.inline.h; sourceTree = "<group>"; };
 		3411740F13C9ACB200CE97B6 /* preheader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = preheader.cpp; sourceTree = "<group>"; };
 		3411742113C9B27E00CE97B6 /* gtest.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = gtest.xcodeproj; path = googletest/xcode/gtest.xcodeproj; sourceTree = "<group>"; };
 		3414CB6C13D03C56008A6866 /* OmniPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OmniPlugin.cpp; sourceTree = "<group>"; };
@@ -864,6 +871,9 @@
 				0A278447128DBF7300336BDE /* abstract_object_heap.h */,
 				0A278448128DBF7300336BDE /* abstract_object_heap.inline.h */,
 				0A278449128DBF7300336BDE /* abstract_object_table.h */,
+				3406F42613E0C59D00CFD9FA /* dummy_object_table.h */,
+				34B7135613E1E58B00FA911F /* dummy_object_table.cpp */,
+				3406F42813E0C5F600CFD9FA /* object_table.h */,
 				0A27844A128DBF7300336BDE /* gc_oop_stack.h */,
 				0A27844B128DBF7300336BDE /* indirect_oop_mark_sweep_collector.h */,
 				0A27844C128DBF7300336BDE /* mark_sweep_collector.h */,
@@ -877,6 +887,9 @@
 				0A278454128DBF7300336BDE /* multicore_object_table.h */,
 				0A278455128DBF7300336BDE /* multicore_object_table.inline.h */,
 				0A278456128DBF7300336BDE /* oop_closure.h */,
+				34B7135813E1E7E400FA911F /* segmented_object_table.cpp */,
+				34B7135913E1E7E400FA911F /* segmented_object_table.h */,
+				34B7135B13E2035900FA911F /* segmented_object_table.inline.h */,
 			);
 			name = heap;
 			path = src/heap;
@@ -1457,7 +1470,6 @@
 				0A27855B128DBF7400336BDE /* oop.cpp in Sources */,
 				0A27855C128DBF7400336BDE /* abstract_os_interface.cpp in Sources */,
 				0A27855D128DBF7400336BDE /* dummy_cpu_coordinate.cpp in Sources */,
-				0A278561128DBF7400336BDE /* osx_os_interface.cpp in Sources */,
 				0A278562128DBF7400336BDE /* posix_os_interface.cpp in Sources */,
 				0A278564128DBF7400336BDE /* shared_memory_message_queue.cpp in Sources */,
 				0A278565128DBF7400336BDE /* thread_memory_semantics.cpp in Sources */,
@@ -1500,6 +1512,9 @@
 				0A5D7C99135CC84700D13E53 /* sqUnixSound.c in Sources */,
 				0A5D7C9C135CC86800D13E53 /* sqUnixSocket.c in Sources */,
 				0A87AD8A1379573F00337878 /* performance_counters.cpp in Sources */,
+				4E9B341713DDB19700E0E991 /* osx_os_interface.cpp in Sources */,
+				34B7135713E1E58B00FA911F /* dummy_object_table.cpp in Sources */,
+				34B7135A13E1E7E500FA911F /* segmented_object_table.cpp in Sources */,
 				3414CB6D13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1638,7 +1653,6 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
-				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/runtime/rvm_config.h;
@@ -1663,6 +1677,7 @@
 					src/from_squeak/unix/vm,
 				);
 				INSTALL_PATH = /usr/local/bin;
+				LD_NO_PIE = YES;
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
@@ -1687,7 +1702,7 @@
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
-				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = src/runtime/rvm_config.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1708,6 +1723,7 @@
 					src/from_squeak/unix/vm,
 				);
 				INSTALL_PATH = /usr/local/bin;
+				LD_NO_PIE = YES;
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "";
@@ -1718,7 +1734,6 @@
 				PRODUCT_NAME = RoarVM;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = i386;
-				ZERO_LINK = NO;
 			};
 			name = Release;
 		};

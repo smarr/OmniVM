@@ -77,7 +77,7 @@ readImageFromFile: f HeapSize: desiredHeapSize StartingAt: imageOffset
 
   read_header();
 
-  fprintf(stdout, "allocating memory for snapshot\n");
+  if (Verbose_Debug_Prints) fprintf(stdout, "allocating memory for snapshot\n");
 
   // "allocate a contiguous block of memory for the Squeak heap"
   memory = (char*)Memory_Semantics::shared_malloc(dataSize);
@@ -90,8 +90,8 @@ readImageFromFile: f HeapSize: desiredHeapSize StartingAt: imageOffset
   */
 
   // "position file after the header"
-  fprintf(stdout, "reading objects in snapshot\n");
-  if ( fseek(image_file, headerStart + headerSize, SEEK_SET))
+  if (Verbose_Debug_Prints) fprintf(stdout, "reading objects in snapshot\n");
+  if (fseek(image_file, headerStart + headerSize, SEEK_SET))
     perror("seek"), fatal();
 
   // "read in the image in bulk, then swap the bytes if necessary"
@@ -102,10 +102,36 @@ readImageFromFile: f HeapSize: desiredHeapSize StartingAt: imageOffset
 
   // "Second, return the bytes of bytes-type objects to their orginal order."
   if (swap_bytes) byteSwapByteObjects();
-
+  
   Safepoint_Ability sa(false); // for distributing objects and putting image name
   distribute_objects();
   imageNamePut_on_all_cores(file_name, strlen(file_name));
+  
+  // we need to reoder floats if the image was a Cog image
+  if (is_cog_image_with_reodered_floats()) {
+    normalize_float_ordering_in_image();
+  }
+}
+
+
+/** Inspired by:
+ !Interpreter methodsFor: 'image save/restore' stamp: 'dtl 10/5/2010 23:54'!
+ normalizeFloatOrderingInImage
+ 
+ "Float objects were saved in platform word ordering. Reorder them into the
+ traditional object format."
+*/
+void Squeak_Image_Reader::normalize_float_ordering_in_image() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  Memory_System* const mem_sys = The_Memory_System();
+  
+  Oop cls = interp->splObj(Special_Indices::ClassFloat);
+  for (Oop floatInstance = mem_sys->initialInstanceOf(cls);
+       floatInstance != interp->roots.nilObj;
+       floatInstance  = mem_sys->nextInstanceAfter(floatInstance) ) {
+    /* Swap words within Float objects, taking them out of native platform ordering */
+    floatInstance.as_object()->swapFloatParts_for_cog_compatibility();
+  }
 }
 
 
@@ -122,7 +148,8 @@ void Squeak_Image_Reader::imageNamePut_on_all_cores(char* bytes, unsigned int le
 
 
 void Squeak_Image_Reader::read_header() {
-  fprintf(stdout, "reading snapshot header\n");
+  if (Verbose_Debug_Prints) fprintf(stdout, "reading snapshot header\n");
+  
   check_image_version();
   // headerStart := (self sqImageFilePosition: f) - bytesPerWord.  "record header start position"
   headerStart = ftell(image_file) - bytesPerWord;
@@ -142,18 +169,22 @@ void Squeak_Image_Reader::read_header() {
 }
 
 void Squeak_Image_Reader::check_image_version() {
-    int32 first_version = get_long();
-    interpreter->image_version = first_version;
-    if ( readable_format(interpreter->image_version) ) return;
-    swap_bytes = true;
-    if (fseek(image_file, -sizeof(int32), SEEK_CUR) != 0) {
-      perror("seek failed"); fatal();
-    }
-    interpreter->image_version = get_long();
-    if ( readable_format(interpreter->image_version) ) return;
-
-    fatal("cannot read file");
-
+  int32 first_version = get_long();
+  interpreter->image_version = first_version;
+    
+  if (readable_format(interpreter->image_version))
+    return;
+  
+  swap_bytes = true;
+  if (fseek(image_file, -sizeof(int32), SEEK_CUR) != 0) {
+    perror("seek in image file failed"); fatal();
+  }
+  
+  interpreter->image_version = get_long();
+  if (readable_format(interpreter->image_version))
+    return;
+ 
+  fatal("Given image file seems to be incompatible.");
 }
 
 int32 Squeak_Image_Reader::get_long() {
@@ -167,10 +198,14 @@ bool Squeak_Image_Reader::readable_format(int32 version) {
   /* Check against a magic constant that changes when the image format
      changes. Since the image reading code uses this to detect byte ordering,
      one must avoid version numbers that are invariant under byte reversal. */
-  return version == Pre_Closure_32_Bit_Image_Version ||  version == Post_Closure_32_Bit_Image_Version;
+  return   version == Pre_Closure_32_Bit_Image_Version
+       ||  version == Post_Closure_32_Bit_Image_Version
+       ||  version == Post_Closure_With_Reordered_Floats_32_Bit_Image_Version;
 }
 
-
+bool Squeak_Image_Reader::is_cog_image_with_reodered_floats() {
+  return interpreter->image_version == Post_Closure_With_Reordered_Floats_32_Bit_Image_Version;
+}
 
 
 void Squeak_Image_Reader::byteSwapByteObjects() {
@@ -185,46 +220,85 @@ void Squeak_Image_Reader::byteSwapByteObjects() {
 }
 
 
-class Convert_Closure: public Oop_Closure {
-  Squeak_Image_Reader* reader;
+# if !Use_Object_Table
+class UpdateOop_Closure: public Oop_Closure {
+  Object_Table* object_table;
 public:
-  Convert_Closure(Squeak_Image_Reader* r)  : Oop_Closure() { reader = r; }
+  UpdateOop_Closure(Object_Table* ot)  : Oop_Closure() { object_table = ot; }
   void value(Oop* p, Object_p) {
     if (p->is_mem()) {
-      *p = reader->oop_for_oop(*p);
+      Object* obj = object_table->object_for(*p);
+      *p = obj->as_oop();
+      assert_always(p->as_object() == obj);
     }
   }
-  virtual const char* class_name(char*) { return "Convert_Closure"; }
+  virtual const char* class_name(char*) { return "UpdateOop_Closure"; }
 };
+# endif
 
+
+void Squeak_Image_Reader::complete_remapping_of_pointers() {
+# if !Use_Object_Table
+  /* Extra pass for updating the pointers && deallocate the object table */
+  UpdateOop_Closure uoc(memory_system->object_table);
+  FOR_ALL_RANKS(r) {
+    for (int hi = 0; hi<Memory_System::max_num_mutabilities; hi++) {
+      Multicore_Object_Heap* heap = memory_system->heaps[r][hi];
+      FOR_EACH_OBJECT_IN_HEAP(heap, obj) {      
+        if (!obj->isFreeObject()) {
+          obj->set_backpointer(obj->as_oop());
+          
+          obj->do_all_oops_of_object(&uoc,false);
+          
+          if(   Extra_Preheader_Word_Experiment
+             && ((Oop*)obj->extra_preheader_word())->is_mem())
+              fatal("shouldnt occur");
+        }
+      }
+    }   
+  }
+  specialObjectsOop = memory_system->object_table->object_for(specialObjectsOop)->as_oop();
+  
+  memory_system->object_table->cleanup();
+  delete memory_system->object_table;
+  memory_system->object_table = NULL;
+# endif
+}
 
 
 void Squeak_Image_Reader::distribute_objects() {
-  fprintf(stdout, "distributing objects\n");
+  if (Verbose_Debug_Prints) fprintf(stdout, "distributing objects\n");
+  
   u_int64 start = OS_Interface::get_cycle_count();
   char* base = memory;
   u_int32 total_bytes = dataSize;
 
   object_oops = (Oop*)malloc(total_bytes);
   bzero(object_oops, total_bytes);
-  Convert_Closure cc(this);
 
   memory_system->initialize_from_snapshot(dataSize, savedWindowSize, fullScreenFlag, lastHash);
   
   for (Chunk *c = (Chunk*)base, *nextChunk = NULL;
        (char*)c <  &base[total_bytes];
        c = nextChunk) {
-    Object* obj = c->object_from_chunk_without_preheader();
-    if (check_many_assertions &&  (char*)obj - memory == (char*)specialObjectsOop.bits() - oldBaseAddr)
+    Object* obj = c->object_from_chunk_without_preheader(); // chunks in memory don't have a preheader
+
+    if (check_many_assertions && 
+        (char*)obj - memory == (char*)specialObjectsOop.bits() - oldBaseAddr)
       lprintf("about to do specialObjectsOop");
+    
     nextChunk = obj->nextChunk();
     if (!obj->isFreeObject()) {
       obj->do_all_oops_of_object_for_reading_snapshot(this);
       memory_system->ask_cpu_core_to_add_object_from_snapshot_allocating_chunk(oop_for_addr(obj), obj);
     }
   }
-  cc.value(&specialObjectsOop, (Object_p)NULL);
+  
+  // Remap specialObjectsOop
+  specialObjectsOop = oop_for_oop(specialObjectsOop);
 
+  complete_remapping_of_pointers();
+  
   memory_system->finished_adding_objects_from_snapshot();
   free(object_oops);
   fprintf(stdout, "done distributing objects, %lld cycles\n",
@@ -249,7 +323,7 @@ Oop Squeak_Image_Reader::oop_for_relative_addr(int relative_addr) {
   Oop* addr_in_table = &object_oops[relative_addr / sizeof(Oop)];
   Object* obj = (Object*) &memory[relative_addr];
   if (addr_in_table->bits() == 0) {
-    Multicore_Object_Table* ot = memory_system->object_table;
+    Object_Table* const ot = memory_system->object_table;
     *addr_in_table = ot->allocate_OTE_for_object_in_snapshot(obj);
   }
   return *addr_in_table;

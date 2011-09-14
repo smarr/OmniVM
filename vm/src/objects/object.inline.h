@@ -12,12 +12,14 @@
  ******************************************************************************/
 
 
+
+# if Enforce_Backpointer || Use_Object_Table
 inline void Object::set_object_address_and_backpointer(Oop x  COMMA_DCL_ESB) {
   Safepoint_for_moving_objects::assert_held();
   The_Memory_System()->object_table->set_object_for(x, (Object_p)this  COMMA_USE_ESB);
   set_backpointer(x);
 }
-
+# endif
 
 
 
@@ -37,13 +39,17 @@ inline void Object::  mark_without_store_barrier() { baseHeader |=  MarkBit; }
 inline void Object::unmark_without_store_barrier() { baseHeader &= ~MarkBit; }
 
 
-
+# if Enforce_Backpointer || Use_Object_Table
 inline void Object::set_backpointer_word(oop_int_t w) {
   oop_int_t* dst = backpointer_word();
   The_Memory_System()->store_enforcing_coherence(dst, w, (Object_p)this);
 }
+# endif // if Enforce_Backpointer || Use_Object_Table
 
 inline void Object::set_extra_preheader_word(oop_int_t w) {
+  if (!Extra_Preheader_Word_Experiment)
+    return;
+  
   assert_always(w); // bug hunt qqq
   oop_int_t* dst = extra_preheader_word();
   The_Memory_System()->store_enforcing_coherence(dst, w, (Object_p)this);
@@ -383,84 +389,6 @@ inline void Object::flushExternalPrimitive() {
 }
 
 
-inline Object_p Object::fill_in_after_allocate(oop_int_t byteSize, oop_int_t hdrSize,
-                                       oop_int_t baseHeader, Oop classOop, oop_int_t extendedSize,
-                                       bool doFill,
-                                       bool fillWithNil) {
-  const int my_rank = Logical_Core::my_rank();
-  if (check_many_assertions  &&  hdrSize > 1)
-    classOop.verify_oop();
-  // since new allocs are in read_write heap, no need to mark this for moving to read_write
-  assert(The_Memory_System()->contains(this));
-
-  Preheader* preheader_p = (Preheader*)this;
-  oop_int_t* headerp = (oop_int_t*)&preheader_p[1];
-  Object_p    newObj = (Object_p)(Object*)&headerp[hdrSize - 1];
-  assert(The_Memory_System()->is_address_read_write(this)); // not going to bother with coherence
-
-  Multicore_Object_Heap* h = The_Memory_System()->heaps[my_rank][Memory_System::read_write];
-  assert(h == my_heap()  ||  Safepoint_for_moving_objects::is_held());
-
-  if (hdrSize == 3) {
-    oop_int_t contents = extendedSize     |  Header_Type::SizeAndClass;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp++ = contents;
-    
-    contents = classOop.bits()  |  Header_Type::SizeAndClass;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp++ = contents;
-    
-    h->record_class_header((Object*)headerp, classOop);
-    
-    contents   = baseHeader       |  Header_Type::SizeAndClass;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp   = contents;
-  }
-  else if (hdrSize == 2) {
-    oop_int_t contents = classOop.bits()  |  Header_Type::Class;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp++ = contents;
-    
-    h->record_class_header((Object*)headerp, classOop);
-
-    contents   = baseHeader       |  Header_Type::Class;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp   = contents;
-  }
-  else {
-    assert_eq(hdrSize, 1, "");
-    
-    oop_int_t contents   = baseHeader       |  Header_Type::Short;
-    DEBUG_STORE_CHECK(headerp, contents);
-    *headerp   = contents;
-  }
-  assert_eq((void*)newObj, (void*)headerp, "");
-
-  The_Memory_System()->object_table->allocate_oop_and_set_preheader(newObj, my_rank  COMMA_TRUE_OR_NOTHING);
-
-
-  //  "clear new object"
-  if (!doFill)
-    ;
-  else if (fillWithNil) // assume it's an oop if not null
-    h->multistore((Oop*)&headerp[1],
-                  (Oop*)&headerp[byteSize >> ShiftForWord],
-                  The_Squeak_Interpreter()->roots.nilObj);
-  else {
-    DEBUG_MULTISTORE_CHECK( &headerp[1], 0, (byteSize - sizeof(*headerp)) / bytes_per_oop);
-    bzero(&headerp[1], byteSize - sizeof(*headerp));
-  }
-
-  The_Memory_System()->enforce_coherence_after_store_into_object_by_interpreter(this, byteSize);
-
-  if (check_assertions) {
-    newObj->okayOop();
-    newObj->hasOkayClass();
-  }
-  return newObj;
-}
-
-
 inline Object_p Object::instantiateContext(oop_int_t  sizeInBytes ) {
   /*
    "This version of instantiateClass assumes that the total object
@@ -551,6 +479,20 @@ inline void Object::storeFloat(double d) {
   The_Memory_System()->store_2_enforcing_coherence(
     &as_int32_p()[0 + BaseHeaderSize/sizeof(int32)], ((int32*)&d)[1],((int32*)&d)[0], (Object_p)this);
 }
+
+/** Floats are stored in platform order in Cog images.
+    This function here is used during image load to make sure that
+    the floats are stored in normalized, i.e., swaped order, since
+    the standard interpreter and the RoarVM do not use platform order.
+ 
+ REM: should NOT be called in normal operation. */
+inline void Object::swapFloatParts_for_cog_compatibility() {
+  int32* data = &as_int32_p()[0 + BaseHeaderSize/sizeof(int32)];
+  
+  The_Memory_System()->store_2_enforcing_coherence(
+    data, data[1], data[0], (Object_p)this);
+}
+
 
 inline bool Object::equals_string(const char* s) {
   return strlen(s) == lengthOf()  &&  strncmp(s, first_byte_address(), lengthOf()) == 0;
