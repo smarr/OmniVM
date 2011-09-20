@@ -110,6 +110,8 @@
 		0A8A87061420ED0200E14B2E /* osx_os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784C9128DBF7400336BDE /* osx_os_interface.cpp */; };
 		0A8A87071420ED0300E14B2E /* osx_os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784C9128DBF7400336BDE /* osx_os_interface.cpp */; };
 		0A8C91C712DE62B6007DBAD9 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A8C91C612DE62B6007DBAD9 /* IOKit.framework */; };
+		0A94A2A61428B8EF0022D6B6 /* preheader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A94A2A51428B8EF0022D6B6 /* preheader.cpp */; };
+		0A94A2A71428B8EF0022D6B6 /* preheader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A94A2A51428B8EF0022D6B6 /* preheader.cpp */; };
 		0A97FB35128FEA77003A1C74 /* buffered_channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A27850F128DBF7400336BDE /* buffered_channel.cpp */; };
 		0A97FB36128FEA77003A1C74 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A278510128DBF7400336BDE /* main.cpp */; };
 		0A97FB37128FEA77003A1C74 /* starter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A278511128DBF7400336BDE /* starter.cpp */; };
@@ -523,6 +525,7 @@
 		0A87AD891379573E00337878 /* performance_counters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = performance_counters.cpp; sourceTree = "<group>"; };
 		0A8C91BC12DE61BB007DBAD9 /* object_p.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = object_p.h; sourceTree = "<group>"; };
 		0A8C91C612DE62B6007DBAD9 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		0A94A2A51428B8EF0022D6B6 /* preheader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = preheader.cpp; sourceTree = "<group>"; };
 		0A97FB26128FE95A003A1C74 /* UnitTests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = UnitTests; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A97FBAE12900336003A1C74 /* tracked_ptr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tracked_ptr.h; sourceTree = "<group>"; };
 		0A97FBB412900371003A1C74 /* tracked_ptr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracked_ptr.cpp; sourceTree = "<group>"; };
@@ -1037,6 +1040,7 @@
 				0A8C91BC12DE61BB007DBAD9 /* object_p.h */,
 				0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */,
 				0A1F53FA1427A3DD00E36120 /* object_field_accessor.h */,
+				0A94A2A51428B8EF0022D6B6 /* preheader.cpp */,
 			);
 			name = objects;
 			path = src/objects;
@@ -1524,6 +1528,7 @@
 				3414CB6D13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 				0A8A87061420ED0200E14B2E /* osx_os_interface.cpp in Sources */,
 				0A1F53F81427A3CA00E36120 /* object_field_accessor.cpp in Sources */,
+				0A94A2A61428B8EF0022D6B6 /* preheader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1621,6 +1626,7 @@
 				3414CB6E13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 				0A8A87071420ED0300E14B2E /* osx_os_interface.cpp in Sources */,
 				0A1F53FB1427E60A00E36120 /* object_field_accessor.cpp in Sources */,
+				0A94A2A71428B8EF0022D6B6 /* preheader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

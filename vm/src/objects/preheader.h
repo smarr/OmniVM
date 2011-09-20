@@ -13,11 +13,16 @@
 
 
 // The stuff that comes before the squeak header word(s):
-//  the backpointer, and maybe other things, too.
-// Each word must be tagged with the low order two bits encoding the type of object just as the header must be.
-// This invariant was included so that the preheader words could be marked as free and contain the size of the object
-//  to speed heap scanning (as best as I can recall).
-// -- dmu 3/2010
+// the backpointer, and maybe other things, too.
+
+// There are no restriction on the content of the preheader.
+// It is entierly skipped for most purposes.
+// 
+// WARNING:
+//   This can lead to problems with the garbage collector.
+//   If a preheader field contains the only reference to an object, it might get collected.
+//
+// STEFAN 2011-09-19
 
 # if Has_Preheader
 
@@ -42,17 +47,32 @@ public:
 # endif
 
 # if Include_Domain_In_Object_Header
-  // typedef enum foreign_access_policy { 
-  //  UNSPECIFIED  = 0, /* Has not been set (not sure yet how to proceed here, probably just ignore and handle as local) */
-  //  SYNCHRONOUS  = 1, /* Synchronous direct access is allowed from foreign domains */
-  //  ASYNCHRONOUS = 2, /* Access has to be transformed into an asynchronous one, but is allowed then. */
-  //  NO_ACCESS    = 3  /* No access allowed */
-  // } foreign_access_policy_t;
   
-  // static const size_t foreign_access_policy_bits = 2;
-  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - (  3 /*read|write*/
-                                                                   * 2 /*sync|async*/
-                                                                   * 1 /*bit*/  + Tag_Size); 
+  /* Define the policy flags.
+     We use here the Smalltalk naming conventions for instance
+     variables to avoid inconsistencies. */
+  # define DO_ALL_POLICY_FLAGS(template)  \
+           template(foreignSyncRead)    \
+           template(foreignSyncWrite)   \
+           template(foreignSyncExecute) \
+           template(foreignAsyncRead)   \
+           template(foreignAsyncWrite)  \
+           template(foreignAsyncExecute)
+  
+  enum Domain_Fields {
+    logicId,
+    
+    # define DEFINE_FLAG(name) name,
+    DO_ALL_POLICY_FLAGS(DEFINE_FLAG)
+    # undef  DEFINE_FLAG
+    
+    Domain_Field_Count
+  };
+  
+  static const char* const Domain_Field_Names[];
+
+  
+  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - ((Domain_Field_Count - 1) + Tag_Size);
   
   // STEFAN: TODO: figure out whether we need to have an exception mechnanism directly specified here,
   //               or whether it is ok to have it in the domain object
@@ -60,24 +80,20 @@ public:
   typedef union domain_header {
     oop_int_t raw_value;
     struct {
-      unsigned                int_tag  : Tag_Size; /* Seems to be necessary, according to David's comment at the top,
-                                                      should verify that.
-                                                      But anyway, if this preheader word is treated as a normal slot,
-                                                      when saving such objects, then it is important to treat
-                                                      it as a normal SmallInteger. 
-                                                      This way, I do not have to be careful, but can just use the int
-                                                      to encode all the interesting information.
-                                                      STEFAN 2011-07-10 */
-      unsigned logic_id : logic_id_bits;
+      unsigned int_tag  : Tag_Size; /* We will treat the domain encoding as a SmallInteger
+                                       throughout the whole system to avoid GC issues and simplify
+                                       handling in general.
+                                       Since, in the worst case, it can be en/decoded manually on the 
+                                       Smalltalk side.
+                                       STEFAN 2011-07-10 */
+
+      unsigned logicId : logic_id_bits;
       
-      bool foreign_sync_read     : 1;
-      bool foreign_sync_write    : 1;
-      bool foreign_sync_execute  : 1;
-      bool foreign_async_read    : 1;
-      bool foreign_async_write   : 1;
-      bool foreign_async_execute : 1;
-      
-    } __attribute__ ((__packed__)) bits;
+      /* Policy bits */
+      # define DEFINE_POLICY_BITS(name) bool name : 1;
+      DO_ALL_POLICY_FLAGS(DEFINE_POLICY_BITS)
+      # undef DEFINE_POLICY_BITS      
+    } __attribute__ ((__packed__)) bits;  /** make sure we have it really in bits as desired */
   } domain_header_t;
   
   domain_header_t domain;
@@ -85,51 +101,56 @@ public:
   
   
   oop_int_t* extra_preheader_word_address() {
-# if Extra_Preheader_Word_Experiment
+    # if Extra_Preheader_Word_Experiment
       return &sly_ensemble_pointer;
-# else
+    # else
       return NULL;
-# endif
+    # endif
   }
   
   oop_int_t* domain_header_address() {
-# if Include_Domain_In_Object_Header
-    return &domain.raw_value;
-# else
-    return NULL;
-# endif
+    # if Include_Domain_In_Object_Header
+        return &domain.raw_value;
+    # else
+        return NULL;
+    # endif
   }
   
   domain_header_t domain_header() {
-# if Include_Domain_In_Object_Header
-    return domain;
-# else
-    return (domain_header_t)0; //STEFAN: this does not work..., won't compile
-# endif  
+    # if Include_Domain_In_Object_Header
+        return domain;
+    # else
+        return (domain_header_t)0; //STEFAN: this does not work..., won't compile
+    # endif
   }
   
   /* Does take care of everything but the backpointer */
   void initialize_preheader() {
-# if Extra_Preheader_Word_Experiment
-    sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
-# endif
-# if Include_Domain_In_Object_Header
-    domain.raw_value = (0 << Tag_Size) | Int_Tag;
-# endif
+    # if Extra_Preheader_Word_Experiment
+        sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
+    # endif
+    # if Include_Domain_In_Object_Header
+        domain.raw_value = (0 << Tag_Size) | Int_Tag;
+    # endif
   }
   
   void mark_all_preheader_words_free_for_debugging() {
     if (check_assertions) {
       # if Enforce_Backpointer || Use_Object_Table
-      backpointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
+        backpointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
       # endif
       
       # if Extra_Preheader_Word_Experiment
-      sly_ensemble_pointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
+        sly_ensemble_pointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
+      # endif
+      
+      # if Include_Domain_In_Object_Header
+        domain.raw_value = 0xe0e0e0e0;
       # endif
     }
   }
 };
+
 
 # if Enforce_Backpointer || Use_Object_Table
 static const int backpointer_oop_size  = 1;
@@ -139,7 +160,7 @@ static const int backpointer_byte_size = sizeof(oop_int_t);
 static const int preheader_byte_size = sizeof(Preheader);
 static const int preheader_oop_size  = sizeof(Preheader) / sizeof(oop_int_t);
 
-# else
+# else // Has_Preheader
 
 static const int preheader_byte_size = 0;
 static const int preheader_oop_size  = 0;

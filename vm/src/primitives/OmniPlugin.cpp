@@ -6,7 +6,7 @@
  *  http://www.eclipse.org/legal/epl-v10.html
  * 
  *  Contributors:
- *    Stefan Marr, Vrije Universiteit Brussel - Initial Implementation
+ *    Stefan Marr, Vrije Universiteit Brussel - Project OMNI
  ******************************************************************************/
 
 
@@ -22,87 +22,94 @@ static const char *moduleName =
 #endif
 ;
 
-static const char* getModuleName() { return moduleName; }
-
-
-/** RVMOperations class>>primitiveGetDomainInfoFor: anObject
-    ^ { #DomainId.
-        #ForeignSyncRead. #ForeignSyncWrite. #ForeignSyncExecute.
-        #ForeignAsyncRead. #ForeignAsyncWrite. #ForeignAsyncExecute.} */
-static int primitiveGeDDDDDDDDDDDDDDDtDomainInfo() {
-  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
-  
-  if (interp->get_argumentCount() != 1) {
-    interp->primitiveFail();
-    return 0;
-  }
-
-  Oop x = interp->stackObjectValue(0);
-  if (interp->failed())
-    return 0;
-  
-  Preheader::domain_header_t domain = x.as_object()->domain_header();
-  
-  int s = interp->makeArrayStart();
-  PUSH_POSITIVE_32_BIT_INT_FOR_MAKE_ARRAY(domain.bits.logic_id);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_read);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_write);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_sync_execute);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_read);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_write);
-  PUSH_BOOL_FOR_MAKE_ARRAY(domain.bits.foreign_async_execute);
-
-  interp->popThenPush(2, interp->makeArray(s));
-  
-  return 0;
+static const char* getModuleName() {
+  return moduleName;
 }
 
-/** RVMOperations class>>primitiveSetDomainInfoFor: anObject 
-        to: aDomainId
-        foreignSyncRead:  aBool foreignSyncWrite:  aBool foreignSyncExecute:  aBool 
-        foreignAsyncRead: aBool foreignAsyncWrite: aBool foreignAsyncExecute: aBool */
-static int primitiveENCODEDomainInfo() {
+static Object_Field_Accessor field_accessor_ODomain = 
+                        Object_Field_Accessor(Preheader::Domain_Field_Names,
+                                              Preheader::Domain_Field_Count);
+
+
+
+/** {{{ OMirror class>>primitiveGenerateDomainInfoFrom: aDomain
+              ^ aDomainId }}} */
+static int primitiveGenerateDomainInfoFrom() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
-  const int ARG_CNT = 7;
+  const int ARG_CNT = 1;
   
   if (interp->get_argumentCount() != ARG_CNT) {
     interp->primitiveFail();
     return 0;
   }
   
-  bool async_execute = interp->stackBooleanValue(0);
-  bool async_write   = interp->stackBooleanValue(1);
-  bool async_read    = interp->stackBooleanValue(2);
+  Oop domain_oop = interp->stackObjectValue(0);
   
-  bool sync_execute  = interp->stackBooleanValue(3);
-  bool sync_write    = interp->stackBooleanValue(4);
-  bool sync_read     = interp->stackBooleanValue(5);
-
-  bool logic_domain_id = interp->stackIntegerValue(6);
-  
-  Oop target = interp->stackObjectValue(7);
-
-  if (interp->failed())
-    return 0;
-
   Preheader::domain_header_t domain;
-  domain.bits.logic_id       = logic_domain_id;
-  domain.bits.foreign_sync_read     = sync_read;
-  domain.bits.foreign_sync_write    = sync_write;
-  domain.bits.foreign_sync_execute  = sync_execute;
-  domain.bits.foreign_async_read    = async_read;
-  domain.bits.foreign_async_write   = async_write;
-  domain.bits.foreign_async_execute = async_execute;
-    
-  domain.bits.int_tag  = Int_Tag;
+  domain.bits.int_tag = Int_Tag;  // needs to be correctly initialized
   
-  target.as_object()->set_domain_header(domain);
-  interp->pop(ARG_CNT);
+  domain.bits.foreignSyncRead     = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncRead)     == interp->roots.trueObj;
+  domain.bits.foreignSyncWrite    = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncWrite)    == interp->roots.trueObj;
+  domain.bits.foreignSyncExecute  = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncExecute)  == interp->roots.trueObj;
+  domain.bits.foreignAsyncRead    = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncRead)    == interp->roots.trueObj;
+  domain.bits.foreignAsyncWrite   = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncWrite)   == interp->roots.trueObj;
+  domain.bits.foreignAsyncExecute = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncExecute) == interp->roots.trueObj;
+  
+
+  
+  Oop logicId_oop = field_accessor_ODomain.get_field(domain_oop, Preheader::logicId);
+  
+  if (logicId_oop.is_int())
+    domain.bits.logicId = logicId_oop.integerValue();
+  else
+    domain.bits.logicId = -1;
+
+  interp->popThenPush(ARG_CNT + 1, Oop::from_bits(domain.raw_value));
   return 0;
 }
 
 
-/** {{{ OMirror class>>#primitiveGetDomainInfoFor: anObject }}} **/
+/** {{{ OMirror class>>primitiveDecodeDomainInfo: aDomainId into: aDomain 
+              ^ aDomain }}} */
+static int primitiveDecodeDomainInfoInto() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  const int ARG_CNT = 2;
+  
+  if (interp->get_argumentCount() != ARG_CNT) {
+    interp->primitiveFail();
+    return 0;
+  }
+  
+  Oop target   = interp->stackObjectValue(0);
+  Oop domainId = interp->stackValue(1);
+  
+  /* Making sure we got all arguments and domainId is a SmallInt */
+  if (interp->failed()  ||  !domainId.is_int())
+    return 0;
+  
+  Preheader::domain_header_t domain;
+  domain.raw_value = domainId.bits();
+  
+  field_accessor_ODomain.set_field(target, Preheader::foreignSyncRead,     domain.bits.foreignSyncRead     ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Preheader::foreignSyncWrite,    domain.bits.foreignSyncWrite    ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Preheader::foreignSyncExecute,  domain.bits.foreignSyncExecute  ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncRead,    domain.bits.foreignAsyncRead    ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncWrite,   domain.bits.foreignAsyncWrite   ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncExecute, domain.bits.foreignAsyncExecute ? interp->roots.trueObj : interp->roots.falseObj);
+  
+
+  field_accessor_ODomain.set_field(target, Preheader::logicId, Oop::from_int(domain.bits.logicId));
+  
+  if (interp->failed())
+    return 0;
+  
+  interp->popThenPush(ARG_CNT + 1, target);
+  return 0;
+}
+
+
+/** {{{ OMirror class>>#primitiveGetDomainInfoFor: anObject 
+            ^ aDomainId }}} **/
 static int primitiveGetDomainInfo() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
@@ -160,8 +167,12 @@ void* OmniPlugin_exports[][3] = {
   {(void*) "OmniPlugin", (void*)"primitiveGetDomainInfo", (void*)primitiveGetDomainInfo},
   {(void*) "OmniPlugin", (void*)"primitiveSetDomainInfo", (void*)primitiveSetDomainInfo},
   
-  {(void*) "OmniPlugin", (void*)"setInterpreter", (void*)setInterpreter},
-
+  {(void*) "OmniPlugin", (void*)"primitiveGenerateDomainInfoFrom", (void*)primitiveGenerateDomainInfoFrom},
+  {(void*) "OmniPlugin", (void*)"primitiveDecodeDomainInfoInto",   (void*)primitiveDecodeDomainInfoInto},
+  
+  
+  /* Required by the internal loading mechanism */
+  {(void*) "OmniPlugin", (void*)"setInterpreter",         (void*)setInterpreter},
   {NULL, NULL, NULL}
 };
 
