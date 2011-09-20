@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A1F53F81427A3CA00E36120 /* object_field_accessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */; };
+		0A1F53FB1427E60A00E36120 /* object_field_accessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */; };
 		0A278517128DBF7400336BDE /* compiler_check.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2783F4128DBF7300336BDE /* compiler_check.cpp */; };
 		0A278518128DBF7400336BDE /* externals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2783F6128DBF7300336BDE /* externals.cpp */; };
 		0A278519128DBF7400336BDE /* FilePlugin.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A278400128DBF7300336BDE /* FilePlugin.c */; };
@@ -259,6 +261,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_field_accessor.cpp; sourceTree = "<group>"; };
+		0A1F53FA1427A3DD00E36120 /* object_field_accessor.h */ = {isa = PBXFileReference; fileEncoding = 4; path = object_field_accessor.h; sourceTree = "<group>"; };
 		0A2783EB128DBF1000336BDE /* RoarVM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RoarVM; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A2783F4128DBF7300336BDE /* compiler_check.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = compiler_check.cpp; path = src/compiler_check.cpp; sourceTree = "<group>"; };
 		0A2783F6128DBF7300336BDE /* externals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = externals.cpp; sourceTree = "<group>"; };
@@ -1031,6 +1035,8 @@
 				0A2784AF128DBF7400336BDE /* special_indices.h */,
 				0A2784B0128DBF7400336BDE /* word_containing_object_type.h */,
 				0A8C91BC12DE61BB007DBAD9 /* object_p.h */,
+				0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */,
+				0A1F53FA1427A3DD00E36120 /* object_field_accessor.h */,
 			);
 			name = objects;
 			path = src/objects;
@@ -1517,6 +1523,7 @@
 				34B7135A13E1E7E500FA911F /* segmented_object_table.cpp in Sources */,
 				3414CB6D13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 				0A8A87061420ED0200E14B2E /* osx_os_interface.cpp in Sources */,
+				0A1F53F81427A3CA00E36120 /* object_field_accessor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1613,6 +1620,7 @@
 				3411741113C9ACB200CE97B6 /* preheader.cpp in Sources */,
 				3414CB6E13D03C56008A6866 /* OmniPlugin.cpp in Sources */,
 				0A8A87071420ED0300E14B2E /* osx_os_interface.cpp in Sources */,
+				0A1F53FB1427E60A00E36120 /* object_field_accessor.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

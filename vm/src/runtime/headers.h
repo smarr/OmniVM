@@ -177,6 +177,7 @@
 # include "chunk.h"
 # include "object.h"
 # include "process_field_locator.h"
+# include "object_field_accessor.h"
 
 # include  "abstract_tracer.h"
 # include      "core_tracer.h"
