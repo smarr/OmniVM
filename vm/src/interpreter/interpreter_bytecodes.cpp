@@ -268,12 +268,12 @@ void Squeak_Interpreter::bytecodePrimAdd() {
   }
   else {
     successFlag = true;
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       primitiveFloatAdd(rcvr, arg);
     }
-    internalizeIPandSP();
+    internalizeExecutionState();
     if (successFlag) {
       fetchNextBytecode();
       return;
@@ -297,12 +297,12 @@ void Squeak_Interpreter::bytecodePrimSubtract() {
   }
   else {
     successFlag = true;
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       primitiveFloatSubtract(rcvr, arg);
     }
-    internalizeIPandSP();
+    internalizeExecutionState();
     if (successFlag) {
       fetchNextBytecode();
       return;
@@ -328,12 +328,12 @@ void Squeak_Interpreter::bytecodePrimMultiply() {
   }
   else {
     successFlag = true;
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       primitiveFloatMultiply(rcvr, arg);
     }
-    internalizeIPandSP();
+    internalizeExecutionState();
     if (successFlag) {
       fetchNextBytecode();
       return;
@@ -360,12 +360,12 @@ void Squeak_Interpreter::bytecodePrimDivide() {
   }
   else {
     successFlag = true;
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       primitiveFloatDivide(rcvr, arg);
     }
-    internalizeIPandSP();
+    internalizeExecutionState();
     if (successFlag) {
       fetchNextBytecode();
       return;
@@ -510,12 +510,12 @@ void Squeak_Interpreter::bytecodePrimNotEqual() {
 
 void Squeak_Interpreter::bytecodePrimMakePoint() {
   successFlag = true;
-  externalizeIPandSP();
+  externalizeExecutionState();
   {
     Safepoint_Ability sa(true);
     primitiveMakePoint();
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (successFlag) {
     fetchNextBytecode();
     return;
@@ -527,12 +527,12 @@ void Squeak_Interpreter::bytecodePrimMakePoint() {
 
 void Squeak_Interpreter::bytecodePrimBitShift() {
   successFlag = true;
-  externalizeIPandSP();
+  externalizeExecutionState();
   {
     Safepoint_Ability sa(true);
     primitiveBitShift();
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (successFlag) {
     fetchNextBytecode();
     return;
@@ -555,12 +555,12 @@ void Squeak_Interpreter::bytecodePrimDiv() {
 }
 void Squeak_Interpreter::bytecodePrimBitAnd() {
   successFlag = true;
-  externalizeIPandSP();
+  externalizeExecutionState();
   {
     Safepoint_Ability sa(true);
     primitiveBitAnd();
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (successFlag) {
     fetchNextBytecode();
     return;
@@ -571,12 +571,12 @@ void Squeak_Interpreter::bytecodePrimBitAnd() {
 }
 void Squeak_Interpreter::bytecodePrimBitOr() {
   successFlag = true;
-  externalizeIPandSP();
+  externalizeExecutionState();
   {
     Safepoint_Ability sa(true);
     primitiveBitOr();
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (successFlag) {
     fetchNextBytecode();
     return;
@@ -661,12 +661,12 @@ void Squeak_Interpreter::bytecodePrimBlockCopy() {
   successFlag = true;
   success(rcvr.as_object()->hasContextHeader());
   if (successFlag) {
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       primitiveBlockCopy();
     }
-    internalizeIPandSP();
+    internalizeExecutionState();
   }
   if (!successFlag) {
     roots.messageSelector = specialSelector(24);
@@ -686,16 +686,16 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
   
 # if Include_Closure_Support
   if (klass == splObj(Special_Indices::ClassBlockClosure)) {
-    externalizeIPandSP();
+    externalizeExecutionState();
     primitiveClosureValue();
-    internalizeIPandSP();
+    internalizeExecutionState();
   }
   else 
 # endif
   if (klass == splObj(Special_Indices::ClassBlockContext)) {
-    externalizeIPandSP();
+    externalizeExecutionState();
     primitiveValue();
-    internalizeIPandSP();
+    internalizeExecutionState();
   } 
   else
     classOK = false;
@@ -790,13 +790,13 @@ void Squeak_Interpreter::pushNewArrayBytecode() {
   bool popValues = size > 127;
   size &= 127;
   fetchNextBytecode();
-  externalizeIPandSP();
+  externalizeExecutionState();
   Object_p array_obj;
   {
     Safepoint_Ability sa(true);
     array_obj = splObj_obj(Special_Indices::ClassArray)->instantiateClass(size);
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (popValues) {
     for ( int i = 0;  i < size;  ++i )
       // Assume new Array is young, so use unchecked stores
@@ -855,11 +855,11 @@ void Squeak_Interpreter::pushClosureCopyCopiedValuesBytecode() {
   u_int32 blockSize = fetchByte() << 8;
   blockSize += (u_int32)fetchByte();
   
-  externalizeIPandSP();
+  externalizeExecutionState();
   Oop newClosure = closureCopy(numArgs, instructionPointer() + 2 - (method_obj()->as_u_char_p() + Object::BaseHeaderSize), numCopied);
   // Recover from GC, but no Object* 's
 
-  internalizeIPandSP();
+  internalizeExecutionState();
   Object_p newClosure_obj = newClosure.as_object();
   newClosure_obj->storePointerUnchecked(Object_Indices::ClosureOuterContextIndex, activeContext());
   reclaimableContextCount = 0; // The closure refers to thisContext so it cannot be reclaimed

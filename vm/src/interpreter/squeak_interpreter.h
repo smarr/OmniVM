@@ -473,7 +473,7 @@ public:
 
   void interpret();
 
-  void internalizeIPandSP() {
+  void internalizeExecutionState() {
     // Copy local instruction ptr and SP to locals for speed
     assert_external();
     assert(safepoint_ability->is_unable());
@@ -483,7 +483,7 @@ public:
     internalized();
   }
 
-  void externalizeIPandSP() {
+  void externalizeExecutionState() {
     // copy out for primitives, etc
     assert_internal();
     _instructionPointer = localIP();
@@ -789,12 +789,12 @@ public:
      */
     if (!lookupInMethodCacheSel(roots.messageSelector, roots.lkupClass)) {
       // "entry was not found in the cache; look it up the hard way"
-      externalizeIPandSP();
+      externalizeExecutionState();
       {
         Safepoint_Ability sa(true);
         lookupMethodInClass(roots.lkupClass); // may have to allocate message obj
       }
-      internalizeIPandSP();
+      internalizeExecutionState();
       addNewMethodToCache();
     }
   }
@@ -946,9 +946,9 @@ public:
 
   void internalQuickCheckForInterrupts() {
     if (--interruptCheckCounter <= 0) {
-      externalizeIPandSP();
+      externalizeExecutionState();
       checkForInterrupts();
-      internalizeIPandSP();
+      internalizeExecutionState();
     }
   }
 
@@ -1452,7 +1452,7 @@ public:
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
     if (process_is_scheduled_and_executing()) {
       Safepoint_Ability sa(false);
-      internalizeIPandSP();
+      internalizeExecutionState();
       check_method_is_correct(will_be_fetched, where);
     }
   }

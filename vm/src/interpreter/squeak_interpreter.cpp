@@ -253,9 +253,9 @@ void Squeak_Interpreter::interpret() {
          "lots of code, including Oop packing into class headers, and the mem_bits fns on Oops depends on this");
 
   Safepoint_Ability sa(false); // about to internalize things
-	internalizeIPandSP();
+	internalizeExecutionState();
 	fetchNextBytecode();
-  externalizeIPandSP(); // for assertions in let_one_through
+  externalizeExecutionState(); // for assertions in let_one_through
 
   for (let_one_through();  ; ) {
     check_for_multicore_interrupt();
@@ -304,7 +304,7 @@ void Squeak_Interpreter::interpret() {
     assert_method_is_correct(false, "right before dispatch");
 
     if (Hammer_Safepoints && Logical_Core::running_on_main()) { 
-      externalizeIPandSP();
+      externalizeExecutionState();
       Safepoint_Ability sa(true);
       while (true) {
         static int n = 0;
@@ -312,7 +312,7 @@ void Squeak_Interpreter::interpret() {
         Safepoint_for_moving_objects sp("test safepoint"); // sends mesgs to other cores to allocate arrays, might cause GC
         printf(">");
       }
-     internalizeIPandSP();
+     internalizeExecutionState();
     }
     
     if (doing_primitiveClosureValueNoContextSwitch)
@@ -348,7 +348,7 @@ void Squeak_Interpreter::interpret() {
     
   }
   internal_undo_prefetch();
-	externalizeIPandSP();
+	externalizeExecutionState();
 }
 
 
@@ -866,14 +866,14 @@ Oop Squeak_Interpreter::lookupMethodInClass(Oop lkupClass) {
 
 #if Extra_Preheader_Word_Experiment
 Oop Squeak_Interpreter::modify_send_for_preheader_word(Oop rcvr) {
-  externalizeIPandSP();
+  externalizeExecutionState();
   {
     Safepoint_Ability sa(true);
     pushRemappableOop(rcvr);
     createActualMessageTo(rcvr);
     rcvr = popRemappableOop();      
   }
-  internalizeIPandSP();
+  internalizeExecutionState();
   
   roots.messageSelector =  roots.extra_preheader_word_selector;
 
@@ -936,13 +936,13 @@ void Squeak_Interpreter::internalActivateNewMethod() {
     roots.freeContexts = nfc;
   }
   else {
-    externalizeIPandSP();
+    externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
       nco = allocateOrRecycleContext(needsLarge);
     }
     newContext = nco->as_oop();
-    internalizeIPandSP();
+    internalizeExecutionState();
     assert(nco->my_heap_contains_me());
   }
 
@@ -1876,7 +1876,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
         default:  internalPopThenPush(1, Oop::from_int(primitiveIndex - 261)); return;
       }
     }
-    externalizeIPandSP();
+    externalizeExecutionState();
     // "self primitiveResponse. <-replaced with  manually inlined code"
     {
       Safepoint_Ability sa(true);
@@ -1897,7 +1897,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
     }
 
     if (process_is_scheduled_and_executing())
-      internalizeIPandSP();
+      internalizeExecutionState();
     
     if (successFlag)
       return;
@@ -2427,7 +2427,7 @@ void Squeak_Interpreter::multicore_interrupt() {
 
   if (process_is_scheduled_and_executing()) {
     internal_undo_prefetch();
-    externalizeIPandSP();
+    externalizeExecutionState();
   }
   
   {
@@ -2464,7 +2464,7 @@ void Squeak_Interpreter::multicore_interrupt() {
     while (!process_is_scheduled_and_executing()) 
       try_to_find_a_process_to_run_and_start_running_it();
   } // end safepoint ability true
-  internalizeIPandSP();
+  internalizeExecutionState();
   if (Check_Prefetch) assert_always(have_executed_currentBytecode);
   fetchNextBytecode(); // redo prefetch
 
@@ -2534,10 +2534,10 @@ void Squeak_Interpreter::give_up_CPU_instead_of_spinning(uint32_t& busyWaitCount
 
 void Squeak_Interpreter::fixup_localIP_after_being_transferred_to() {
   if (process_is_scheduled_and_executing()) {
-    internalizeIPandSP();
+    internalizeExecutionState();
     if (Check_Prefetch)  assert_always(have_executed_currentBytecode);
     fetchNextBytecode(); // because normally transferTo is called as primitive, and caller does this
-    externalizeIPandSP();
+    externalizeExecutionState();
   }
 }
 
@@ -2942,7 +2942,7 @@ Oop Squeak_Interpreter::commonVariableAt(Oop rcvr, oop_int_t index, At_Cache::En
 
     if (!Object::Format::has_bytes(fmt)) { // Bitmap
       if (isInternal)
-        externalizeIPandSP();
+        externalizeExecutionState();
 
       {
         Safepoint_Ability sa(true);
@@ -3183,7 +3183,7 @@ void Squeak_Interpreter::postGCAction_here(bool fullGC) {
     // because none of the routines called below can receive a message -- dmu 7/12/10
     Safepoint_Ability sa(false); 
     fetchContextRegisters(activeContext(), activeContext_obj());
-    internalizeIPandSP(); // may be doing gc deep in msg receiving
+    internalizeExecutionState(); // may be doing gc deep in msg receiving
     activeContext_obj()->beRootIfOld();
     theHomeContext_obj()->beRootIfOld();
 
