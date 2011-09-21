@@ -56,18 +56,16 @@ private:
   Object_p _method_obj;
   Object_p _theHomeContext_obj;
 public:
-  u_char* _instructionPointer;
-  u_char* instructionPointer() {
-    assert_external();
-    return _instructionPointer;
-  }
-  void set_instructionPointer(u_char* x) {
-    registers_unstored();
-    uninternalized();
-    _instructionPointer = x;
-  }
   
-  Oop*    _stackPointer;  Oop* stackPointer() { assert_external(); return _stackPointer; } void set_stackPointer(Oop* x) { registers_unstored(); uninternalized(); _stackPointer = x; }
+  u_char* _instructionPointer;
+  Oop*    _stackPointer;
+  
+  u_char* instructionPointer() { assert_external(); return _instructionPointer; }
+  Oop*    stackPointer()       { assert_external(); return _stackPointer; }
+  
+  void set_instructionPointer(u_char* x) { registers_unstored(); uninternalized(); _instructionPointer = x; }
+  void set_stackPointer(Oop* x)          { registers_unstored(); uninternalized(); _stackPointer = x; }
+  
   u_char currentBytecode; // interp version is out of order
   bool   have_executed_currentBytecode;
   oop_int_t interruptCheckCounter;
@@ -884,8 +882,6 @@ public:
       method().print(dittoing_stdout_printer);
       dittoing_stdout_printer->printf(", IP %d, SP %d\n", ip_int, sp_int);
     }
-
-
   }
 
 
