@@ -74,7 +74,11 @@ public:
   static const oop_int_t InvokeCallbackSelector = 53;
   static const oop_int_t ClassUnsafeAlien = 54;
   static const oop_int_t ClassWeakFinalizer = 55;
-  static const oop_int_t end = 56;
+  // static const oop_int_t end = 56;
 # endif
+  
+  
+  static const oop_int_t SelectorOmniProtectionViolation = 60;
+  static const oop_int_t end = 61;
 };
 
