@@ -16,7 +16,7 @@
 
 # if Include_Domain_In_Object_Header
 
-const char* const Preheader::Domain_Field_Names[] = {
+const char* const Domain_Info::field_names[] = {
   "logicId",
   
 # define DEFINE_FLAG_NAME(name) #name,

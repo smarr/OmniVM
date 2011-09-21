@@ -55,15 +55,15 @@ inline void Object::set_extra_preheader_word(oop_int_t w) {
   The_Memory_System()->store_enforcing_coherence(dst, w, (Object_p)this);
 }
 
-inline void Object::set_domain_header(Oop domain_info) {
+inline void Object::set_domain_info(Oop domain_info) {
   assert(domain_info.is_int());
-  oop_int_t* dst = domain_header_address();
+  oop_int_t* dst = domain_info_address();
   The_Memory_System()->store_enforcing_coherence(dst, domain_info.bits(), (Object_p)this);
 }
 
-inline void Object::set_domain_header(Preheader::domain_header_t header) {
+inline void Object::set_domain_info(domain_info_t header) {
   assert_eq(Int_Tag, header.bits.int_tag, "This should be always marked as an integer, otherwise we might get trouble with the GC.");
-  oop_int_t* dst = domain_header_address();
+  oop_int_t* dst = domain_info_address();
   The_Memory_System()->store_enforcing_coherence(dst, header.raw_value, (Object_p)this);
 }
 

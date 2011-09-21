@@ -116,6 +116,7 @@
 # include "rvm_bitmap.h"
 # include "bytemap.h"
 
+# include "domain_info.h"
 # include "preheader.h"
 
 

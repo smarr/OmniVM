@@ -198,20 +198,20 @@ public:
    
 # endif
   
-  oop_int_t* domain_header_address() {
-    return preheader()->domain_header_address();
+  oop_int_t* domain_info_address() {
+    return preheader()->domain_info_address();
   }
    
-  Oop domain_header_oop() {
-    return Oop::from_bits(*preheader()->domain_header_address());
+  Oop domain_info_oop() {
+    return Oop::from_bits(*preheader()->domain_info_address());
   }
    
-  Preheader::domain_header_t domain_header() {
-    return preheader()->domain_header();
+  domain_info_t domain_info() {
+    return preheader()->domain_info();
   }
    
-  inline void set_domain_header(Preheader::domain_header_t header);
-  inline void set_domain_header(Oop domain_info);
+  inline void set_domain_info(domain_info_t domain_info);
+  inline void set_domain_info(Oop domain_info);
    
 
   void initialize_preheader() { preheader()->initialize_preheader(); }

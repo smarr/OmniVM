@@ -27,8 +27,8 @@ static const char* getModuleName() {
 }
 
 static Object_Field_Accessor field_accessor_ODomain = 
-                        Object_Field_Accessor(Preheader::Domain_Field_Names,
-                                              Preheader::Domain_Field_Count);
+                              Object_Field_Accessor(Domain_Info::field_names,
+                                                    Domain_Info::field_count);
 
 
 
@@ -45,19 +45,19 @@ static int primitiveGenerateDomainInfoFrom() {
   
   Oop domain_oop = interp->stackObjectValue(0);
   
-  Preheader::domain_header_t domain;
+  domain_info_t domain;
   domain.bits.int_tag = Int_Tag;  // needs to be correctly initialized
   
-  domain.bits.foreignSyncRead     = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncRead)     == interp->roots.trueObj;
-  domain.bits.foreignSyncWrite    = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncWrite)    == interp->roots.trueObj;
-  domain.bits.foreignSyncExecute  = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignSyncExecute)  == interp->roots.trueObj;
-  domain.bits.foreignAsyncRead    = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncRead)    == interp->roots.trueObj;
-  domain.bits.foreignAsyncWrite   = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncWrite)   == interp->roots.trueObj;
-  domain.bits.foreignAsyncExecute = field_accessor_ODomain.get_field(domain_oop, Preheader::foreignAsyncExecute) == interp->roots.trueObj;
+  domain.bits.foreignSyncRead     = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncRead)     == interp->roots.trueObj;
+  domain.bits.foreignSyncWrite    = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncWrite)    == interp->roots.trueObj;
+  domain.bits.foreignSyncExecute  = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncExecute)  == interp->roots.trueObj;
+  domain.bits.foreignAsyncRead    = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncRead)    == interp->roots.trueObj;
+  domain.bits.foreignAsyncWrite   = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncWrite)   == interp->roots.trueObj;
+  domain.bits.foreignAsyncExecute = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncExecute) == interp->roots.trueObj;
   
 
   
-  Oop logicId_oop = field_accessor_ODomain.get_field(domain_oop, Preheader::logicId);
+  Oop logicId_oop = field_accessor_ODomain.get_field(domain_oop, Domain_Info::logicId);
   
   if (logicId_oop.is_int())
     domain.bits.logicId = logicId_oop.integerValue();
@@ -87,18 +87,18 @@ static int primitiveDecodeDomainInfoInto() {
   if (interp->failed()  ||  !domainInfo.is_int())
     return 0;
   
-  Preheader::domain_header_t domain;
+  domain_info_t domain;
   domain.raw_value = domainInfo.bits();
   
-  field_accessor_ODomain.set_field(target, Preheader::foreignSyncRead,     domain.bits.foreignSyncRead     ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Preheader::foreignSyncWrite,    domain.bits.foreignSyncWrite    ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Preheader::foreignSyncExecute,  domain.bits.foreignSyncExecute  ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncRead,    domain.bits.foreignAsyncRead    ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncWrite,   domain.bits.foreignAsyncWrite   ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Preheader::foreignAsyncExecute, domain.bits.foreignAsyncExecute ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncRead,     domain.bits.foreignSyncRead     ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncWrite,    domain.bits.foreignSyncWrite    ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncExecute,  domain.bits.foreignSyncExecute  ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncRead,    domain.bits.foreignAsyncRead    ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncWrite,   domain.bits.foreignAsyncWrite   ? interp->roots.trueObj : interp->roots.falseObj);
+  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncExecute, domain.bits.foreignAsyncExecute ? interp->roots.trueObj : interp->roots.falseObj);
   
 
-  field_accessor_ODomain.set_field(target, Preheader::logicId, Oop::from_int(domain.bits.logicId));
+  field_accessor_ODomain.set_field(target, Domain_Info::logicId, Oop::from_int(domain.bits.logicId));
   
   if (interp->failed())
     return 0;
@@ -123,7 +123,7 @@ static int primitiveGetDomainInfo() {
     return 0;
   }
   
-  interp->popThenPush(2, o.as_object()->domain_header_oop());
+  interp->popThenPush(2, o.as_object()->domain_info_oop());
   
   return 0;
 }
@@ -151,7 +151,7 @@ static int primitiveSetDomainInfo() {
     return 0;
   }
 
-  target.as_object()->set_domain_header(domainInfo);
+  target.as_object()->set_domain_info(domainInfo);
   interp->pop(2);
   
   return 0;

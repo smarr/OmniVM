@@ -47,56 +47,7 @@ public:
 # endif
 
 # if Include_Domain_In_Object_Header
-  
-  /* Define the policy flags.
-     We use here the Smalltalk naming conventions for instance
-     variables to avoid inconsistencies. */
-  # define DO_ALL_POLICY_FLAGS(template)  \
-           template(foreignSyncRead)    \
-           template(foreignSyncWrite)   \
-           template(foreignSyncExecute) \
-           template(foreignAsyncRead)   \
-           template(foreignAsyncWrite)  \
-           template(foreignAsyncExecute)
-  
-  enum Domain_Fields {
-    logicId,
-    
-    # define DEFINE_FLAG(name) name,
-    DO_ALL_POLICY_FLAGS(DEFINE_FLAG)
-    # undef  DEFINE_FLAG
-    
-    Domain_Field_Count
-  };
-  
-  static const char* const Domain_Field_Names[];
-
-  
-  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - ((Domain_Field_Count - 1) + Tag_Size);
-  
-  // STEFAN: TODO: figure out whether we need to have an exception mechnanism directly specified here,
-  //               or whether it is ok to have it in the domain object
-  
-  typedef union domain_header {
-    oop_int_t raw_value;
-    struct {
-      unsigned int_tag  : Tag_Size; /* We will treat the domain encoding as a SmallInteger
-                                       throughout the whole system to avoid GC issues and simplify
-                                       handling in general.
-                                       Since, in the worst case, it can be en/decoded manually on the 
-                                       Smalltalk side.
-                                       STEFAN 2011-07-10 */
-
-      unsigned logicId : logic_id_bits;
-      
-      /* Policy bits */
-      # define DEFINE_POLICY_BITS(name) bool name : 1;
-      DO_ALL_POLICY_FLAGS(DEFINE_POLICY_BITS)
-      # undef DEFINE_POLICY_BITS      
-    } __attribute__ ((__packed__)) bits;  /** make sure we have it really in bits as desired */
-  } domain_header_t;
-  
-  domain_header_t domain;
+  domain_info_t domain;
 # endif
   
   
@@ -108,7 +59,7 @@ public:
     # endif
   }
   
-  oop_int_t* domain_header_address() {
+  oop_int_t* domain_info_address() {
     # if Include_Domain_In_Object_Header
         return &domain.raw_value;
     # else
@@ -116,11 +67,11 @@ public:
     # endif
   }
   
-  domain_header_t domain_header() {
+  domain_info_t domain_info() {
     # if Include_Domain_In_Object_Header
         return domain;
     # else
-        return (domain_header_t)0; //STEFAN: this does not work..., won't compile
+        return (domain_info_t)0; //STEFAN: this does not work..., won't compile
     # endif
   }
   

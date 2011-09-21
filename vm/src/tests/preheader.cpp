@@ -22,7 +22,7 @@ TEST(Preheader, DomainHeaderSize) {
   ASSERT_EQ(sizeof(oop_int_t), sizeof(u_oop_int_t));
   
   // Domain header needs to fit into this header word
-  ASSERT_EQ(sizeof(u_oop_int_t), sizeof(Preheader::domain_header_t));
+  ASSERT_EQ(sizeof(u_oop_int_t), sizeof(domain_info_t));
 }
 
 TEST(Preheader, Initialization) {
@@ -53,16 +53,16 @@ TEST(Preheader, DomainHeaderLayout) {
   
   ASSERT_TRUE(Oop::from_bits(h.domain.raw_value).is_int());
   
-  ASSERT_EQ(0xFFFFFFFF, h.domain_header().raw_value);
-  ASSERT_EQ(0x01FFFFFF, h.domain_header().bits.logic_id);  // That is the max value for the logic id
+  ASSERT_EQ(0xFFFFFFFF, h.domain_info().raw_value);
+  ASSERT_EQ(0x01FFFFFF, h.domain_info().bits.logic_id);  // That is the max value for the logic id
   
-  ASSERT_TRUE(h.domain_header().bits.foreign_sync_read);
-  ASSERT_TRUE(h.domain_header().bits.foreign_sync_write);
-  ASSERT_TRUE(h.domain_header().bits.foreign_sync_execute);
+  ASSERT_TRUE(h.domain_info().bits.foreign_sync_read);
+  ASSERT_TRUE(h.domain_info().bits.foreign_sync_write);
+  ASSERT_TRUE(h.domain_info().bits.foreign_sync_execute);
 
-  ASSERT_TRUE(h.domain_header().bits.foreign_async_read);
-  ASSERT_TRUE(h.domain_header().bits.foreign_async_write);
-  ASSERT_TRUE(h.domain_header().bits.foreign_async_execute);
+  ASSERT_TRUE(h.domain_info().bits.foreign_async_read);
+  ASSERT_TRUE(h.domain_info().bits.foreign_async_write);
+  ASSERT_TRUE(h.domain_info().bits.foreign_async_execute);
 
   
   // Now clear the bits and verify the resulting raw_value
