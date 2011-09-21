@@ -197,17 +197,22 @@ public:
   Safepoint_Tracker* safepoint_tracker;
   Safepoint_Master_Control* safepoint_master_control;
 
-  u_char*  _localIP;  
-  Oop*     _localSP;
-  Object_p _localHomeContext;
+  u_char*   _localIP;  
+  Oop*      _localSP;
+  Object_p  _localHomeContext;
+  
+  domain_info_t _localDomainInfo;
+  
   
   u_char*  localIP()          { assert_internal(); return _localIP; }
   Oop*     localSP()          { assert_internal(); return _localSP; }
   Object_p localHomeContext() { assert_internal(); return _localHomeContext; }
+  domain_info_t localDomainInfo() { assert_internal(); return _localDomainInfo; }
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
   void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
-  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
+//  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
+  domain_info_t set_localDomainInfo(domain_info_t x) { _localDomainInfo = x; registers_unstored(); unexternalized(); }
   
   int32 image_version;
 
@@ -509,6 +514,7 @@ public:
     _localIP = instructionPointer();
     _localSP =       stackPointer();
     _localHomeContext = theHomeContext_obj();
+    _localDomainInfo  = _localHomeContext->domain_info();
     internalized();
   }
 
@@ -870,6 +876,8 @@ public:
     // "the stack pointer is a pointer variable also..."
     oop_int_t sp_int = activeCntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _localSP = (Oop*) (activeCntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
+    
+    _localDomainInfo = activeCntx_obj->domain_info();
 
     internalized();
 

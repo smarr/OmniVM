@@ -1197,6 +1197,27 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   Oop runSelector = roots.messageSelector;
   Oop runReceiver = stackValue(get_argumentCount());
   pop(get_argumentCount() + 1);
+  
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  // STEFAN: add my exec barrier code here
+# warning TODO: verify that this here is the correct reviever, since there are two here
+  domain_info_t domainInfo = runReceiver.as_object()->domain_info();
+  
+  // TODO: try to optimize that, should be much cheaper to pass that in, no?
+  domain_info_t exec_domain = _localDomainInfo;
+  
+  // Exact match should be common case, lets try that first.
+  // If they are not identical, we need to check that we have foreign sync read.
+  if (   (domainInfo.raw_value != exec_domain.raw_value)
+      &&  !domainInfo.bits.foreignSyncExecute) {
+    fatal("Not yet implemented. Should raise an exception and survive...");
+  }
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  
 
   Oop newReceiver = roots.newMethod;
   assert(newReceiver.verify_oop());
@@ -1608,6 +1629,23 @@ void Squeak_Interpreter::primitivePerform() {
     stdout_printer->printf(" startUp: "); newReceiver.print(stdout_printer); stdout_printer->nl();
     roots.messageSelector.print(dittoing_stdout_printer), stdout_printer->nl();
   }
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  // STEFAN: add my exec barrier code here
+  domain_info_t domainInfo = newReceiver.as_object()->domain_info();
+  
+  // TODO: try to optimize that, should be much cheaper to pass that in, no?
+  domain_info_t exec_domain = _localDomainInfo;
+  
+  // Exact match should be common case, lets try that first.
+  // If they are not identical, we need to check that we have foreign sync read.
+  if (   (domainInfo.raw_value != exec_domain.raw_value)
+      &&  !domainInfo.bits.foreignSyncExecute) {
+    fatal("Not yet implemented. Should raise an exception and survive...");
+  }
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
   // Note: following lookup may fail
 

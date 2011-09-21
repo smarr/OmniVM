@@ -464,6 +464,8 @@ public:
 
   public:
   inline Oop  fetchPointer(oop_int_t fieldIndex);
+  inline Oop  fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex);
+  
   inline void storePointer(oop_int_t fieldIndex, Oop oop);
   inline void storePointerUnchecked( oop_int_t fieldIndex, Oop oop);
   inline void storePointerIntoContext(oop_int_t i, Oop x);

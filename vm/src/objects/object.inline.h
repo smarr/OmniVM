@@ -87,7 +87,7 @@ inline oop_int_t Object::fetchInteger(oop_int_t fieldIndex) {
 }
 
 inline oop_int_t Object::fetchStackPointer() { // rcvr is a ContextObject
-  Oop sp = fetchPointer(Object_Indices::StackPointerIndex);
+  Oop sp = fetchPointer_no_domain_read_barrier(Object_Indices::StackPointerIndex);
   return sp.is_int() ? sp.integerValue() : 0;
 }
 
@@ -164,7 +164,9 @@ inline char* Object::first_byte_address() {
 
 inline char* Object::first_byte_address_after_header() { return as_char_p() + BaseHeaderSize; }
 
-inline oop_int_t Object::methodHeader() { return fetchPointer(Object_Indices::HeaderIndex).bits(); }
+inline oop_int_t Object::methodHeader() {
+  return fetchPointer_no_domain_read_barrier(Object_Indices::HeaderIndex).bits();
+}
 
 inline void Object::byteSwapIfByteObject() {
   char* b = first_byte_address();
@@ -250,7 +252,30 @@ inline Oop& Object::pointer_at(oop_int_t fieldIndex) {
 }
 
 inline Oop  Object::fetchPointer(oop_int_t fieldIndex) {
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  // STEFAN: add my read barrier code here
+  domain_info_t domainInfo = domain_info();
+  
+  // TODO: try to optimize that, should be much cheaper to pass that in, no?
+  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
+  
+  // Exact match should be common case, lets try that first.
+  // If they are not identical, we need to check that we have foreign sync read.
+  if (   (domainInfo.raw_value != exec_domain.raw_value)
+      &&  !domainInfo.bits.foreignSyncRead) {
+    fatal("Not yet implemented. Should raise an exception and survive...");
+  }
+  else {
+    return fetchPointer_no_domain_read_barrier(fieldIndex);
+  }
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+}
+
+inline Oop  Object::fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) {
   assert(fieldIndex >= 0); // STEFAN that should always hold, shouldn't it?
+  
   Oop r;
   MEASURE(fetch_pointer, r.bits(), r = pointer_at(fieldIndex));
   return r;
@@ -267,12 +292,31 @@ inline void Object::catch_stores_of_method_in_home_ctxs(Oop* /* addr */, int n, 
 }
 
 
-inline void Object::storePointer( oop_int_t fieldIndex, Oop oop) {
+inline void Object::storePointer(oop_int_t fieldIndex, Oop oop) {
   Oop* addr = &pointer_at(fieldIndex);
   catch_stores_of_method_in_home_ctxs(addr, fieldIndex, oop);
-  The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
+
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  // STEFAN: add my write barrier code here
+  domain_info_t domainInfo = domain_info();
+  
+  // TODO: try to optimize that, should be much cheaper to pass that in, no?
+  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
+  
+  // Exact match should be common case, lets try that first.
+  // If they are not identical, we need to check that we have foreign sync read.
+  if (   (domainInfo.raw_value != exec_domain.raw_value)
+      &&  !domainInfo.bits.foreignSyncWrite) {
+    fatal("Not yet implemented. Should raise an exception and survive...");
+  }
+  else
+    The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
+
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 }
-inline void Object::storePointerUnchecked( oop_int_t fieldIndex, Oop oop) {
+
+inline void Object::storePointerUnchecked(oop_int_t fieldIndex, Oop oop) {
   // "Like storePointer:ofObject:withValue:, 
   //  but the caller guarantees that the object being stored into
   //  is a young object or is already marked as a root."
@@ -280,7 +324,27 @@ inline void Object::storePointerUnchecked( oop_int_t fieldIndex, Oop oop) {
   // Must NOT send any messages; may be called with safepoint ability true, but caller is not safe.
   Oop* addr = &pointer_at(fieldIndex);
   catch_stores_of_method_in_home_ctxs(addr, fieldIndex, oop);
-  The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
+  
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  
+  
+  // STEFAN: add my write barrier code here
+  domain_info_t domainInfo = domain_info();
+  
+  // TODO: try to optimize that, should be much cheaper to pass that in, no?
+  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
+  
+  // Exact match should be common case, lets try that first.
+  // If they are not identical, we need to check that we have foreign sync read.
+  if (   (domainInfo.raw_value != exec_domain.raw_value)
+      &&  !domainInfo.bits.foreignSyncWrite) {
+    fatal("Not yet implemented. Should raise an exception and survive...");
+  }
+  else
+    The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
+  
+  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 }
 
 void Object::storePointerIntoContext(oop_int_t fieldIndex, Oop x) {
