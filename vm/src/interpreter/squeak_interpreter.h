@@ -199,9 +199,17 @@ public:
   Safepoint_Tracker* safepoint_tracker;
   Safepoint_Master_Control* safepoint_master_control;
 
-  u_char* _localIP;  u_char* localIP() { assert_internal(); return _localIP; }  void set_localIP(u_char* x) { _localIP = x; registers_unstored(); unexternalized(); }
-  Oop*    _localSP;  Oop*    localSP() { assert_internal(); return _localSP; }  void set_localSP(Oop* x)    { _localSP = x; registers_unstored(); unexternalized(); }
-  Object_p _localHomeContext;  Object_p localHomeContext() { assert_internal(); return _localHomeContext; } void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
+  u_char*  _localIP;  
+  Oop*     _localSP;
+  Object_p _localHomeContext;
+  
+  u_char*  localIP()          { assert_internal(); return _localIP; }
+  Oop*     localSP()          { assert_internal(); return _localSP; }
+  Object_p localHomeContext() { assert_internal(); return _localHomeContext; }
+  
+  void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
+  void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
+  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
   
   int32 image_version;
 
@@ -209,18 +217,18 @@ public:
   bool are_registers_stored;
   bool is_external_valid;
   bool is_internal_valid;
-  void registers_unstored() { assert(get_running_process() != roots.nilObj); are_registers_stored = false; }
-  void registers_stored() { are_registers_stored = true; }
-  void externalized() { is_external_valid = true; }
-  void internalized() { is_internal_valid = true; }
-  void unexternalized() { is_external_valid = false; }
-  void uninternalized() { is_internal_valid = false; }
+  void registers_unstored()        { assert(get_running_process() != roots.nilObj); are_registers_stored = false; }
+  void registers_stored()          { are_registers_stored = true; }
+  void externalized()              { is_external_valid = true; }
+  void internalized()              { is_internal_valid = true; }
+  void unexternalized()            { is_external_valid = false; }
+  void uninternalized()            { is_internal_valid = false; }
 
-  void assert_internal() { assert(is_internal_valid); }
-  void assert_external() { assert(is_external_valid); }
-  void assert_registers_stored() { assert(are_registers_stored); }
+  void assert_internal()           { assert(is_internal_valid); }
+  void assert_external()           { assert(is_external_valid); }
+  void assert_registers_stored()   { assert(are_registers_stored); }
   void assert_registers_unstored() { assert(!are_registers_stored); }
-  void assert_stored_if_no_proc() { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
+  void assert_stored_if_no_proc()  { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
 # else
   void registers_unstored()        {}
   void registers_stored()          {}
@@ -365,18 +373,41 @@ public:
   void set_activeContext(Object_p x) { set_activeContext( x->as_oop(), x); }
 
 
-  Oop method() { return roots._method; }
-  Object_p method_obj() { return _method_obj; }
-  void set_method(Oop m) { roots._method = m;  _method_obj = m.as_object(); }
-  void set_method_obj(Object_p m) { roots._method = m->as_oop();  _method_obj = m; }
+  Oop      method()      { return roots._method; }
+  Object_p method_obj()  { return _method_obj; }
+  
+  void set_method(Oop m) {
+    roots._method = m;
+    _method_obj = m.as_object();
+  }
+  
+  void set_method_obj(Object_p m) {
+    roots._method = m->as_oop();
+    _method_obj = m;
+  }
 
-  Oop theHomeContext() { assert_external(); return roots._theHomeContext; }
-  Object_p theHomeContext_obj() { assert_external(); return _theHomeContext_obj; }
-  void set_theHomeContext(Oop m, bool really_changing) { if (really_changing) {registers_unstored(); uninternalized(); }  roots._theHomeContext = m;  _theHomeContext_obj = m.as_object(); }
-  void set_theHomeContext_obj(Object_p m, bool really_changing) { if (really_changing) {registers_unstored(); uninternalized(); }   roots._theHomeContext = m->as_oop();  _theHomeContext_obj = m; }
+  Oop      theHomeContext()     { assert_external(); return roots._theHomeContext; }
+  Object_p theHomeContext_obj() { assert_external(); return _theHomeContext_obj;   }
+  
+  void set_theHomeContext(Oop m, bool really_changing) {
+    if (really_changing) {
+      registers_unstored();
+      uninternalized();
+    }  
+    roots._theHomeContext = m;
+    _theHomeContext_obj = m.as_object();
+  }
+  void set_theHomeContext_obj(Object_p m, bool really_changing) {
+    if (really_changing) {
+      registers_unstored();
+      uninternalized();
+    }
+    roots._theHomeContext = m->as_oop();
+    _theHomeContext_obj = m;
+  }
 
 
-  Object_p receiver_obj() { return roots.receiver.as_object(); }
+  Object_p receiver_obj()  { return roots.receiver.as_object(); }
   Object_p newMethod_obj() { return roots.newMethod.as_object(); }
   Object_p lkupClass_obj();
 
