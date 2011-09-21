@@ -33,7 +33,7 @@ static Object_Field_Accessor field_accessor_ODomain =
 
 
 /** {{{ OMirror class>>primitiveGenerateDomainInfoFrom: aDomain
-              ^ aDomainId }}} */
+              ^ aDomainInfo }}} */
 static int primitiveGenerateDomainInfoFrom() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   const int ARG_CNT = 1;
@@ -69,7 +69,7 @@ static int primitiveGenerateDomainInfoFrom() {
 }
 
 
-/** {{{ OMirror class>>primitiveDecodeDomainInfo: aDomainId into: aDomain 
+/** {{{ OMirror class>>primitiveDecodeDomainInfo: aDomainInfo into: aDomain 
               ^ aDomain }}} */
 static int primitiveDecodeDomainInfoInto() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
@@ -80,15 +80,15 @@ static int primitiveDecodeDomainInfoInto() {
     return 0;
   }
   
-  Oop target   = interp->stackObjectValue(0);
-  Oop domainId = interp->stackValue(1);
+  Oop target     = interp->stackObjectValue(0);
+  Oop domainInfo = interp->stackValue(1);
   
-  /* Making sure we got all arguments and domainId is a SmallInt */
-  if (interp->failed()  ||  !domainId.is_int())
+  /* Making sure we got all arguments and domainInfo is a SmallInt */
+  if (interp->failed()  ||  !domainInfo.is_int())
     return 0;
   
   Preheader::domain_header_t domain;
-  domain.raw_value = domainId.bits();
+  domain.raw_value = domainInfo.bits();
   
   field_accessor_ODomain.set_field(target, Preheader::foreignSyncRead,     domain.bits.foreignSyncRead     ? interp->roots.trueObj : interp->roots.falseObj);
   field_accessor_ODomain.set_field(target, Preheader::foreignSyncWrite,    domain.bits.foreignSyncWrite    ? interp->roots.trueObj : interp->roots.falseObj);
@@ -109,7 +109,7 @@ static int primitiveDecodeDomainInfoInto() {
 
 
 /** {{{ OMirror class>>#primitiveGetDomainInfoFor: anObject 
-            ^ aDomainId }}} **/
+            ^ aDomainInfo }}} **/
 static int primitiveGetDomainInfo() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
