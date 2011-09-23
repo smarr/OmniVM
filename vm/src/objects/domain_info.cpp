@@ -19,7 +19,7 @@
 const char* const Domain_Info::field_names[] = {
   "logicId",
   
-# define DEFINE_FLAG_NAME(name) #name,
+# define DEFINE_FLAG_NAME(name, value) #name,
   DO_ALL_POLICY_FLAGS(DEFINE_FLAG_NAME)
 # undef  DEFINE_FLAG_NAME
   

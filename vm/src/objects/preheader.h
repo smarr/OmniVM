@@ -78,10 +78,11 @@ public:
   /* Does take care of everything but the backpointer */
   void initialize_preheader() {
     # if Extra_Preheader_Word_Experiment
-        sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
+      sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
     # endif
+    
     # if Include_Domain_In_Object_Header
-        domain.raw_value = (0 << Tag_Size) | Int_Tag;
+      domain.raw_value = Domain_Info::REFLECTIVE_DOMAIN;
     # endif
   }
   
@@ -96,7 +97,7 @@ public:
       # endif
       
       # if Include_Domain_In_Object_Header
-        domain.raw_value = 0xe0e0e0e0;
+        domain.raw_value = Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN;
       # endif
     }
   }

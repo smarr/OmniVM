@@ -15,12 +15,13 @@
    We use here the Smalltalk naming conventions for instance
    variables to avoid inconsistencies. */
 # define DO_ALL_POLICY_FLAGS(template)  \
-         template(foreignSyncRead)    \
-         template(foreignSyncWrite)   \
-         template(foreignSyncExecute) \
-         template(foreignAsyncRead)   \
-         template(foreignAsyncWrite)  \
-         template(foreignAsyncExecute)
+         template(foreignSyncRead,     0x4000000)    \
+         template(foreignSyncWrite,    0x8000000)    \
+         template(foreignSyncExecute,  0x10000000)   \
+         template(foreignAsyncRead,    0x20000000)   \
+         template(foreignAsyncWrite,   0x40000000)   \
+         template(foreignAsyncExecute, 0x80000000)
+# define NUMBER_OF_POLICY_FLAGS        6 /* make sure it is updated!!! */
 
 class Domain_Info {
 public:
@@ -28,18 +29,24 @@ public:
   typedef enum fields {
     logicId,
     
-    # define DEFINE_FLAG(name) name,
+    # define DEFINE_FLAG(name, value) name = value,
     DO_ALL_POLICY_FLAGS(DEFINE_FLAG)
     # undef  DEFINE_FLAG
     
-    field_count
   } fields_t;
 
-  
+  static const size_t      field_count = NUMBER_OF_POLICY_FLAGS;
   static const char* const field_names[];
-  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * 8) - ((field_count - 1) + Tag_Size);
+  static const size_t logic_id_bits = (sizeof(u_oop_int_t) * CHAR_BIT) - ((field_count - 1) + Tag_Size);
 
-  
+  enum Special_Raw_Values {
+    REFLECTIVE_DOMAIN       = Int_Tag, /* This is the standard domain for Smalltalk: It is used as a magic value, and for initialization. */
+
+    GLOBAL_IMMUTABLE_DOMAIN =   foreignSyncRead    | foreignAsyncRead 
+                              | foreignSyncExecute | foreignAsyncExecute | Int_Tag,
+
+    RECOGNIZABLE_BOGUS_DOMAIN = 0xe0e0e0e0, /* Should be used in freed preheaders only */
+  };
 };
 
 
@@ -56,7 +63,7 @@ typedef union domain_info {
     unsigned logicId : Domain_Info::logic_id_bits;
     
     /* Policy bits */
-    # define DEFINE_POLICY_BITS(name) bool name : 1;
+    # define DEFINE_POLICY_BITS(name, value) bool name : 1;
     DO_ALL_POLICY_FLAGS(DEFINE_POLICY_BITS)
     # undef DEFINE_POLICY_BITS      
   } __attribute__ ((__packed__)) bits;  /** make sure we have it really in bits as desired */
