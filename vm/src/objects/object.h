@@ -212,6 +212,7 @@ public:
    
   inline void set_domain_info(domain_info_t domain_info);
   inline void set_domain_info(Oop domain_info);
+  inline void set_domain_info(int raw_value);
    
 
   void initialize_preheader() { preheader()->initialize_preheader(); }
@@ -228,8 +229,8 @@ public:
 
   inline oop_int_t sizeBits();
   inline oop_int_t sizeBitsSafe();
-  oop_int_t shortSizeBits() { return baseHeader & SizeMask; }
-  oop_int_t longSizeBits() { return sizeHeader() & LongSizeMask; }
+  oop_int_t shortSizeBits() { return baseHeader   & SizeMask;     }
+  oop_int_t longSizeBits()  { return sizeHeader() & LongSizeMask; }
   oop_int_t total_byte_size();
   oop_int_t total_byte_size_without_preheader();
 

@@ -57,8 +57,13 @@ inline void Object::set_extra_preheader_word(oop_int_t w) {
 
 inline void Object::set_domain_info(Oop domain_info) {
   assert(domain_info.is_int());
-  oop_int_t* dst = domain_info_address();
-  The_Memory_System()->store_enforcing_coherence(dst, domain_info.bits(), (Object_p)this);
+  set_domain_info(domain_info.bits());
+}
+
+inline void Object::set_domain_info(int raw_value) {
+  domain_info_t tmp;
+  tmp.raw_value = raw_value;
+  set_domain_info(tmp);
 }
 
 inline void Object::set_domain_info(domain_info_t header) {
