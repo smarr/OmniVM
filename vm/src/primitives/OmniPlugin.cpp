@@ -150,7 +150,9 @@ static int primitiveSetDomainInfo() {
   if (interp->failed()) {
     return 0;
   }
-
+  
+  assert(target.as_object()->domain_info().raw_value != 0);
+  
   target.as_object()->set_domain_info(domainInfo);
   interp->pop(2);
   

@@ -223,7 +223,11 @@ public:
   void registers_unstored()        { assert(get_running_process() != roots.nilObj); are_registers_stored = false; }
   void registers_stored()          { are_registers_stored = true; }
   void externalized()              { is_external_valid = true; }
-  void internalized()              { is_internal_valid = true; }
+  void internalized()              { is_internal_valid = true; 
+    //assert_eq(_localHomeContext->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
+    assert_eq(roots._activeContext.as_object(), _activeContext_obj, "");
+    assert_eq(_activeContext_obj->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
+  }
   void unexternalized()            { is_external_valid = false; }
   void uninternalized()            { is_internal_valid = false; }
 

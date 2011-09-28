@@ -324,6 +324,9 @@ void Squeak_Interpreter::interpret() {
     bc_cycles[bc_cycles_index] = OS_Interface::get_cycle_count();
 #   endif
     
+    assert(_activeContext_obj->domain_info().raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+    assert(_localDomainInfo.raw_value                  != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+    
     dispatch(currentBytecode);
     
 #   if Dump_Bytecode_Cycles

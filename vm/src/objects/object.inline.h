@@ -67,7 +67,7 @@ inline void Object::set_domain_info(int raw_value) {
 }
 
 inline void Object::set_domain_info(domain_info_t header) {
-  assert_eq(Int_Tag, header.bits.int_tag, "This should be always marked as an integer, otherwise we might get trouble with the GC.");
+  assert(header.bits.int_tag || header.raw_value == Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
   oop_int_t* dst = domain_info_address();
   The_Memory_System()->store_enforcing_coherence(dst, header.raw_value, (Object_p)this);
 }
@@ -339,6 +339,8 @@ inline void Object::storePointerUnchecked(oop_int_t fieldIndex, Oop oop) {
   
   // TODO: try to optimize that, should be much cheaper to pass that in, no?
   domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
+  
+  assert(domainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
   
   // Exact match should be common case, lets try that first.
   // If they are not identical, we need to check that we have foreign sync read.
@@ -719,6 +721,8 @@ inline Oop Object::get_orig_block_method() {
 }
 
 inline void Object::zapping_ctx() {
+  set_domain_info(Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+  
 // called when zapping a ctx to help find the bug
 # if Extra_OTE_Words_for_Debugging_Block_Context_Method_Change_Bug
   if (isMethodContext()) return;
