@@ -29,23 +29,33 @@ public:
   typedef enum fields {
     logicId,
     
-    # define DEFINE_FLAG(name, value) name = value,
+    # define DEFINE_FLAG(name, value) name,
     DO_ALL_POLICY_FLAGS(DEFINE_FLAG)
     # undef  DEFINE_FLAG
-    
+    field_count
   } fields_t;
+  
+  /** Define the actual bit values corresponding to position in domain_info */
+  enum Policy_Bit_Masks {
+    # define DEFINE_FLAG(name, value) name##_Bit = value,
+    DO_ALL_POLICY_FLAGS(DEFINE_FLAG)
+    # undef  DEFINE_FLAG
+  };
 
-  static const size_t      field_count = NUMBER_OF_POLICY_FLAGS;
   static const char* const field_names[];
   static const size_t logic_id_bits = (sizeof(u_oop_int_t) * CHAR_BIT) - ((field_count - 1) + Tag_Size);
 
   enum Special_Raw_Values {
-    REFLECTIVE_DOMAIN       = Int_Tag, /* This is the standard domain for Smalltalk: It is used as a magic value, and for initialization. */
+    /* This is the standard domain for Smalltalk: It is used for initialization. */
+    REFLECTIVE_DOMAIN       =   Int_Tag
+                              | foreignSyncRead_Bit    | foreignAsyncRead_Bit
+                              | foreignSyncWrite_Bit   | foreignAsyncWrite_Bit
+                              | foreignSyncExecute_Bit | foreignAsyncExecute_Bit, 
 
-    GLOBAL_IMMUTABLE_DOMAIN =   foreignSyncRead    | foreignAsyncRead 
-                              | foreignSyncExecute | foreignAsyncExecute | Int_Tag,
+    GLOBAL_IMMUTABLE_DOMAIN =   foreignSyncRead_Bit    | foreignAsyncRead_Bit 
+                              | foreignSyncExecute_Bit | foreignAsyncExecute_Bit | Int_Tag,
 
-    RECOGNIZABLE_BOGUS_DOMAIN = 0xe0e0e0e0, /* Should be used in freed preheaders only */
+    RECOGNIZABLE_BOGUS_DOMAIN = 0x00E1E1E2, /* Should be used in freed preheaders only */
   };
 };
 
