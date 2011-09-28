@@ -934,6 +934,12 @@ public:
   }
 
   Oop lookupMethodInClass(Oop lkupClass);
+  Oop send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass);
+//  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
+  
+  inline bool omni_sync_exec_valid(Oop rcvr) const;
+  inline void omni_prepare_sending_protection_violation(Oop lkupClass);
+  
   void findNewMethodInClass(Oop klass);
 
   void addNewMethodToCache() {

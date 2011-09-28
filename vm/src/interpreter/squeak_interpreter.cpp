@@ -403,27 +403,6 @@ void Squeak_Interpreter::update_times_when_asking() {
 
 
 void Squeak_Interpreter::dispatch(u_char currentByte) {
-# warning STEFAN: not sure what the receiver semantics is here, but well...
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-  
-  // STEFAN: add my exec barrier code here
-  if (roots.receiver.is_mem()) {
-    domain_info_t domainInfo = receiver_obj()->domain_info();
-    domain_info_t exec_domain = _localDomainInfo;
-    
-    // Exact match should be common case, lets try that first.
-    // If they are not identical, we need to check that we have foreign sync read.
-    if (   (domainInfo.raw_value != exec_domain.raw_value)
-        &&  !domainInfo.bits.foreignSyncExecute) {
-      fatal("Not yet implemented. Should raise an exception and survive...");
-    }
-  }
-  
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
-  
-  
-  
   if (Check_Prefetch)  have_executed_currentBytecode = true;
   switch (currentByte) {
   case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
