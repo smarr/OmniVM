@@ -2296,6 +2296,13 @@ void Squeak_Interpreter::primitiveValue() {
                                            activeContext_obj(),
                                            Object_Indices::TempFrameStart,
                                            bco);
+  // OMNI
+  
+  assert(bco->domain_info().raw_value != 0);
+  
+  domain_info_t old_domain_info = bco->domain_info();
+  bco->set_domain_info(_localDomainInfo);
+  
   // assume prev call made blockContext a root
 
   pop(get_argumentCount()+1);

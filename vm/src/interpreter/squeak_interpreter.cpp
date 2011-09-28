@@ -962,6 +962,11 @@ void Squeak_Interpreter::internalActivateNewMethod() {
             nco->get_count_of_blocks_homed_to_this_method_ctx());
     lprintf("needsLarge %d\n", needsLarge);
   }
+  
+  // OMNI: set the domain of the new context
+  assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+  assert(nco->domain_info().raw_value != 0);
+  nco->set_domain_info(_localDomainInfo);
 
   int tempCount = Object::temporaryCountOfHeader(methodHeader);
   assert(nco->my_heap_contains_me());
@@ -2842,6 +2847,12 @@ Object_p Squeak_Interpreter::allocateOrRecycleContext(bool needsLarge) {
       freeC = fc;
       assert(The_Memory_System()->contains(r));
       // assert_eq(r->rank(), my_rank, "");
+      
+      // OMNI: initialize with current domain info
+      assert(r->domain_info().raw_value != 0);
+      assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+      r->set_domain_info(_localDomainInfo);
+      
       if (check_many_assertions  &&  r->get_count_of_blocks_homed_to_this_method_ctx() > 0)
         lprintf("RECYCLING recycled live one 0x%x, method 0x%x\n", r->as_oop().bits(), r->fetchPointer(Object_Indices::MethodIndex).bits());
       return r;
@@ -2861,6 +2872,11 @@ Object_p Squeak_Interpreter::allocateOrRecycleContext(bool needsLarge) {
   r->storePointerIntoContext(Object_Indices::InitialIPIndex, roots.nilObj);
   assert(The_Memory_System()->contains(r));
   assert_eq(r->rank(), my_rank(), "");
+  
+  // OMNI: initialize with current domain info
+  assert(r->domain_info().raw_value != 0);
+  assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+  r->set_domain_info(_localDomainInfo);
 
   if (check_many_assertions  &&  r->get_count_of_blocks_homed_to_this_method_ctx() > 0)
     lprintf("RECYCLING new live one 0x%x, method 0x%x\n", r->as_oop().bits(), r->fetchPointer(Object_Indices::MethodIndex).bits());

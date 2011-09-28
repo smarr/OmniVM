@@ -374,6 +374,15 @@ public:
 
   void set_activeContext(Oop x, Object_p o) {
     assert_eq(o->as_oop().bits(), x.bits(), "activeContext messed up");
+    
+    // OMNI help for debugging, all that should not happen:
+    domain_info_t di = o->domain_info();   
+    assert(di.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+    assert(di.raw_value != 0);
+    assert(di.raw_value != Int_Tag);
+    assert(di.raw_value != Oop::Illegals::zapped);
+
+    
     roots._activeContext = x;
     _activeContext_obj = o;
     uninternalized();
@@ -475,6 +484,7 @@ public:
     oop_int_t sp_int = cntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _stackPointer = (Oop*) (cntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
 
+    _localDomainInfo = cntx_obj->domain_info();
 
     if (PrintFetchedContextRegisters) {
       dittoing_stdout_printer->printf("fetchContextRegisters: theHomeContext(): ");
@@ -521,7 +531,7 @@ public:
     _localIP = instructionPointer();
     _localSP =       stackPointer();
     _localHomeContext = theHomeContext_obj();
-    _localDomainInfo  = _localHomeContext->domain_info();
+    _localDomainInfo  = _activeContext_obj->domain_info();
     internalized();
   }
 
