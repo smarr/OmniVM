@@ -2351,10 +2351,11 @@ void Squeak_Interpreter::primitiveValueWithArgs() {
 # if Include_Closure_Support
 
 void Squeak_Interpreter::primitiveClosureValue() {
-  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
-  
   Oop blockClosure = stackValue(get_argumentCount());
-  if (!blockClosure.is_mem()) { primitiveFail(); return; }
+  if (!blockClosure.is_mem()) {
+    primitiveFail();
+    return;
+  }
   Object_p blockClosure_obj = blockClosure.as_object();
   int blockArgumentCount = blockClosure_obj->argumentCountOfClosure();
   if ( !successFlag || get_argumentCount() != blockArgumentCount) { 
@@ -2371,7 +2372,7 @@ void Squeak_Interpreter::primitiveClosureValue() {
   if (!closureMethod_obj->isCompiledMethod()) { primitiveFail(); return; }
   
   activateNewClosureMethod(blockClosure_obj, (Object_p)NULL);
-  if (   !interp->doing_primitiveClosureValueNoContextSwitch
+  if (   !doing_primitiveClosureValueNoContextSwitch
       && !suppress_context_switch_for_debugging )
     quickCheckForInterrupts();
 }
