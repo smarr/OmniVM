@@ -178,7 +178,7 @@ public:
   }
 
 
- private:
+private:
   static const int RemapBufferSize = 1024;
   Oop remapBuffer[RemapBufferSize];
   int remapBufferCount;
@@ -190,7 +190,7 @@ public:
   bool I_am_running;
 
 
- public:
+public:
   void remember_to_move_mutated_read_mostly_object(Oop x);
 
   
@@ -323,21 +323,21 @@ public:
 
 
   void pushRemappableOop(Oop x) { remapBuffer[remapBufferCount++] = x; }
-  Oop  popRemappableOop()       {return remapBuffer[--remapBufferCount]; }
+  Oop  popRemappableOop()       { return remapBuffer[--remapBufferCount]; }
   void popRemappableOops(int n) { remapBufferCount -= n; assert(remapBufferCount >= 0); }
-  Oop  topRemappableOop()       {return remapBuffer[remapBufferCount]; }
+  Oop  topRemappableOop()       { return remapBuffer[remapBufferCount]; }
 
   void do_all_roots(Oop_Closure* oc);
 
 
- public:
+public:
    int added_process_count;
 
    OS_Mutex_Interface* get_scheduler_mutex() {  return &scheduler_mutex; }
    OS_Mutex_Interface* get_semaphore_mutex() {  return &semaphore_mutex; }
    OS_Mutex_Interface* get_safepoint_mutex() {  return &safepoint_mutex; }
 
-  private:
+private:
    OS_Mutex_Interface scheduler_mutex;
    OS_Mutex_Interface semaphore_mutex;
    OS_Mutex_Interface safepoint_mutex; // this is not a complete mutex, it does not use underlying systems mutex
@@ -346,7 +346,7 @@ public:
    int* print_sequence_number;
    bool* debug_flag;
 
-  public:
+public:
    int* debug_int;
 
    int get_global_sequence_number() { return *global_sequence_number; }
@@ -354,8 +354,8 @@ public:
    int get_print_sequence_number() { return *print_sequence_number; }
    int increment_print_sequence_number() { return ++*print_sequence_number; }
 
-  bool get_debug_flag() { return *debug_flag; }
-   void set_debug_flag(bool b) { *debug_flag = b; }
+  bool get_debug_flag()       { return *debug_flag; }
+  void set_debug_flag(bool b) { *debug_flag = b; }
 
   Oop* running_process_by_core; // array per core of which process that core is running
 
@@ -364,10 +364,10 @@ public:
   bool emergency_semaphore_signal_requested;
 
 
- public:
+public:
 
-  Oop activeContext() { return roots._activeContext; }
-  Object_p activeContext_obj() { return _activeContext_obj; }
+  Oop activeContext()          { return roots._activeContext; }
+  Object_p activeContext_obj() { return _activeContext_obj;   }
 
   void set_activeContext(Oop x, Object_p o) {
     assert_eq(o->as_oop().bits(), x.bits(), "activeContext messed up");
