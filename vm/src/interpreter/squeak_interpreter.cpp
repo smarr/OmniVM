@@ -67,6 +67,8 @@ Squeak_Interpreter::Squeak_Interpreter()
 
   doing_primitiveClosureValueNoContextSwitch = false;
   
+  suppress_context_switch_for_debugging = false;
+  
   _localDomainInfo.raw_value = Int_Tag;
 }
 
@@ -1180,7 +1182,7 @@ void Squeak_Interpreter::signalSemaphoreWithIndex(int index) {
 
 
 void Squeak_Interpreter::checkForInterrupts(bool is_safe_to_process_events) {
-  if (doing_primitiveClosureValueNoContextSwitch)
+  if (doing_primitiveClosureValueNoContextSwitch || suppress_context_switch_for_debugging)
     return;
   static bool last_use_cpu_ms = use_cpu_ms();
   bool use_cpu_ms_changed = last_use_cpu_ms != use_cpu_ms();
@@ -2435,7 +2437,7 @@ void Squeak_Interpreter::restore_from_checkpoint(FILE* f) {
 // Broke out of the interpreter loop to do some multicore stuff:
 
 void Squeak_Interpreter::multicore_interrupt() {
-  if (doing_primitiveClosureValueNoContextSwitch)
+  if (doing_primitiveClosureValueNoContextSwitch || suppress_context_switch_for_debugging)
     return;
   
   /* Record some performance counters */

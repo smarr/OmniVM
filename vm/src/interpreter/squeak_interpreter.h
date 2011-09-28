@@ -72,6 +72,9 @@ public:
   static const int interruptCheckCounter_force_value = -0x8000000; // must be neg
   bool multicore_interrupt_check;
   bool doing_primitiveClosureValueNoContextSwitch;
+  
+  bool suppress_context_switch_for_debugging;
+  
   static const u_int64 all_cores_mask = ~0LL;
   static u_int64 run_mask_value_for_core(int x) { return 1LL << x; }
   void set_run_mask_and_request_yield(u_int64);
