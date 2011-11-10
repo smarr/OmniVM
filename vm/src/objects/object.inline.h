@@ -259,21 +259,25 @@ inline Oop& Object::pointer_at(oop_int_t fieldIndex) {
 inline Oop  Object::fetchPointer(oop_int_t fieldIndex) {
   /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
   
-  // STEFAN: add my read barrier code here
-  domain_info_t domainInfo = domain_info();
-  
   // TODO: try to optimize that, should be much cheaper to pass that in, no?
   domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
+
+  if (exec_domain.raw_value != Domain_Info::REFLECTIVE_DOMAIN) {
+    // STEFAN: add my read barrier code here
+    domain_info_t domainInfo = domain_info();
   
-  // Exact match should be common case, lets try that first.
-  // If they are not identical, we need to check that we have foreign sync read.
-  if (   (domainInfo.raw_value != exec_domain.raw_value)
-      &&  !domainInfo.bits.foreignSyncRead) {
-    fatal("Not yet implemented. Should raise an exception and survive...");
+  
+    // Exact match should be common case, lets try that first.
+    // If they are not identical, we need to check that we have foreign sync read.
+    if (   (domainInfo.raw_value != exec_domain.raw_value)
+        &&  !domainInfo.bits.foreignSyncRead) {
+      // fatal("Not yet implemented. Should raise an exception and survive...");
+      //printf("Not yet implemented. Should raise an exception and survive...");
+    }
   }
-  else {
-    return fetchPointer_no_domain_read_barrier(fieldIndex);
-  }
+
+  return fetchPointer_no_domain_read_barrier(fieldIndex);
+
   
   /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 }
@@ -440,7 +444,8 @@ inline oop_int_t Object::literalCount() {  return Object::literalCountOfHeader(m
 inline oop_int_t Object::literalCountOfHeader(oop_int_t header) { return (header >> Object_Indices::LiteralCountShift) & Object_Indices::LiteralCountMask; }
 
 inline Oop Object::literal(oop_int_t offset) {
-  Oop r = fetchPointer(offset + Object_Indices::LiteralStart);
+  # warning STEFAN: recheck this optimization, not entierly sure whether this is valid in all contexts
+  Oop r = fetchPointer_no_domain_read_barrier(offset + Object_Indices::LiteralStart);
   if (check_many_assertions) {
     assert_always(r.is_int() || The_Memory_System()->object_table->probably_contains((void*)r.bits()));
   }
