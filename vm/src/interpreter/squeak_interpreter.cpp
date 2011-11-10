@@ -480,6 +480,7 @@ void Squeak_Interpreter::dispatch(u_char currentByte) {
     longJumpIfFalse(); break;
 
   // sendArithmeticSelector
+  // --those have all a receiver and a single argument, we know that...
   case 176: bytecodePrimAdd(); break;
   case 177: bytecodePrimSubtract(); break;
   case 178: bytecodePrimLessThan(); break;
@@ -498,6 +499,7 @@ void Squeak_Interpreter::dispatch(u_char currentByte) {
   case 191: bytecodePrimBitOr(); break;
 
   // sendCommonSelector
+  // --those are less regular
   case 192: bytecodePrimAt(); break;
   case 193: bytecodePrimAtPut(); break;
   case 194: bytecodePrimSize(); break;
@@ -515,6 +517,8 @@ void Squeak_Interpreter::dispatch(u_char currentByte) {
   case 206: bytecodePrimPointX(); break;
   case 207: bytecodePrimPointY(); break;
 
+  // here it depends on the selector -> and the number of arguments
+  // are encoded in the bytecode
   case 208: case 209:
   case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219:
   case 220: case 221: case 222: case 223: case 224: case 225: case 226: case 227: case 228: case 229:
@@ -839,13 +843,16 @@ Oop Squeak_Interpreter::lookupMethodInClass(Oop lkupClass) {
     fatal("Recursive not understood error encountered");
   }
 
-  // send doesNotUnderstand
+  // lookup failed
+  return send_doesNotUnderstand(currentClass_obj, lkupClass);
+}
 
+Oop Squeak_Interpreter::send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass) {
   if ( !roots.messageSelector.as_object()->equals_string("paragraph")
-    && !roots.messageSelector.as_object()->equals_string("gradientWindowLook")
-    && !roots.messageSelector.as_object()->equals_string("uniformWindowColors")
-    && !roots.messageSelector.as_object()->equals_string("externalServerDefsOnly")) {// xxx_dmu
-
+      && !roots.messageSelector.as_object()->equals_string("gradientWindowLook")
+      && !roots.messageSelector.as_object()->equals_string("uniformWindowColors")
+      && !roots.messageSelector.as_object()->equals_string("externalServerDefsOnly")) {// xxx_dmu
+    
     const int enough_already = 7;
     if (dnu_kvetch_count() < enough_already) {
       print_time();
@@ -863,7 +870,7 @@ Oop Squeak_Interpreter::lookupMethodInClass(Oop lkupClass) {
       lprintf("sel not bytes\n");
       fatal("Message selector not isBytes");
     }
-
+    
   } // xxx_dmu
   pushRemappableOop(lkupClass);
   createActualMessageTo(lkupClass);
