@@ -1105,8 +1105,14 @@ void Squeak_Interpreter::primitiveInputWord() {
 void Squeak_Interpreter::primitiveInstVarAt() {
   oop_int_t index = stackIntegerValue(0);
   Oop rcvr = stackValue(1);
-  if (!rcvr.is_mem()) { primitiveFail(); return; }
+  
+  if (!rcvr.is_mem()) {
+    primitiveFail();
+    return;
+  }
+  
   Object_p ro = rcvr.as_object();
+  
   if (successFlag) {
     oop_int_t fixedFields = ro->fixedFieldsOfArray();
     if (index < 1  ||  index > fixedFields)
@@ -1114,7 +1120,8 @@ void Squeak_Interpreter::primitiveInstVarAt() {
   }
   if (successFlag) {
     Oop value = subscript(ro, index);
-    if (successFlag) popThenPush(get_argumentCount() + 1, value);
+    if (successFlag)
+      popThenPush(get_argumentCount() + 1, value);
   }
 }
 void Squeak_Interpreter::primitiveInstVarAtPut() {
@@ -1325,11 +1332,15 @@ void Squeak_Interpreter::primitiveLoadImageSegment() {
    */
   unimplemented(); // too much work
 }
+
+
 void Squeak_Interpreter::primitiveLoadInstVar() {
   Oop r = popStack();
   if (!r.is_mem()) {unPop(1); primitiveFail(); return; }
   push(r.as_object()->fetchPointer(primitiveIndex - 264));
 }
+
+
 void Squeak_Interpreter::primitiveLogN() {
   double r = popFloat();
   if (!successFlag) {unPop(1); return; }
