@@ -265,7 +265,7 @@
 /* Begin PBXFileReference section */
 		0A1F53F71427A3CA00E36120 /* object_field_accessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = object_field_accessor.cpp; sourceTree = "<group>"; };
 		0A1F53FA1427A3DD00E36120 /* object_field_accessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = object_field_accessor.h; sourceTree = "<group>"; };
-		0A2783EB128DBF1000336BDE /* RoarVM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RoarVM; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A2783EB128DBF1000336BDE /* OmniVM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OmniVM; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A2783F4128DBF7300336BDE /* compiler_check.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = compiler_check.cpp; path = src/compiler_check.cpp; sourceTree = "<group>"; };
 		0A2783F6128DBF7300336BDE /* externals.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = externals.cpp; sourceTree = "<group>"; };
 		0A2783F7128DBF7300336BDE /* externals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = externals.h; sourceTree = "<group>"; };
@@ -615,7 +615,7 @@
 		0A2783EC128DBF1000336BDE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0A2783EB128DBF1000336BDE /* RoarVM */,
+				0A2783EB128DBF1000336BDE /* OmniVM */,
 				0A97FB26128FE95A003A1C74 /* UnitTests */,
 			);
 			name = Products;
@@ -1309,9 +1309,9 @@
 /* End PBXLegacyTarget section */
 
 /* Begin PBXNativeTarget section */
-		0A2783EA128DBF1000336BDE /* RoarVM */ = {
+		0A2783EA128DBF1000336BDE /* OmniVM */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0A2783F0128DBF1000336BDE /* Build configuration list for PBXNativeTarget "RoarVM" */;
+			buildConfigurationList = 0A2783F0128DBF1000336BDE /* Build configuration list for PBXNativeTarget "OmniVM" */;
 			buildPhases = (
 				0A2783E8128DBF1000336BDE /* Sources */,
 				0A2783E9128DBF1000336BDE /* Frameworks */,
@@ -1320,9 +1320,9 @@
 			);
 			dependencies = (
 			);
-			name = RoarVM;
+			name = OmniVM;
 			productName = RoarVM;
-			productReference = 0A2783EB128DBF1000336BDE /* RoarVM */;
+			productReference = 0A2783EB128DBF1000336BDE /* OmniVM */;
 			productType = "com.apple.product-type.tool";
 		};
 		0A97FB25128FE95A003A1C74 /* UnitTests */ = {
@@ -1371,7 +1371,7 @@
 			);
 			projectRoot = "";
 			targets = (
-				0A2783EA128DBF1000336BDE /* RoarVM */,
+				0A2783EA128DBF1000336BDE /* OmniVM */,
 				0A97FB25128FE95A003A1C74 /* UnitTests */,
 				0AC76D9212EC5FCD00C86B11 /* make */,
 			);
@@ -1648,14 +1648,17 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				VALID_ARCHS = i386;
 			};
 			name = Debug;
 		};
 		0A278287128DBE2700336BDE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				VALID_ARCHS = i386;
 			};
 			name = Release;
 		};
@@ -1665,7 +1668,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
-				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
@@ -1687,6 +1689,7 @@
 					LSB_FIRST,
 					ROAR_VM,
 				);
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					src/runtime,
 					src/from_squeak/iOS/vm/src/vm,
@@ -1697,12 +1700,11 @@
 				LD_NO_PIE = YES;
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-lX11",
 					"-lXext",
 				);
-				PRODUCT_NAME = RoarVM;
+				PRODUCT_NAME = OmniVM;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = i386;
 			};
@@ -1715,7 +1717,6 @@
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_ENABLE_CPP_EXCEPTIONS = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
@@ -1733,6 +1734,7 @@
 					LSB_FIRST,
 					ROAR_VM,
 				);
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					src/runtime,
 					src/from_squeak/iOS/vm/src/vm,
@@ -1743,12 +1745,11 @@
 				LD_NO_PIE = YES;
 				LIBRARY_SEARCH_PATHS = /usr/X11/lib;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-lX11",
 					"-lXext",
 				);
-				PRODUCT_NAME = RoarVM;
+				PRODUCT_NAME = OmniVM;
 				USER_HEADER_SEARCH_PATHS = "";
 				VALID_ARCHS = i386;
 			};
@@ -1850,7 +1851,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0A2783F0128DBF1000336BDE /* Build configuration list for PBXNativeTarget "RoarVM" */ = {
+		0A2783F0128DBF1000336BDE /* Build configuration list for PBXNativeTarget "OmniVM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0A2783EE128DBF1000336BDE /* Debug */,

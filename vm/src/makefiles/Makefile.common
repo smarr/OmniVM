@@ -113,7 +113,7 @@ endif
 
 TILE_MONITOR = $(BIN)tile-monitor
 
-EXECUTABLE = rvm
+EXECUTABLE = omnivm
 
 MONITOR_COMMON_ARGS = \
   --batch-mode \
