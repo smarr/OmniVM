@@ -86,6 +86,10 @@ void Squeak_Interpreter::initialize(Oop soo, bool from_checkpoint) {
   if (!from_checkpoint) roots.initialize(soo);
 
   if (Logical_Core::running_on_main()) {
+    // OMNI: make sure that the domain of the nil object is well defined
+    //       we might need to do that of the rest, too :-/
+    roots.nilObj.as_object()->set_domain(roots.nilObj);
+
     
     timeout_deferral_counters = (int32*)Memory_Semantics::shared_calloc(Max_Number_Of_Cores, sizeof(timeout_deferral_counters[0]));
     
@@ -972,7 +976,8 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   
   // OMNI: set the domain of the new context
   assert(_localDomain != NULL);
-  assert(nco->domain_oop() != roots.nilObj);
+  assert(nco->domain_oop().bits() != Int_Tag);
+  assert(nco->domain_oop().bits() != 0 );
   nco->set_domain(_localDomain);
 
   int tempCount = Object::temporaryCountOfHeader(methodHeader);
@@ -2856,7 +2861,7 @@ Object_p Squeak_Interpreter::allocateOrRecycleContext(bool needsLarge) {
       // assert_eq(r->rank(), my_rank, "");
       
       // OMNI: initialize with current domain info
-      assert(r->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
+      assert(r->domain_oop().bits() == Oop::Illegals::free_extra_preheader_words); // should have been freed, not sure whether the general assert is in sync with the flags which enforce this flag to be set, check later
       assert(_localDomain != NULL);
       r->set_domain(_localDomain);
       

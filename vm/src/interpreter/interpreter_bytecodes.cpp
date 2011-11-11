@@ -465,7 +465,7 @@ void Squeak_Interpreter::bytecodePrimMod() {
   roots.messageSelector = specialSelector(10);
   set_argumentCount(1);
   
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -676,7 +676,7 @@ void Squeak_Interpreter::bytecodePrimBitShift() {
   set_argumentCount(1);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -696,7 +696,7 @@ void Squeak_Interpreter::bytecodePrimDiv() {
   set_argumentCount(1);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -719,7 +719,7 @@ void Squeak_Interpreter::bytecodePrimBitAnd() {
   set_argumentCount(1);
 
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -740,7 +740,7 @@ void Squeak_Interpreter::bytecodePrimBitOr() {
   set_argumentCount(1);
 
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -804,7 +804,7 @@ void Squeak_Interpreter::bytecodePrimSize() {
   set_argumentCount(0);
   
   Oop rcvr = internalStackTop();
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -816,7 +816,7 @@ void Squeak_Interpreter::bytecodePrimNext() {
   set_argumentCount(0);
   
   Oop rcvr = internalStackTop();
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -828,7 +828,7 @@ void Squeak_Interpreter::bytecodePrimNextPut() {
   set_argumentCount(1);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -840,7 +840,7 @@ void Squeak_Interpreter::bytecodePrimAtEnd() {
   set_argumentCount(0);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -855,7 +855,7 @@ void Squeak_Interpreter::bytecodePrimEquivalent() {
 void Squeak_Interpreter::bytecodePrimClass() {  
   Oop rcvr = internalStackTop();
   
-  if (!omni_requires_delegation(rcvr)) {
+  if (omni_requires_delegation(rcvr)) {
     omni_request_execution(rcvr.fetchClass());
     normalSend();
     return;
@@ -899,7 +899,7 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
   
   // OMNI this looks like a slow operation, so try to fail fast
   //      usually we try to do the normal path first, like integer handling
-  if (!omni_requires_delegation(block)) {
+  if (omni_requires_delegation(block)) {
     omni_request_execution(block.fetchClass());
     normalSend();
     return;
@@ -946,7 +946,7 @@ void Squeak_Interpreter::bytecodePrimDo() {
   set_argumentCount(1);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   
   normalSend();
@@ -956,7 +956,7 @@ void Squeak_Interpreter::bytecodePrimNew() {
   set_argumentCount(0);
 
   Oop rcvr = internalStackTop();
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -966,7 +966,7 @@ void Squeak_Interpreter::bytecodePrimNewWithArg() {
   set_argumentCount(1);
   
   Oop rcvr = internalStackValue(1);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
 
   normalSend();
@@ -1037,7 +1037,7 @@ void Squeak_Interpreter::sendLiteralSelectorBytecode() {
 	set_argumentCount(arg_count);
   
   Oop rcvr = internalStackValue(arg_count);
-  if (!omni_requires_delegation(rcvr))
+  if (omni_requires_delegation(rcvr))
     omni_request_execution(rcvr.fetchClass());
   normalSend();
 }

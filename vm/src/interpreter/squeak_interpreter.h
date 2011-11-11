@@ -376,7 +376,15 @@ public:
     assert_eq(o->as_oop().bits(), x.bits(), "activeContext messed up");
     
     // OMNI help for debugging, all that should not happen:
-    Oop domain = o->domain_oop();   
+    Oop domain = o->domain_oop();
+    
+    // Make sure that we do not have the Int_Tag here anymore,
+    // but that we actually point to nil
+    if (domain.bits() == Int_Tag) {
+      o->set_domain(roots.nilObj);
+      domain = roots.nilObj;
+    }
+    
     assert(domain.bits() != Int_Tag);
     assert(domain.bits() != Oop::Illegals::zapped);
     assert(domain.bits() != Oop::Illegals::free_extra_preheader_words);
