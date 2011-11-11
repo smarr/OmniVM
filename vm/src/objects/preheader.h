@@ -82,7 +82,10 @@ public:
     # endif
     
     # if Include_Domain_In_Object_Header
-      domain_obj = (0 << Tag_Size) | Int_Tag;
+      domain_obj = NULL; // Using here a NULL instead of the Int_Tag, 
+                         // to make sure that an uninitialized field does not
+                         // propergate to the smalltalk level, we can not
+                         // statically initialize it to nilObj unfortunatly.
     # endif
   }
   

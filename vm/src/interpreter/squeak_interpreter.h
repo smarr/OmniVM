@@ -380,12 +380,12 @@ public:
     
     // Make sure that we do not have the Int_Tag here anymore,
     // but that we actually point to nil
-    if (domain.bits() == Int_Tag) {
+    if (domain.bits() == 0   /* NULL */) {
       o->set_domain(roots.nilObj);
       domain = roots.nilObj;
     }
     
-    assert(domain.bits() != Int_Tag);
+    assert(domain.is_mem());
     assert(domain.bits() != Oop::Illegals::zapped);
     assert(domain.bits() != Oop::Illegals::free_extra_preheader_words);
     

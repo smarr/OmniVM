@@ -976,8 +976,8 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   
   // OMNI: set the domain of the new context
   assert(_localDomain != NULL);
-  assert(nco->domain_oop().bits() != Int_Tag);
-  assert(nco->domain_oop().bits() != 0 );
+  assert(nco->domain_oop().is_mem());
+  assert(nco->domain_oop().bits() != 0 /* NULL */);
   nco->set_domain(_localDomain);
 
   int tempCount = Object::temporaryCountOfHeader(methodHeader);

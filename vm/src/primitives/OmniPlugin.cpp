@@ -42,7 +42,16 @@ static int primitiveGetDomain() {
     return 0;
   }
   
-  interp->popThenPush(2, o.as_object()->domain_oop());
+  Oop result = o.as_object()->domain_oop();
+  
+  /** Approach for lazily repairing NULL initialized objects
+      with nilObj */
+  if (result.bits() == 0 /* NULL */) {
+    result = interp->roots.nilObj;
+    o.as_object()->set_domain(interp->roots.nilObj);
+  }
+  
+  interp->popThenPush(2, result);
   
   return 0;
 }
@@ -57,10 +66,8 @@ static int primitiveSetDomain() {
     return 0;
   }
   
-  Oop domain = interp->stackValue(0);
-
-  if (!domain.is_mem()) {
-    interp->primitiveFail();
+  Oop domain = interp->stackObjectValue(0);
+  if (interp->failed()) {
     return 0;
   }
   
@@ -70,7 +77,6 @@ static int primitiveSetDomain() {
     return 0;
   }
   
-  assert(target.as_object()->domain_oop().bits() != 0);
   assert(target.as_object()->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
   
   target.as_object()->set_domain(domain);
