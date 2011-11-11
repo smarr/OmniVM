@@ -197,22 +197,22 @@ public:
   inline void set_backpointer(Oop) const {}
    
 # endif
-  
-  oop_int_t* domain_info_address() {
-    return preheader()->domain_info_address();
+private:  
+  oop_int_t* domain_word_address() {
+    return preheader()->domain_word_address();
+  }
+
+public:   
+  inline Oop domain_oop() {
+    return Oop::from_bits(preheader()->domain());
   }
    
-  Oop domain_info_oop() {
-    return Oop::from_bits(*preheader()->domain_info_address());
+  inline Object_p domain() {
+    return domain_oop().as_object();
   }
    
-  domain_info_t domain_info() {
-    return preheader()->domain_info();
-  }
-   
-  inline void set_domain_info(domain_info_t domain_info);
-  inline void set_domain_info(Oop domain_info);
-  inline void set_domain_info(int raw_value);
+  inline void set_domain(Oop domain_oop);
+  inline void set_domain(Object_p domain_obj);
    
 
   void initialize_preheader() { preheader()->initialize_preheader(); }

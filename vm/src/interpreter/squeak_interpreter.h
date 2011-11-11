@@ -204,18 +204,18 @@ public:
   Oop*      _localSP;
   Object_p  _localHomeContext;
   
-  domain_info_t _localDomainInfo;
+  Object_p  _localDomain;
   
   
   u_char*  localIP()          { assert_internal(); return _localIP; }
   Oop*     localSP()          { assert_internal(); return _localSP; }
   Object_p localHomeContext() { assert_internal(); return _localHomeContext; }
-  domain_info_t localDomainInfo() { assert_internal(); return _localDomainInfo; }
+  Object_p localDomain()      { assert_internal(); return _localDomain; }
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
   void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
 //  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
-  domain_info_t set_localDomainInfo(domain_info_t x) { _localDomainInfo = x; registers_unstored(); unexternalized(); }
+  void set_localDomain(Object_p x)      { _localDomain = x; registers_unstored(); unexternalized(); }
   
   int32 image_version;
 
@@ -229,7 +229,7 @@ public:
   void internalized()              { is_internal_valid = true; 
     //assert_eq(_localHomeContext->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
     assert_eq(roots._activeContext.as_object(), _activeContext_obj, "");
-    assert_eq(_activeContext_obj->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
+    assert_eq(_activeContext_obj->domain(), _localDomain, "Would expect them to be equal at this point.");
   }
   void unexternalized()            { is_external_valid = false; }
   void uninternalized()            { is_internal_valid = false; }
@@ -376,20 +376,18 @@ public:
     assert_eq(o->as_oop().bits(), x.bits(), "activeContext messed up");
     
     // OMNI help for debugging, all that should not happen:
-    domain_info_t di = o->domain_info();   
-    assert(di.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-    assert(di.raw_value != 0);
-    assert(di.raw_value != Int_Tag);
-    assert(di.raw_value != Oop::Illegals::zapped);
-
+    Oop domain = o->domain_oop();   
+    assert(domain.bits() != Int_Tag);
+    assert(domain.bits() != Oop::Illegals::zapped);
+    assert(domain.bits() != Oop::Illegals::free_extra_preheader_words);
     
     roots._activeContext = x;
     _activeContext_obj = o;
     uninternalized();
     unexternalized();
   }
-  void set_activeContext(Oop x) { set_activeContext(x, x.as_object()); }
-  void set_activeContext(Object_p x) { set_activeContext( x->as_oop(), x); }
+  void set_activeContext(Oop x)      { set_activeContext(x, x.as_object()); }
+  void set_activeContext(Object_p x) { set_activeContext(x->as_oop(),   x); }
 
 
   Oop      method()      { return roots._method; }
@@ -484,7 +482,7 @@ public:
     oop_int_t sp_int = cntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _stackPointer = (Oop*) (cntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
 
-    _localDomainInfo = cntx_obj->domain_info();
+    _localDomain = cntx_obj->domain();
 
     if (PrintFetchedContextRegisters) {
       dittoing_stdout_printer->printf("fetchContextRegisters: theHomeContext(): ");
@@ -531,7 +529,7 @@ public:
     _localIP = instructionPointer();
     _localSP =       stackPointer();
     _localHomeContext = theHomeContext_obj();
-    _localDomainInfo  = _activeContext_obj->domain_info();
+    _localDomain      = _activeContext_obj->domain();
     internalized();
   }
 
@@ -894,7 +892,7 @@ public:
     oop_int_t sp_int = activeCntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _localSP = (Oop*) (activeCntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
     
-    _localDomainInfo = activeCntx_obj->domain_info();
+    _localDomain = activeCntx_obj->domain();
 
     internalized();
 
@@ -947,8 +945,8 @@ public:
   Oop send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass);
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
-  inline bool omni_sync_exec_valid(Oop rcvr) const;
-  inline void omni_prepare_sending_protection_violation(Oop lkupClass);
+  inline bool omni_requires_delegation(Oop rcvr) const;
+  inline void omni_request_execution(Oop lkupClass);
   
   void findNewMethodInClass(Oop klass);
 

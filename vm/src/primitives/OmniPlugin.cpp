@@ -26,91 +26,10 @@ static const char* getModuleName() {
   return moduleName;
 }
 
-static Object_Field_Accessor field_accessor_ODomain = 
-                              Object_Field_Accessor(Domain_Info::field_names,
-                                                    Domain_Info::field_count);
 
-
-
-/** {{{ OMirror class>>primitiveGenerateDomainInfoFrom: aDomain
-              ^ aDomainInfo }}} */
-static int primitiveGenerateDomainInfoFrom() {
-  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
-  const int ARG_CNT = 1;
-  
-  if (interp->get_argumentCount() != ARG_CNT) {
-    interp->primitiveFail();
-    return 0;
-  }
-  
-  Oop domain_oop = interp->stackObjectValue(0);
-  
-  domain_info_t domain;
-  domain.bits.int_tag = Int_Tag;  // needs to be correctly initialized
-  
-  domain.bits.foreignSyncRead     = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncRead)     == interp->roots.trueObj;
-  domain.bits.foreignSyncWrite    = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncWrite)    == interp->roots.trueObj;
-  domain.bits.foreignSyncExecute  = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignSyncExecute)  == interp->roots.trueObj;
-  domain.bits.foreignAsyncRead    = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncRead)    == interp->roots.trueObj;
-  domain.bits.foreignAsyncWrite   = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncWrite)   == interp->roots.trueObj;
-  domain.bits.foreignAsyncExecute = field_accessor_ODomain.get_field(domain_oop, Domain_Info::foreignAsyncExecute) == interp->roots.trueObj;
-  
-
-  
-  Oop logicId_oop = field_accessor_ODomain.get_field(domain_oop, Domain_Info::logicId);
-  
-  if (logicId_oop.is_int())
-    domain.bits.logicId = logicId_oop.integerValue();
-  else
-    domain.bits.logicId = -1;
-
-  interp->popThenPush(ARG_CNT + 1, Oop::from_bits(domain.raw_value));
-  return 0;
-}
-
-
-/** {{{ OMirror class>>primitiveDecodeDomainInfo: aDomainInfo into: aDomain 
-              ^ aDomain }}} */
-static int primitiveDecodeDomainInfoInto() {
-  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
-  const int ARG_CNT = 2;
-  
-  if (interp->get_argumentCount() != ARG_CNT) {
-    interp->primitiveFail();
-    return 0;
-  }
-  
-  Oop target     = interp->stackObjectValue(0);
-  Oop domainInfo = interp->stackValue(1);
-  
-  /* Making sure we got all arguments and domainInfo is a SmallInt */
-  if (interp->failed()  ||  !domainInfo.is_int())
-    return 0;
-  
-  domain_info_t domain;
-  domain.raw_value = domainInfo.bits();
-  
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncRead,     domain.bits.foreignSyncRead     ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncWrite,    domain.bits.foreignSyncWrite    ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignSyncExecute,  domain.bits.foreignSyncExecute  ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncRead,    domain.bits.foreignAsyncRead    ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncWrite,   domain.bits.foreignAsyncWrite   ? interp->roots.trueObj : interp->roots.falseObj);
-  field_accessor_ODomain.set_field(target, Domain_Info::foreignAsyncExecute, domain.bits.foreignAsyncExecute ? interp->roots.trueObj : interp->roots.falseObj);
-  
-
-  field_accessor_ODomain.set_field(target, Domain_Info::logicId, Oop::from_int(domain.bits.logicId));
-  
-  if (interp->failed())
-    return 0;
-  
-  interp->popThenPush(ARG_CNT + 1, target);
-  return 0;
-}
-
-
-/** {{{ OMirror class>>#primitiveGetDomainInfoFor: anObject 
+/** {{{ OMirror class>>#primitiveGetDomainOf: anObject 
             ^ aDomainInfo }}} **/
-static int primitiveGetDomainInfo() {
+static int primitiveGetDomain() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
   if (interp->get_argumentCount() != 1) {
@@ -123,14 +42,14 @@ static int primitiveGetDomainInfo() {
     return 0;
   }
   
-  interp->popThenPush(2, o.as_object()->domain_info_oop());
+  interp->popThenPush(2, o.as_object()->domain_oop());
   
   return 0;
 }
 
 
-/** {{{ OMirror class>>#primitiveSetDomainInfoFor: anObject to: aDomainInfo }}} **/
-static int primitiveSetDomainInfo() {
+/** {{{ OMirror class>>#primitiveSetDomainOf: anObject to: aDomain }}} **/
+static int primitiveSetDomain() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
   if (interp->get_argumentCount() != 2) {
@@ -138,9 +57,9 @@ static int primitiveSetDomainInfo() {
     return 0;
   }
   
-  Oop domainInfo = interp->stackValue(0);
+  Oop domain = interp->stackValue(0);
 
-  if (not domainInfo.is_int()) {
+  if (!domain.is_mem()) {
     interp->primitiveFail();
     return 0;
   }
@@ -151,9 +70,10 @@ static int primitiveSetDomainInfo() {
     return 0;
   }
   
-  assert(target.as_object()->domain_info().raw_value != 0);
+  assert(target.as_object()->domain_oop().bits() != 0);
+  assert(target.as_object()->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
   
-  target.as_object()->set_domain_info(domainInfo);
+  target.as_object()->set_domain(domain);
   interp->pop(2);
   
   return 0;
@@ -166,11 +86,8 @@ static int setInterpreter(struct VirtualMachine* /* anInterpreter */) {
 
 
 void* OmniPlugin_exports[][3] = {
-  {(void*) "OmniPlugin", (void*)"primitiveGetDomainInfo", (void*)primitiveGetDomainInfo},
-  {(void*) "OmniPlugin", (void*)"primitiveSetDomainInfo", (void*)primitiveSetDomainInfo},
-  
-  {(void*) "OmniPlugin", (void*)"primitiveGenerateDomainInfoFrom", (void*)primitiveGenerateDomainInfoFrom},
-  {(void*) "OmniPlugin", (void*)"primitiveDecodeDomainInfoInto",   (void*)primitiveDecodeDomainInfoInto},
+  {(void*) "OmniPlugin", (void*)"primitiveGetDomain", (void*)primitiveGetDomain},
+  {(void*) "OmniPlugin", (void*)"primitiveSetDomain", (void*)primitiveSetDomain},
   
   
   /* Required by the internal loading mechanism */

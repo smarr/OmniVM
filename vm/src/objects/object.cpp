@@ -53,7 +53,7 @@ bool Object::verify_backpointer() {
 
 bool Object::verify_preheader_words() {
   return  (    (!Extra_Preheader_Word_Experiment || Oop::from_bits(get_extra_preheader_word()).verify_oop())
-           &&  (!Include_Domain_In_Object_Header || Oop::from_bits(*preheader()->domain_info_address()).is_int()));
+           &&  (!Include_Domain_In_Object_Header || Oop::from_bits(preheader()->domain()).is_int()));
 }
 
 

@@ -69,7 +69,7 @@ Squeak_Interpreter::Squeak_Interpreter()
   
   suppress_context_switch_for_debugging = false;
   
-  _localDomainInfo.raw_value = Int_Tag;
+  _localDomain = NULL;
 }
 
 
@@ -326,8 +326,8 @@ void Squeak_Interpreter::interpret() {
     bc_cycles[bc_cycles_index] = OS_Interface::get_cycle_count();
 #   endif
     
-    assert(_activeContext_obj->domain_info().raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-    assert(_localDomainInfo.raw_value                  != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+    assert(_activeContext_obj->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
+    //assert(_localDomain.bits()                 != Oop::Illegals::free_extra_preheader_words);
     
     dispatch(currentBytecode);
     
@@ -971,9 +971,9 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   }
   
   // OMNI: set the domain of the new context
-  assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-  assert(nco->domain_info().raw_value != 0);
-  nco->set_domain_info(_localDomainInfo);
+  assert(_localDomain != NULL);
+  assert(nco->domain_oop() != roots.nilObj);
+  nco->set_domain(_localDomain);
 
   int tempCount = Object::temporaryCountOfHeader(methodHeader);
   assert(nco->my_heap_contains_me());
@@ -2856,9 +2856,9 @@ Object_p Squeak_Interpreter::allocateOrRecycleContext(bool needsLarge) {
       // assert_eq(r->rank(), my_rank, "");
       
       // OMNI: initialize with current domain info
-      assert(r->domain_info().raw_value != 0);
-      assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-      r->set_domain_info(_localDomainInfo);
+      assert(r->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
+      assert(_localDomain != NULL);
+      r->set_domain(_localDomain);
       
       if (check_many_assertions  &&  r->get_count_of_blocks_homed_to_this_method_ctx() > 0)
         lprintf("RECYCLING recycled live one 0x%x, method 0x%x\n", r->as_oop().bits(), r->fetchPointer(Object_Indices::MethodIndex).bits());
@@ -2881,9 +2881,9 @@ Object_p Squeak_Interpreter::allocateOrRecycleContext(bool needsLarge) {
   assert_eq(r->rank(), my_rank(), "");
   
   // OMNI: initialize with current domain info
-  assert(r->domain_info().raw_value != 0);
-  assert(_localDomainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-  r->set_domain_info(_localDomainInfo);
+  assert(r->domain_oop().bits() != Oop::Illegals::free_extra_preheader_words);
+  assert(_localDomain != NULL);
+  r->set_domain(_localDomain);
 
   if (check_many_assertions  &&  r->get_count_of_blocks_homed_to_this_method_ctx() > 0)
     lprintf("RECYCLING new live one 0x%x, method 0x%x\n", r->as_oop().bits(), r->fetchPointer(Object_Indices::MethodIndex).bits());

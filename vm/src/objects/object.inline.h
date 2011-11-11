@@ -55,21 +55,14 @@ inline void Object::set_extra_preheader_word(oop_int_t w) {
   The_Memory_System()->store_enforcing_coherence(dst, w, (Object_p)this);
 }
 
-inline void Object::set_domain_info(Oop domain_info) {
-  assert(domain_info.is_int());
-  set_domain_info(domain_info.bits());
+inline void Object::set_domain(Object_p domain_obj) {
+  set_domain(domain_obj->as_oop());
 }
 
-inline void Object::set_domain_info(int raw_value) {
-  domain_info_t tmp;
-  tmp.raw_value = raw_value;
-  set_domain_info(tmp);
-}
-
-inline void Object::set_domain_info(domain_info_t header) {
-  assert(header.bits.int_tag || header.raw_value == Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-  oop_int_t* dst = domain_info_address();
-  The_Memory_System()->store_enforcing_coherence(dst, header.raw_value, (Object_p)this);
+inline void Object::set_domain(Oop domain_oop) {
+  //assert(header.bits.int_tag || header.raw_value == Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+  oop_int_t* dst = domain_word_address();
+  The_Memory_System()->store_enforcing_coherence(dst, domain_oop.bits(), (Object_p)this);
 }
 
 inline bool Object::hasSender(Oop aContext) {
@@ -257,29 +250,11 @@ inline Oop& Object::pointer_at(oop_int_t fieldIndex) {
 }
 
 inline Oop  Object::fetchPointer(oop_int_t fieldIndex) {
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-  
-  // TODO: try to optimize that, should be much cheaper to pass that in, no?
-  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
-
-  if (exec_domain.raw_value != Domain_Info::REFLECTIVE_DOMAIN) {
-    // STEFAN: add my read barrier code here
-    domain_info_t domainInfo = domain_info();
-  
-  
-    // Exact match should be common case, lets try that first.
-    // If they are not identical, we need to check that we have foreign sync read.
-    if (   (domainInfo.raw_value != exec_domain.raw_value)
-        &&  !domainInfo.bits.foreignSyncRead) {
-      // fatal("Not yet implemented. Should raise an exception and survive...");
-      //printf("Not yet implemented. Should raise an exception and survive...");
-    }
-  }
-
+  /** OMNI no-opt: we will enforce the Omni semantics only on a 
+                   bytecode level.
+                   Every violation below that is considered a bug for the
+                   moment. */
   return fetchPointer_no_domain_read_barrier(fieldIndex);
-
-  
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 }
 
 inline Oop  Object::fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) {
@@ -304,25 +279,12 @@ inline void Object::catch_stores_of_method_in_home_ctxs(Oop* /* addr */, int n, 
 inline void Object::storePointer(oop_int_t fieldIndex, Oop oop) {
   Oop* addr = &pointer_at(fieldIndex);
   catch_stores_of_method_in_home_ctxs(addr, fieldIndex, oop);
-
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
   
-  // STEFAN: add my write barrier code here
-  domain_info_t domainInfo = domain_info();
-  
-  // TODO: try to optimize that, should be much cheaper to pass that in, no?
-  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
-  
-  // Exact match should be common case, lets try that first.
-  // If they are not identical, we need to check that we have foreign sync read.
-  if (   (domainInfo.raw_value != exec_domain.raw_value)
-      &&  !domainInfo.bits.foreignSyncWrite) {
-    fatal("Not yet implemented. Should raise an exception and survive...");
-  }
-  else
-    The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
-
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  /** OMNI no-opt: we will enforce the Omni semantics only on a 
+   bytecode level.
+   Every violation below that is considered a bug for the
+   moment. */
+  The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
 }
 
 inline void Object::storePointerUnchecked(oop_int_t fieldIndex, Oop oop) {
@@ -335,27 +297,11 @@ inline void Object::storePointerUnchecked(oop_int_t fieldIndex, Oop oop) {
   catch_stores_of_method_in_home_ctxs(addr, fieldIndex, oop);
   
   
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-  
-  
-  // STEFAN: add my write barrier code here
-  domain_info_t domainInfo = domain_info();
-  
-  // TODO: try to optimize that, should be much cheaper to pass that in, no?
-  domain_info_t exec_domain = The_Squeak_Interpreter()->_localDomainInfo;
-  
-  assert(domainInfo.raw_value != Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
-  
-  // Exact match should be common case, lets try that first.
-  // If they are not identical, we need to check that we have foreign sync read.
-  if (   (domainInfo.raw_value != exec_domain.raw_value)
-      &&  !domainInfo.bits.foreignSyncWrite) {
-    fatal("Not yet implemented. Should raise an exception and survive...");
-  }
-  else
-    The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
-  
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
+  /** OMNI no-opt: we will enforce the Omni semantics only on a 
+   bytecode level.
+   Every violation below that is considered a bug for the
+   moment. */
+  The_Memory_System()->store_enforcing_coherence(addr, oop, (Object_p)this);
 }
 
 void Object::storePointerIntoContext(oop_int_t fieldIndex, Oop x) {
@@ -726,7 +672,7 @@ inline Oop Object::get_orig_block_method() {
 }
 
 inline void Object::zapping_ctx() {
-  set_domain_info(Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
+  set_domain(Oop::from_bits(Oop::Illegals::free_extra_preheader_words));
   
 // called when zapping a ctx to help find the bug
 # if Extra_OTE_Words_for_Debugging_Block_Context_Method_Change_Bug

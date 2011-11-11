@@ -78,7 +78,9 @@ public:
 # endif
   
   
-  static const oop_int_t SelectorOmniProtectionViolation = 60;
-  static const oop_int_t end = 61;
+  static const oop_int_t SelectorOmniReadFieldOf = 60;
+  static const oop_int_t SelectorOmniRequestExecutionOfOn = 61;
+  static const oop_int_t SelectorOmniWriteToFieldOf = 62;
+  static const oop_int_t end = 63;
 };
 

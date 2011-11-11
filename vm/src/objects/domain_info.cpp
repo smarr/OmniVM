@@ -16,15 +16,7 @@
 
 # if Include_Domain_In_Object_Header
 
-const char* const Domain_Info::field_names[] = {
-  "logicId",
-  
-# define DEFINE_FLAG_NAME(name, value) #name,
-  DO_ALL_POLICY_FLAGS(DEFINE_FLAG_NAME)
-# undef  DEFINE_FLAG_NAME
-  
-  NULL
-};
+// not used currently, STEFAN 2011-11-10
 
 # endif
 

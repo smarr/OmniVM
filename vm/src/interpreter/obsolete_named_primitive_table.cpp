@@ -147,8 +147,8 @@ Obsolete_Named_Primitive_Table::entry Obsolete_Named_Primitive_Table::contents[]
   { "primitiveRunsHeadless",              "RVMPlugin", "primitiveRunsHeadless",              false },
   
   /* Project-Omni-related primitives */
-  { "primitiveGetDomainInfo",             "OmniPlugin", "primitiveGetDomainInfo",            false },
-  { "primitiveSetDomainInfo",             "OmniPlugin", "primitiveSetDomainInfo",            false },
+  { "primitiveGetDomain",             "OmniPlugin", "primitiveGetDomain",            false },
+  { "primitiveSetDomain",             "OmniPlugin", "primitiveSetDomain",            false },
 
 
 

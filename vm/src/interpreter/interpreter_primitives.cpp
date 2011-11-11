@@ -1202,16 +1202,9 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
   
   // STEFAN: add my exec barrier code here
+# warning TODO: what is going on here exactly? what do we need to do here? don't think this has been tested or carefully thought through yet, STEFAN 2011-11-10
 # warning TODO: verify that this here is the correct reviever, since there are two here
-  domain_info_t domainInfo = runReceiver.as_object()->domain_info();
-  
-  // TODO: try to optimize that, should be much cheaper to pass that in, no?
-  domain_info_t exec_domain = _localDomainInfo;
-  
-  // Exact match should be common case, lets try that first.
-  // If they are not identical, we need to check that we have foreign sync read.
-  if (   (domainInfo.raw_value != exec_domain.raw_value)
-      &&  !domainInfo.bits.foreignSyncExecute) {
+  if (omni_requires_delegation(runReceiver)) {
     fatal("Not yet implemented. Should raise an exception and survive...");
   }
   
@@ -1631,17 +1624,10 @@ void Squeak_Interpreter::primitivePerform() {
   }
   
   /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-  
-  // STEFAN: add my exec barrier code here
-  domain_info_t domainInfo = newReceiver.as_object()->domain_info();
-  
-  // TODO: try to optimize that, should be much cheaper to pass that in, no?
-  domain_info_t exec_domain = _localDomainInfo;
-  
+   
   // Exact match should be common case, lets try that first.
   // If they are not identical, we need to check that we have foreign sync read.
-  if (   (domainInfo.raw_value != exec_domain.raw_value)
-      &&  !domainInfo.bits.foreignSyncExecute) {
+  if (omni_requires_delegation(newReceiver)) {
     fatal("Not yet implemented. Should raise an exception and survive...");
   }
   
@@ -2298,10 +2284,10 @@ void Squeak_Interpreter::primitiveValue() {
                                            bco);
   // OMNI
   
-  assert(bco->domain_info().raw_value != 0);
+  // assert(bco->domain_info().raw_value != 0);
   
-  domain_info_t old_domain_info = bco->domain_info();
-  bco->set_domain_info(_localDomainInfo);
+  Oop old_domain = bco->domain_oop();
+  bco->set_domain(_localDomain);
   
   // assume prev call made blockContext a root
 

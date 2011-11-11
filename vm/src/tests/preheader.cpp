@@ -33,7 +33,7 @@ TEST(Preheader, Initialization) {
   ASSERT_EQ(1, Int_Tag);
 
 # if Extra_Preheader_Word_Experiment
-  ASSERT_EQ(Int_Tag, h.sly_ensemble_pointer);
+  ASSERT_EQ(Int_Tag, h.sly_ensemble_collection_pointer);
 # endif
   
   ASSERT_EQ(Int_Tag, h.domain.raw_value);

@@ -43,46 +43,46 @@ public:
   // STEFAN: was named extra_preheader_word before. Did not refactor everything, just the name here
   //         since the original name does not tell what it is used for, 
   //         but is consistent in the image and all over the VM.
-  oop_int_t sly_ensemble_pointer; /* was: extra_preheader_word */
+  oop_int_t sly_ensemble_collection_pointer; /* was: extra_preheader_word */
 # endif
 
 # if Include_Domain_In_Object_Header
-  domain_info_t domain;
+  oop_int_t domain_obj;
 # endif
   
   
   oop_int_t* extra_preheader_word_address() {
     # if Extra_Preheader_Word_Experiment
-      return &sly_ensemble_pointer;
+      return &sly_ensemble_collection_pointer;
     # else
       return NULL;
     # endif
   }
   
-  oop_int_t* domain_info_address() {
+  oop_int_t* domain_word_address() {
     # if Include_Domain_In_Object_Header
-        return &domain.raw_value;
+        return &domain_obj;
     # else
         return NULL;
     # endif
   }
   
-  domain_info_t domain_info() {
+  oop_int_t domain() {
     # if Include_Domain_In_Object_Header
-        return domain;
+        return domain_obj;
     # else
-        return (domain_info_t)0; //STEFAN: this does not work..., won't compile
+        return 0;
     # endif
   }
   
   /* Does take care of everything but the backpointer */
   void initialize_preheader() {
     # if Extra_Preheader_Word_Experiment
-      sly_ensemble_pointer = (0 << Tag_Size) | Int_Tag;
+      sly_ensemble_collection_pointer = (0 << Tag_Size) | Int_Tag;
     # endif
     
     # if Include_Domain_In_Object_Header
-      domain.raw_value = Domain_Info::REFLECTIVE_DOMAIN;
+      domain_obj = (0 << Tag_Size) | Int_Tag;
     # endif
   }
   
@@ -93,11 +93,11 @@ public:
       # endif
       
       # if Extra_Preheader_Word_Experiment
-        sly_ensemble_pointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
+        sly_ensemble_collection_pointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
       # endif
       
       # if Include_Domain_In_Object_Header
-        domain.raw_value = Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN;
+        domain_obj = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
       # endif
     }
   }
