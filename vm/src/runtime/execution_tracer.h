@@ -23,10 +23,13 @@
  *   - k_bc:           execution of a bytecode
  */
 class Execution_Tracer: public Abstract_Tracer {
+private:
   int gc_count;
-  void check_it(Oop);
   Oop ctx; // for debugging
-
+  
+protected:
+  void check_it(Oop);
+  
 public:
   Oop get();
   enum { k_bc, k_gc, k_proc, k_rcved_interp, k_aux } kind;

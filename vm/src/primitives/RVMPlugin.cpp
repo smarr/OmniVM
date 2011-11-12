@@ -556,8 +556,24 @@ static int primitiveResetPerfCounters() {
   return 0;
 }
   
-static int primitivePrintExecutionTrace() { The_Squeak_Interpreter()->print_execution_trace(); return 0; }
+static int primitivePrintExecutionTrace() {
+  The_Squeak_Interpreter()->print_execution_trace();
+  return 0;
+}
 
+static int primitiveEnableTracing() {
+  Triggerable_Execution_Tracer* tracer = (Triggerable_Execution_Tracer*)The_Squeak_Interpreter()->execution_tracer();
+  if (tracer)
+    tracer->enable_recording_and_printing();
+  return 0;
+}
+
+static int primitiveDisableTracing() {
+  Triggerable_Execution_Tracer* tracer = (Triggerable_Execution_Tracer*)The_Squeak_Interpreter()->execution_tracer();
+  if (tracer)
+    tracer->disable_recording_and_printing();
+  return 0;
+}
 
 static int primitiveThisProcess() {
   The_Squeak_Interpreter()->pop(The_Squeak_Interpreter()->get_argumentCount() + 1);
@@ -797,6 +813,8 @@ void* RVMPlugin_exports[][3] = {
   {(void*) "RVMPlugin", (void*)"primitivePrintStack", (void*)primitivePrintStack},
   {(void*) "RVMPlugin", (void*)"primitivePrintObjectForVMDebugging", (void*) primitivePrintObjectForVMDebugging},
   {(void*) "RVMPlugin", (void*)"primitivePrintExecutionTrace", (void*)primitivePrintExecutionTrace},
+  {(void*) "RVMPlugin", (void*)"primitiveEnableTracing",       (void*)primitiveEnableTracing},
+  {(void*) "RVMPlugin", (void*)"primitiveDisableTracing",      (void*)primitiveDisableTracing},
   {(void*) "RVMPlugin", (void*)"primitiveThisProcess", (void*)primitiveThisProcess},
   {(void*) "RVMPlugin", (void*)"primitivePrint", (void*)primitivePrint},
   {(void*) "RVMPlugin", (void*)"primitivePrintStats", (void*)primitivePrintStats},
