@@ -42,3 +42,21 @@ void pat() {
   The_Squeak_Interpreter()->print_all_stack_traces(dittoing_stdout_printer);
 }
 int printAllStacks() { pat(); return 0; }
+
+
+void enableTracing() {
+  Triggerable_Execution_Tracer* tracer = 
+      (Triggerable_Execution_Tracer*)The_Squeak_Interpreter()->execution_tracer();
+  if (tracer) {
+    tracer->enable_recording_and_printing();
+  }
+}
+
+void disableTracing() {
+  Triggerable_Execution_Tracer* tracer = 
+  (Triggerable_Execution_Tracer*)The_Squeak_Interpreter()->execution_tracer();
+  if (tracer) {
+    tracer->disable_recording_and_printing();
+  }
+}
+
