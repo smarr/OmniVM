@@ -393,9 +393,9 @@ public:
     }
     
     assert(domain.is_mem());
-    assert(domain.bits() != Oop::Illegals::zapped);
-    assert(domain.bits() != Oop::Illegals::free_extra_preheader_words);
-    assert(domain.bits() != Oop::Illegals::uninitialized);
+    assert(domain != Oop::from_bits(0));
+    if (check_assertions)
+      domain.assert_is_not_illegal();
     
     roots._activeContext = x;
     _activeContext_obj = o;
@@ -498,9 +498,10 @@ public:
     oop_int_t sp_int = cntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _stackPointer = (Oop*) (cntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
     
-    assert(   cntx_obj->domain_oop() != Oop::from_bits(0)
-           && cntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
-           && cntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
+    assert(cntx_obj->domain_oop() != Oop::from_bits(0));
+    if (check_assertions)
+      cntx_obj->domain_oop().assert_is_not_illegal();
+    
     _localDomain = cntx_obj->domain();
     if (cntx_obj->domain_execute_on_baselevel())
       switch_to_baselevel();
@@ -561,9 +562,9 @@ public:
     _localDomain      = _activeContext_obj->domain();
     _executes_on_baselevel = _activeContext_obj->domain_execute_on_baselevel();
     
-    assert(   _activeContext_obj->domain_oop() != Oop::from_bits(0)
-           && _activeContext_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
-           && _activeContext_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
+    assert(_activeContext_obj->domain_oop() != Oop::from_bits(0));
+    if (check_assertions)
+      _activeContext_obj->domain_oop().assert_is_not_illegal();
 
     internalized();
   }
@@ -927,10 +928,9 @@ public:
     oop_int_t sp_int = activeCntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _localSP = (Oop*) (activeCntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
 
-    assert(   activeCntx_obj->domain_oop() != Oop::from_bits(0)
-           && activeCntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
-           && activeCntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
-
+    assert(activeCntx_obj->domain_oop() != Oop::from_bits(0));
+    if (check_assertions)
+      activeCntx_obj->domain_oop().assert_is_not_illegal();
     
     _localDomain = activeCntx_obj->domain();
     if (activeCntx_obj->domain_execute_on_baselevel())

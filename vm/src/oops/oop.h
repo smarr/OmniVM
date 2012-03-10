@@ -37,14 +37,36 @@ private:
     public:
     // should all be even to look like bad pointers
     static const oop_int_t uninitialized = 0xbadbad00;
-    static const oop_int_t magic = 0xabcdabdc;
-    static const oop_int_t shifted = 0xbadcad00; // low-order bits are different
-    static const oop_int_t zapped = 0xdeaddeac;
-    static const oop_int_t trimmed_end = 0xdead1100;
-    static const oop_int_t allocated = 0xfefefefe;
-    static const oop_int_t made_free = 0xd0dedede; // 2nd nibble is different; look for dede
+    static const oop_int_t magic         = 0xabcdabdc;
+    static const oop_int_t shifted       = 0xbadcad00; // low-order bits are different
+    static const oop_int_t zapped        = 0xdeaddeac;
+    static const oop_int_t trimmed_end   = 0xdead1100;
+    static const oop_int_t allocated     = 0xfefefefe;
+    static const oop_int_t made_free     = 0xd0dedede; // 2nd nibble is different; look for dede
     static const oop_int_t free_extra_preheader_words = 0xe0e0e0e0;
   };
+  
+  inline bool is_illegal() {
+    return _bits != Illegals::uninitialized
+      ||   _bits != Illegals::magic
+      ||   _bits != Illegals::shifted
+      ||   _bits != Illegals::zapped
+      ||   _bits != Illegals::trimmed_end
+      ||   _bits != Illegals::allocated
+      ||   _bits != Illegals::made_free
+      ||   _bits != Illegals::free_extra_preheader_words;
+  }
+  
+  inline void assert_is_not_illegal() const {
+    assert(_bits != Illegals::uninitialized);
+    assert(_bits != Illegals::magic);
+    assert(_bits != Illegals::shifted);
+    assert(_bits != Illegals::zapped);
+    assert(_bits != Illegals::trimmed_end);
+    assert(_bits != Illegals::allocated);
+    assert(_bits != Illegals::made_free);
+    assert(_bits != Illegals::free_extra_preheader_words);
+  }
 
 
 
