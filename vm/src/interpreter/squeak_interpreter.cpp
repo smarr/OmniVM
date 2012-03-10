@@ -3045,7 +3045,7 @@ void Squeak_Interpreter::trace_execution() {
     tracer = new Profiling_Tracer(1000);
 # else
     //tracer = new Execution_Tracer(1000);
-    tracer = new Triggerable_Execution_Tracer(1000);
+    tracer = new Triggerable_Execution_Tracer(1);
 # endif
 
   set_execution_tracer(tracer);
