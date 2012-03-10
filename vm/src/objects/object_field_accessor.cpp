@@ -56,7 +56,8 @@ void Object_Field_Accessor::print_results() {
 
 
 Object_p Object_Field_Accessor::instance_variable_names() {
-  return class_oop.as_object()->fetchPointer(class_oop.as_object()->instance_variable_names_index_of_class("suspendedContext")).as_object();
+  Object_p class_obj = class_oop.as_object();
+  return class_obj->fetchPointer(class_obj->instance_variable_names_index_of_class(field_names[0])).as_object();
 }
 
 

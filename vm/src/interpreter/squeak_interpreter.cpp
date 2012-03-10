@@ -122,6 +122,7 @@ void Squeak_Interpreter::initialize(Oop soo, bool from_checkpoint) {
     FOR_ALL_HELD_IN_SHARED_MEMORY(INIT_SHARED_MEMORY_VARS)
   }
 
+  The_OstDomain.initialize(splObj(Special_Indices::ClassOstDomain));
 
   if (!from_checkpoint) {
     set_activeContext(roots.nilObj);

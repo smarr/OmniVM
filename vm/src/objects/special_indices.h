@@ -81,6 +81,9 @@ public:
   static const oop_int_t SelectorOmniReadFieldOf = 60;
   static const oop_int_t SelectorOmniRequestExecutionOfOn = 61;
   static const oop_int_t SelectorOmniWriteToFieldOf = 62;
-  static const oop_int_t end = 63;
+  
+  static const oop_int_t ClassOstDomain = 69;
+  
+  static const oop_int_t end = 100;
 };
 
