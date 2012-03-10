@@ -943,8 +943,11 @@ void Squeak_Interpreter::printUnbalancedStack(int primIdx, fn_t fn) {
 
 void Squeak_Interpreter::internalActivateNewMethod() {
   oop_int_t methodHeader = newMethod_obj()->methodHeader();
-  bool needsLarge = methodHeader & Object::LargeContextBit;
-  Object_p nco;  Oop newContext;
+  bool needsLarge   = methodHeader & Object::LargeContextBit;
+  bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
+  
+  Object_p nco;
+  Oop newContext;
 
   if (!needsLarge &&  roots.freeContexts != Object::NilContext()) {
     newContext = roots.freeContexts;
@@ -980,6 +983,11 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   assert(nco->domain_oop().is_mem());
   assert(nco->domain_oop().bits() != 0 /* NULL */);
   nco->set_domain(_localDomain);
+  
+  if (omniMetaExit || !_executes_on_baselevel)
+    nco->set_domain_execute_on_metalevel();
+  else
+    nco->set_domain_execute_on_baselevel();
 
   int tempCount = Object::temporaryCountOfHeader(methodHeader);
   assert(nco->my_heap_contains_me());

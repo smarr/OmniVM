@@ -417,6 +417,10 @@ inline oop_int_t Object::primitiveIndex() const {
   return primitiveIndex_of_header(methodHeader());
 }
 
+inline bool Object::omniMetaExit() const {
+  return methodHeader() & Object_Indices::OmniMetaExit_FlagBit_Mask;
+}
+
 inline oop_int_t Object::literalCount() {  return Object::literalCountOfHeader(methodHeader()); }
 inline oop_int_t Object::literalCountOfHeader(oop_int_t header) { return (header >> Object_Indices::LiteralCountShift) & Object_Indices::LiteralCountMask; }
 

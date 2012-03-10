@@ -96,6 +96,7 @@ public:
   static const int Primitive_Index_High_Shift = 19 + Tag_Size;
   static const int Primitive_Index_Low_Mask =       0x1FF << Tag_Size;
   static const int Primitive_Index_High_Mask = 0x10000000 << Tag_Size;
+  static const int OmniMetaExit_FlagBit_Mask = (1 << 29);
 
   static const int External_Primitive_Literal_Index = 0;
 

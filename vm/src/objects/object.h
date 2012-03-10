@@ -107,6 +107,7 @@ public:
   static int MaxPrimitiveIndex() { return primitiveIndex_of_header(~0); }
 
   inline oop_int_t primitiveIndex() const;
+  inline bool omniMetaExit() const;
 
   int32 baseHeader;
   static const int BaseHeaderSize = sizeof(int32);
