@@ -1434,8 +1434,11 @@ void Squeak_Interpreter::primitiveNew() {
   // may GC
   Logical_Core* c = coreWithSufficientSpaceToInstantiate(klass, 0);
   success(c != NULL);
-  if (successFlag)
-    push( popStack().as_object()->instantiateClass(0, c)->as_oop());
+  if (successFlag) {
+    Object_p newObj = popStack().as_object()->instantiateClass(0, c);
+    newObj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    push(newObj->as_oop());
+  }
 }
 
 void Squeak_Interpreter::primitiveNewMethod() {
@@ -1446,6 +1449,7 @@ void Squeak_Interpreter::primitiveNewMethod() {
   Oop klass = popStack();
   oop_int_t size = (Object::literalCountOfHeader(header.bits()) + 1) * bytesPerWord + bytecodeCount;
   Object_p thisMethod = klass.as_object()->instantiateClass(size);
+# warning We are not setting domains on methods for the moment, they are meta objects of some sort...
   thisMethod->storePointer(Object_Indices::HeaderIndex, header);
   oop_int_t lc = Object::literalCountOfHeader(header.bits());
   for (int i = 1;  i <= lc;  ++i)
@@ -1465,8 +1469,11 @@ void Squeak_Interpreter::primitiveNewWithArg() {
     klass = stackValue(1); // GC
   }
 
-  if (successFlag)
-    popThenPush(2, klass.as_object()->instantiateClass(size, c)->as_oop());
+  if (successFlag) {
+    Object_p newObj = klass.as_object()->instantiateClass(size, c);
+    newObj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    popThenPush(2, newObj->as_oop());
+  }
 }
 
 void Squeak_Interpreter::primitiveNext() {

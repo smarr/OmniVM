@@ -1092,7 +1092,10 @@ void Squeak_Interpreter::pushNewArrayBytecode() {
       array_obj->storePointerUnchecked(i, internalStackValue(size - i - 1));
     internalPop(size);
   }
-  internalPush(array_obj->as_oop());
+  
+  Oop newArray = array_obj->as_oop();
+  array_obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+  internalPush(newArray);
 }
 
 
@@ -1173,6 +1176,9 @@ Oop Squeak_Interpreter::closureCopy(u_int32 numArgs, u_int32 initialIP, u_int32 
   // Assume young, use unchecked
   newClosure_obj->storePointerUnchecked(Object_Indices::ClosureStartPCIndex, Oop::from_int(initialIP)),
   newClosure_obj->storePointerUnchecked(Object_Indices::ClosureNumArgsIndex, Oop::from_int(numArgs));
+  
+  newClosure_obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+  
   return newClosure_obj->as_oop();
 }
 

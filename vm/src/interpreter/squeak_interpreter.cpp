@@ -2356,7 +2356,8 @@ Oop Squeak_Interpreter::makeArray(int start) {
   int n = remapBufferCount - start;
 
   Object_p r = splObj(Special_Indices::ClassArray).as_object()->instantiateClass(n);
-
+  r->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+  
   for (int i = n-1;  i >= 0;  --i)
     r->storePointer(i, popRemappableOop());
   return r->as_oop();
