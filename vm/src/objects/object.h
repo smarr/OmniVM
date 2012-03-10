@@ -106,18 +106,17 @@ public:
   }
   static int MaxPrimitiveIndex() { return primitiveIndex_of_header(~0); }
 
-  inline oop_int_t primitiveIndex();
-
+  inline oop_int_t primitiveIndex() const;
 
   int32 baseHeader;
   static const int BaseHeaderSize = sizeof(int32);
 
 
-  char*      as_char_p()     { return (char*)this; }
-  u_char*    as_u_char_p()   { return (u_char*)this; }
-  oop_int_t* as_oop_int_p()  { return (oop_int_t*)this; }
-  int32*     as_int32_p()    { return (int32*)this; }
-  Oop*       as_oop_p()      { return (Oop*)this; }
+  char*      as_char_p()     const { return (char*)this; }
+  u_char*    as_u_char_p()   const { return (u_char*)this; }
+  oop_int_t* as_oop_int_p()  const { return (oop_int_t*)this; }
+  int32*     as_int32_p()    const { return (int32*)this; }
+  Oop*       as_oop_p()      const { return (Oop*)this; }
 
   bool contains_sizeHeader() {
     return Header_Type::contains_sizeHeader(baseHeader);
@@ -421,7 +420,7 @@ public:
 
   void byteSwapIfByteObject();
   inline char* first_byte_address();
-  inline int32 methodHeader(); // use instead of header()
+  inline int32 methodHeader() const; // use instead of header()
   inline void beRootIfOld();
   bool is_new() { /*unimplemented();*/ return false; }
 
@@ -468,13 +467,13 @@ public:
 
 
   private:
-  inline Oop& pointer_at(oop_int_t fieldIndex);
+  inline Oop& pointer_at(oop_int_t fieldIndex) const;
   u_char& byte_at(oop_int_t byteIndex);
   int32& long32_at(oop_int_t fieldIndex);
 
   public:
   inline Oop  fetchPointer(oop_int_t fieldIndex);
-  inline Oop  fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex);
+  inline Oop  fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) const;
   
   inline void storePointer(oop_int_t fieldIndex, Oop oop);
   inline void storePointerUnchecked( oop_int_t fieldIndex, Oop oop);

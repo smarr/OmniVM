@@ -193,7 +193,7 @@ inline char* Object::first_byte_address() {
 
 inline char* Object::first_byte_address_after_header() { return as_char_p() + BaseHeaderSize; }
 
-inline oop_int_t Object::methodHeader() {
+inline oop_int_t Object::methodHeader() const {
   return fetchPointer_no_domain_read_barrier(Object_Indices::HeaderIndex).bits();
 }
 
@@ -276,7 +276,7 @@ inline void    Object::storeByte( oop_int_t byteIndex, u_char valueByte) {
 }
 
 
-inline Oop& Object::pointer_at(oop_int_t fieldIndex) {
+inline Oop& Object::pointer_at(oop_int_t fieldIndex) const {
   return as_oop_p()[BaseHeaderSize / sizeof(Oop)  +  fieldIndex];
 }
 
@@ -288,7 +288,7 @@ inline Oop  Object::fetchPointer(oop_int_t fieldIndex) {
   return fetchPointer_no_domain_read_barrier(fieldIndex);
 }
 
-inline Oop  Object::fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) {
+inline Oop  Object::fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) const {
   assert(fieldIndex >= 0); // STEFAN that should always hold, shouldn't it?
   
   Oop r;
@@ -410,7 +410,7 @@ inline bool Object::isCompiledMethod() { return Format::isCompiledMethod(format(
 inline bool Object::isFloatObject() { return fetchClass() == The_Squeak_Interpreter()->splObj(Special_Indices::ClassFloat); }
 
 
-inline oop_int_t Object::primitiveIndex() {
+inline oop_int_t Object::primitiveIndex() const {
 	// "Note: We now have 10 bits of primitive index, but they are in two places
 	// for temporary backward compatibility.  The time to unpack is negligible,
 	// since the reconstituted full index is stored in the method cache."

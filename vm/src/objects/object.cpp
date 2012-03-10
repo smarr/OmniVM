@@ -275,7 +275,7 @@ Oop Object::signed64BitIntegerFor(int64 integerValue) {
     classes is 0. */
 oop_int_t Object::instanceSizeOfClass() {
   // STEFAN: this is extracted from below, needs testing!!
-#warning Untested and to many magic numbers here. Please fix!
+#warning Untested and too many magic numbers here. Please fix!
 
   oop_int_t classFormat = formatOfClass();
   oop_int_t sizeHiBits = (classFormat & 0x60000) >> 9;

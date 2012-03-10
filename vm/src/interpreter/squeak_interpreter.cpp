@@ -1464,7 +1464,7 @@ void Squeak_Interpreter::yield(const char* why) {
 
 
 
-Oop Squeak_Interpreter::get_running_process() {
+Oop Squeak_Interpreter::get_running_process() const {
   return roots.running_process_or_nil;
 }
 void Squeak_Interpreter::set_running_process(Oop proc, const char* why) {
@@ -2739,7 +2739,7 @@ void Squeak_Interpreter::commonReturn(Oop localCntx, Oop localVal) {
     internalCannotReturn(localVal, localCntx == nilOop, localCntx_obj->fetchPointer(Object_Indices::InstructionPointerIndex) == nilOop, false);
     return;
   }
-  // If this return is not to immed predecessor, scan stackfor first unwind marked ctx and inform it.
+  // If this return is not to immed predecessor, scan stack for first unwind marked ctx and inform it.
   for (Oop thisCntx = activeContext_obj()->fetchPointer(Object_Indices::SenderIndex);
        // faster test would be cmp homeContext and activeContext-- see ST
        thisCntx != localCntx;

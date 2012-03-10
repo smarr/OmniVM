@@ -208,12 +208,13 @@ public:
   bool      _executes_on_baselevel;
   
   
-  u_char*  localIP()          { assert_internal(); return _localIP; }
-  Oop*     localSP()          { assert_internal(); return _localSP; }
-  Object_p localHomeContext() { assert_internal(); return _localHomeContext; }
-  Object_p localDomain()      { assert_internal(); return _localDomain; }
+  u_char*  localIP()          const { assert_internal(); return _localIP; }
+  Oop*     localSP()          const { assert_internal(); return _localSP; }
+  Object_p localHomeContext() const { assert_internal(); return _localHomeContext; }
+  Object_p localDomain()      const { assert_internal(); return _localDomain; }
   bool     executes_on_baselevel() const { return  _executes_on_baselevel; }
   bool     executes_on_metalevel() const { return !_executes_on_baselevel; }
+  
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
   void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
@@ -240,24 +241,24 @@ public:
   void unexternalized()            { is_external_valid = false; }
   void uninternalized()            { is_internal_valid = false; }
 
-  void assert_internal()           { assert(is_internal_valid); }
-  void assert_external()           { assert(is_external_valid); }
-  void assert_registers_stored()   { assert(are_registers_stored); }
-  void assert_registers_unstored() { assert(!are_registers_stored); }
-  void assert_stored_if_no_proc()  { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
+  void assert_internal()           const { assert(is_internal_valid); }
+  void assert_external()           const { assert(is_external_valid); }
+  void assert_registers_stored()   const { assert(are_registers_stored); }
+  void assert_registers_unstored() const { assert(!are_registers_stored); }
+  void assert_stored_if_no_proc()  const { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
 # else
-  void registers_unstored()        {}
-  void registers_stored()          {}
-  void externalized()              {}
-  void internalized()              {}
-  void unexternalized()            {}
-  void uninternalized()            {}
+  void registers_unstored()        const {}
+  void registers_stored()          const {}
+  void externalized()              const {}
+  void internalized()              const {}
+  void unexternalized()            const {}
+  void uninternalized()            const {}
 
-  void assert_internal()           {}
-  void assert_external()           {}
-  void assert_registers_stored()   {}
-  void assert_registers_unstored() {}
-  void assert_stored_if_no_proc()  {}
+  void assert_internal()           const {}
+  void assert_external()           const {}
+  void assert_registers_stored()   const {}
+  void assert_registers_unstored() const {}
+  void assert_stored_if_no_proc()  const {}
 # endif
 
 
@@ -1234,7 +1235,7 @@ public:
     return schedulerPointer_obj()->fetchPointer(Object_Indices::ProcessListsIndex).as_object();
   }
 
-  Oop  get_running_process();
+  Oop  get_running_process() const;
   void set_running_process(Oop, const char*);
 
 
