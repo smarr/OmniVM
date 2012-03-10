@@ -201,10 +201,13 @@ private:
   oop_int_t* domain_word_address() {
     return preheader()->domain_word_address();
   }
+   
+  static const int ExecutionLevelMask = 2;  // STEFAN: am not entierly sure whether Oops also have that bit free for use as pointer have..., surely hope so...
 
 public:   
   inline Oop domain_oop() {
-    return Oop::from_bits(preheader()->domain());
+    oop_int_t domain_oop = preheader()->domain();
+    return Oop::from_bits(domain_oop & (~ExecutionLevelMask));
   }
    
   inline Object_p domain() {
@@ -213,6 +216,12 @@ public:
    
   inline void set_domain(Oop domain_oop);
   inline void set_domain(Object_p domain_obj);
+  
+  inline bool domain_execute_on_baselevel();
+  inline bool domain_execute_on_metalevel(); 
+   
+  inline void set_domain_execute_on_baselevel();
+  inline void set_domain_execute_on_metalevel(); 
    
 
   void initialize_preheader() { preheader()->initialize_preheader(); }

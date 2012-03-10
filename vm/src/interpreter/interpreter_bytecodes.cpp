@@ -256,6 +256,9 @@ void Squeak_Interpreter::longJumpIfFalse() {
 }
 
 bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr) const {
+  // Delegation is only necessary for execution in the base level.
+  if (executes_on_metalevel())
+    return false;
   Object_p exec_domain = _localDomain;
   Oop exec_oop = exec_domain->as_oop();
   

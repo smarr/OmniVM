@@ -204,18 +204,24 @@ public:
   Oop*      _localSP;
   Object_p  _localHomeContext;
   
-  Object_p  _localDomain;
+  Object_p  _localDomain; // warning: is this pointer GC save? is it used only in an uptodate form???
+  bool      _executes_on_baselevel;
   
   
   u_char*  localIP()          { assert_internal(); return _localIP; }
   Oop*     localSP()          { assert_internal(); return _localSP; }
   Object_p localHomeContext() { assert_internal(); return _localHomeContext; }
   Object_p localDomain()      { assert_internal(); return _localDomain; }
+  bool     executes_on_baselevel() const { return  _executes_on_baselevel; }
+  bool     executes_on_metalevel() const { return !_executes_on_baselevel; }
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
   void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
 //  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
   void set_localDomain(Object_p x)      { _localDomain = x; registers_unstored(); unexternalized(); }
+  
+  void switch_to_baselevel();
+  void switch_to_metalevel();
   
   int32 image_version;
 
@@ -388,6 +394,7 @@ public:
     assert(domain.is_mem());
     assert(domain.bits() != Oop::Illegals::zapped);
     assert(domain.bits() != Oop::Illegals::free_extra_preheader_words);
+    assert(domain.bits() != Oop::Illegals::uninitialized);
     
     roots._activeContext = x;
     _activeContext_obj = o;
@@ -489,8 +496,15 @@ public:
     // "the stack pointer is a pointer variable also..."
     oop_int_t sp_int = cntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _stackPointer = (Oop*) (cntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
-
+    
+    assert(   cntx_obj->domain_oop() != Oop::from_bits(0)
+           && cntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
+           && cntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
     _localDomain = cntx_obj->domain();
+    if (cntx_obj->domain_execute_on_baselevel())
+      switch_to_baselevel();
+    else
+      switch_to_metalevel();
 
     if (PrintFetchedContextRegisters) {
       dittoing_stdout_printer->printf("fetchContextRegisters: theHomeContext(): ");
@@ -522,6 +536,12 @@ public:
                                     instructionPointer() - method_obj()->as_u_char_p() - Object::BaseHeaderSize + 2 );
     cntx_obj->storeIntegerUnchecked_into_context(Object_Indices::StackPointerIndex,
                                     stackPointerIndex() - Object_Indices::TempFrameStart + 1);
+    
+    cntx_obj->set_domain(_localDomain);
+    if (_executes_on_baselevel)
+      cntx_obj->set_domain_execute_on_baselevel();
+    else
+      cntx_obj->set_domain_execute_on_metalevel();
 
     registers_stored();
   }
@@ -538,6 +558,12 @@ public:
     _localSP =       stackPointer();
     _localHomeContext = theHomeContext_obj();
     _localDomain      = _activeContext_obj->domain();
+    _executes_on_baselevel = _activeContext_obj->domain_execute_on_baselevel();
+    
+    assert(   _activeContext_obj->domain_oop() != Oop::from_bits(0)
+           && _activeContext_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
+           && _activeContext_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
+
     internalized();
   }
 
@@ -899,9 +925,18 @@ public:
     // "the stack pointer is a pointer variable also..."
     oop_int_t sp_int = activeCntx_obj->quickFetchInteger(Object_Indices::StackPointerIndex);
     _localSP = (Oop*) (activeCntx_obj->as_char_p() + Object::BaseHeaderSize + (Object_Indices::TempFrameStart + sp_int - 1) * bytesPerWord);
+
+    assert(   activeCntx_obj->domain_oop() != Oop::from_bits(0)
+           && activeCntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::free_extra_preheader_words)
+           && activeCntx_obj->domain_oop() != Oop::from_bits(Oop::Illegals::uninitialized));
+
     
     _localDomain = activeCntx_obj->domain();
-
+    if (activeCntx_obj->domain_execute_on_baselevel())
+      switch_to_baselevel();
+    else
+      switch_to_metalevel();
+    
     internalized();
 
     if (PrintFetchedContextRegisters) {

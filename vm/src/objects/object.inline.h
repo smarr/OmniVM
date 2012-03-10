@@ -62,8 +62,39 @@ inline void Object::set_domain(Object_p domain_obj) {
 inline void Object::set_domain(Oop domain_oop) {
   //assert(header.bits.int_tag || header.raw_value == Domain_Info::RECOGNIZABLE_BOGUS_DOMAIN);
   oop_int_t* dst = domain_word_address();
-  The_Memory_System()->store_enforcing_coherence(dst, domain_oop.bits(), (Object_p)this);
+  
+  oop_int_t with_preserverd_exec_level_tag = domain_oop.bits() & (~ExecutionLevelMask | *dst);
+  
+  The_Memory_System()->store_enforcing_coherence(dst, with_preserverd_exec_level_tag, (Object_p)this);
 }
+
+/** meta level -> tag not set */
+inline bool Object::domain_execute_on_metalevel() {
+  oop_int_t* dst = domain_word_address();
+  return (*dst & ExecutionLevelMask) == 0; 
+}
+
+inline void Object::set_domain_execute_on_metalevel() {
+  oop_int_t* dst = domain_word_address();
+  
+  if (*dst & ExecutionLevelMask)
+      The_Memory_System()->store_enforcing_coherence(dst, *dst & (~ExecutionLevelMask), (Object_p)this);
+}
+
+/** base level -> tag set */
+inline bool Object::domain_execute_on_baselevel() {
+  oop_int_t* dst = domain_word_address();
+  return *dst & ExecutionLevelMask;
+}
+
+inline void Object::set_domain_execute_on_baselevel() {
+  oop_int_t* dst = domain_word_address();
+  
+  if ((*dst & ExecutionLevelMask) == 0)
+    The_Memory_System()->store_enforcing_coherence(dst, *dst | ExecutionLevelMask, (Object_p)this);
+}
+
+
 
 inline bool Object::hasSender(Oop aContext) {
   // rcvr must be a context

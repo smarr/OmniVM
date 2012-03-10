@@ -85,6 +85,19 @@ static int primitiveSetDomain() {
   return 0;
 }
 
+/** {{{ OMirror class>>#primitiveSwitchToBaseLevel }}} */
+static int primitiveSwitchToBaseLevel() {
+  The_Squeak_Interpreter()->switch_to_baselevel();
+  return 0;
+}
+
+/** {{{ OMirror class>>#primitiveSwitchToMetaLevel }}} */
+static int primitiveSwitchToMetaLevel() {
+  The_Squeak_Interpreter()->switch_to_metalevel();
+  return 0;
+}
+
+
 /** Required to be picked up by the loading mechanism as an internal plugin */
 static int setInterpreter(struct VirtualMachine* /* anInterpreter */) {
 	return 1;
@@ -95,6 +108,8 @@ void* OmniPlugin_exports[][3] = {
   {(void*) "OmniPlugin", (void*)"primitiveGetDomain", (void*)primitiveGetDomain},
   {(void*) "OmniPlugin", (void*)"primitiveSetDomain", (void*)primitiveSetDomain},
   
+  {(void*) "OmniPlugin", (void*)"primitiveSwitchToBaseLevel", (void*)primitiveSwitchToBaseLevel},
+  {(void*) "OmniPlugin", (void*)"primitiveSwitchToMetaLevel", (void*)primitiveSwitchToMetaLevel},
   
   /* Required by the internal loading mechanism */
   {(void*) "OmniPlugin", (void*)"setInterpreter",         (void*)setInterpreter},

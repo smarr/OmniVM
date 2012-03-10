@@ -70,6 +70,7 @@ Squeak_Interpreter::Squeak_Interpreter()
   suppress_context_switch_for_debugging = false;
   
   _localDomain = NULL;
+  _executes_on_baselevel = false;
 }
 
 
@@ -3359,3 +3360,16 @@ bool Squeak_Interpreter::getNextEvent_any_platform(void* p) {
   successFlag = preserved_successFlag;
   return successFlag_value;
 }
+
+void Squeak_Interpreter::switch_to_baselevel() {
+  _executes_on_baselevel = true;
+  _activeContext_obj->domain_execute_on_baselevel();
+}
+void Squeak_Interpreter::switch_to_metalevel() {
+  _executes_on_baselevel = false;
+  _activeContext_obj->domain_execute_on_metalevel();
+}
+
+
+
+
