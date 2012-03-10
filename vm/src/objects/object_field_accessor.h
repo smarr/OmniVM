@@ -26,15 +26,12 @@ public:
     indices(new oop_int_t[number_of_fields]) {}
 
 public:
-  /** field_name_idx corresponds to the possition of the field name in the give field_names array.
-      class_oop is passed in in case the class has been redefined, then we can notice.
-      Otherwise, we would need to expose the class_oop member to the GC, which is inconvenient. */
-  int index_of_instance_variable(oop_int_t field_name_idx, Oop class_oop);
-
+  void update_indices(Oop class_oop);
+  
   Oop  get_field(Oop source_oop, oop_int_t field_name_idx);
   bool set_field(Oop target_oop, oop_int_t field_name_idx, Oop value);
 
-    void print_results();
+  void print_results();
   
 private:
   const char* const *const field_names;
@@ -53,6 +50,12 @@ private:
 
   Object_p instance_variable_names();  
   int instance_variable_count_of_superclasses();
-  void update_indices(Oop class_oop);
+
+  
+  /** field_name_idx corresponds to the possition of the field name in the give field_names array.
+   class_oop is passed in in case the class has been redefined, then we can notice.
+   Otherwise, we would need to expose the class_oop member to the GC, which is inconvenient. */
+  int index_of_instance_variable(oop_int_t field_name_idx, Oop class_oop);
+
 
 };
