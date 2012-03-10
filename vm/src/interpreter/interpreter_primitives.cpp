@@ -1436,7 +1436,9 @@ void Squeak_Interpreter::primitiveNew() {
   success(c != NULL);
   if (successFlag) {
     Object_p newObj = popStack().as_object()->instantiateClass(0, c);
-    newObj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    
+    omni_set_domain_for_new_object(newObj);
+    
     push(newObj->as_oop());
   }
 }
@@ -1471,7 +1473,7 @@ void Squeak_Interpreter::primitiveNewWithArg() {
 
   if (successFlag) {
     Object_p newObj = klass.as_object()->instantiateClass(size, c);
-    newObj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    omni_set_domain_for_new_object(newObj);
     popThenPush(2, newObj->as_oop());
   }
 }

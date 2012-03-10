@@ -1094,7 +1094,9 @@ void Squeak_Interpreter::pushNewArrayBytecode() {
   }
   
   Oop newArray = array_obj->as_oop();
-  array_obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+  
+  omni_set_domain_for_new_object(array_obj);
+  
   internalPush(newArray);
 }
 
@@ -1177,8 +1179,8 @@ Oop Squeak_Interpreter::closureCopy(u_int32 numArgs, u_int32 initialIP, u_int32 
   newClosure_obj->storePointerUnchecked(Object_Indices::ClosureStartPCIndex, Oop::from_int(initialIP)),
   newClosure_obj->storePointerUnchecked(Object_Indices::ClosureNumArgsIndex, Oop::from_int(numArgs));
   
-  newClosure_obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
-  
+  omni_set_domain_for_new_object(newClosure_obj);
+    
   return newClosure_obj->as_oop();
 }
 

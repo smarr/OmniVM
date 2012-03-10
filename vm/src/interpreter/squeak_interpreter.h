@@ -992,6 +992,14 @@ public:
   inline bool omni_requires_delegation(Oop rcvr) const;
   inline void omni_request_execution(Oop lkupClass);
   
+  inline void omni_set_domain_for_new_object(Object_p obj) {
+    if (executes_on_baselevel())
+      obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    else
+      obj->set_domain(roots.nilObj);
+  }
+  
+  
   void findNewMethodInClass(Oop klass);
 
   void addNewMethodToCache() {
