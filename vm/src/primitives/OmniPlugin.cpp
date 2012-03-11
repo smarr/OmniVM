@@ -85,15 +85,36 @@ static int primitiveSetDomain() {
   return 0;
 }
 
-/** {{{ OMirror class>>#primitiveSwitchToBaseLevel }}} */
+/** {{{ ONOMirror class>>#switchToBaseLevel }}} */
 static int primitiveSwitchToBaseLevel() {
   The_Squeak_Interpreter()->switch_to_baselevel();
   return 0;
 }
 
-/** {{{ OMirror class>>#primitiveSwitchToMetaLevel }}} */
+/** {{{ ONOMirror class>>#switchToMetaLevel }}} */
 static int primitiveSwitchToMetaLevel() {
   The_Squeak_Interpreter()->switch_to_metalevel();
+  return 0;
+}
+
+/** {{{ ONOMirror class>>#executesOnBaseLevel }}} */
+static int primitiveExecutesOnBaseLevel() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  interp->popStack();
+  interp->pushBool(interp->activeContext_obj()->domain_execute_on_baselevel());
+  
+  return 0;
+}
+
+/** {{{ ONOMirror class>>#executesOnMetaLevel }}} */
+static int primitiveExecutesOnMetaLevel() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  interp->popStack();
+  interp->pushBool(interp->activeContext_obj()->domain_execute_on_metalevel());
+  
+  
   return 0;
 }
 
@@ -110,6 +131,9 @@ void* OmniPlugin_exports[][3] = {
   
   {(void*) "OmniPlugin", (void*)"primitiveSwitchToBaseLevel", (void*)primitiveSwitchToBaseLevel},
   {(void*) "OmniPlugin", (void*)"primitiveSwitchToMetaLevel", (void*)primitiveSwitchToMetaLevel},
+  
+  {(void*) "OmniPlugin", (void*)"primitiveExecutesOnMetaLevel", (void*)primitiveExecutesOnMetaLevel},
+  {(void*) "OmniPlugin", (void*)"primitiveExecutesOnBaseLevel", (void*)primitiveExecutesOnBaseLevel},
   
   /* Required by the internal loading mechanism */
   {(void*) "OmniPlugin", (void*)"setInterpreter",         (void*)setInterpreter},
