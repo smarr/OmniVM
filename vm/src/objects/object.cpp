@@ -819,7 +819,9 @@ void Object::print_frame(Printer* p) {
     fetchInteger(Object_Indices::InstructionPointerIndex)
       - ((Object_Indices::LiteralStart + mo->literalCount() * bytesPerWord) + 1);
 
-  p->printf("0x%x, ip %3d, sp %2d:  ", this, ip, sp);
+  p->printf("[%s] 0x%x, ip %3d, sp %2d:  ",
+            domain_execute_on_baselevel() ? "b" : "M",
+            this, ip, sp);
 
 
   Oop sel, mclass;
