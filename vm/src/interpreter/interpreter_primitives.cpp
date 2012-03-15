@@ -2315,8 +2315,8 @@ void Squeak_Interpreter::primitiveValue() {
   
   // assert(bco->domain_info().raw_value != 0);
   
-  Oop old_domain = bco->domain_oop();
-  bco->set_domain(_localDomain);
+  assert(_localDomain != NULL);
+  set_domain_and_execution_level_on_new_context(bco);
   
   // assume prev call made blockContext a root
 
@@ -2364,6 +2364,9 @@ void Squeak_Interpreter::primitiveValueWithArgs() {
     blockContext_obj->storePointerUnchecked(Object_Indices::InstructionPointerIndex, initialIP);
     blockContext_obj->storeStackPointerValue(arrayArgumentCount);
     blockContext_obj->storePointerUnchecked(Object_Indices::CallerIndex, activeContext());
+    
+    set_domain_and_execution_level_on_new_context(blockContext_obj);
+    
     newActiveContext(blockContext, blockContext_obj);
   }
   else

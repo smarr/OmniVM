@@ -1097,6 +1097,9 @@ void Squeak_Interpreter::activateNewMethod() {
 
   pop(get_argumentCount() + 1);
   reclaimableContextCount += 1;
+  
+  set_domain_and_execution_level_on_new_context(nco);
+  
   newActiveContext(newContext, nco);
 }
 
@@ -1165,6 +1168,9 @@ void Squeak_Interpreter::activateNewClosureMethod(Object_p blockClosure_obj, Obj
   }
   
   pop(get_argumentCount() + 1);
+  
+  set_domain_and_execution_level_on_new_context(newContext_obj);
+  
   newActiveContext(newContext, newContext_obj);
 }
 
@@ -3382,4 +3388,10 @@ void Squeak_Interpreter::switch_to_metalevel() {
 
 
 
+void Squeak_Interpreter::indicate_switch_to_baselevel() {
+  _executes_on_baselevel = true;
+}
+void Squeak_Interpreter::indicate_switch_to_metalevel() {
+  _executes_on_baselevel = false;
+}
 

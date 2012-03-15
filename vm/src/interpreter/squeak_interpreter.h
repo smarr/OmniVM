@@ -192,7 +192,8 @@ private:
 
   bool I_am_running;
 
-
+  bool      _executes_on_baselevel;
+  
 public:
   void remember_to_move_mutated_read_mostly_object(Oop x);
 
@@ -205,7 +206,7 @@ public:
   Object_p  _localHomeContext;
   
   Object_p  _localDomain; // warning: is this pointer GC save? is it used only in an uptodate form???
-  bool      _executes_on_baselevel;
+
   
   
   u_char*  localIP()          const { assert_internal(); return _localIP; }
@@ -223,6 +224,21 @@ public:
   
   void switch_to_baselevel();
   void switch_to_metalevel();
+  
+  /** indicatie_... sets only the flag in the interpreter instance,
+      but does not change the context frame's flag.
+      It is for instance used for the implementation of the baselevelPerform
+      primitives. */
+  void indicate_switch_to_baselevel();
+  void indicate_switch_to_metalevel();
+  
+  void set_domain_and_execution_level_on_new_context(Object_p ctx) const {
+    ctx->set_domain(_localDomain);
+    if (_executes_on_baselevel)
+      ctx->set_domain_execute_on_baselevel();
+    else
+      ctx->set_domain_execute_on_metalevel();
+  }
   
   int32 image_version;
 
