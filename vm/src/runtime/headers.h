@@ -180,6 +180,7 @@
 # include "process_field_locator.h"
 # include "object_field_accessor.h"
 
+# include "ostdomain_selector_indices.h"
 # include "ostdomain.h"
 
 # include  "abstract_tracer.h"

@@ -17,19 +17,29 @@ extern class OstDomain {
 private:
   static const char * const field_names[];
   Object_Field_Accessor field_accessor;
-
+  Oop domain_selectors;
+  
+  inline Oop get_domain_selector(oop_int_t selector_id) {
+    return domain_selectors.as_object()->fetchPointer(selector_id);
+  }
   
 public:
   OstDomain() : field_accessor(Object_Field_Accessor(field_names, 1)) {}
   
-  void initialize(Oop ostDomain) {
-    field_accessor.update_indices(ostDomain);
-  }
+  void initialize(Oop ostDomain);
   
-  Oop get_domain_for_new_objects(Oop domain) {
+  inline Oop get_domain_for_new_objects(Oop domain) {
     return field_accessor.get_field(domain, 0);
   }
-                               
-  
+   
+  inline Oop request_exec(int arg_cnt) {
+    if (arg_cnt == 0)
+      return get_domain_selector(OstDomainSelector_Indices::RequestExecutionOf_On_);
+    
+    oop_int_t selector_id = OstDomainSelector_Indices::RequestExecution_Of_On_ + arg_cnt - 1;
+    return get_domain_selector(selector_id);
+  }
+
+
 } The_OstDomain;
 

@@ -284,20 +284,29 @@ void Squeak_Interpreter::omni_request_execution(Oop lkupClass) {
   /*** STEFAN TODO: Check whether we need a specific safepoint ability here.
                     Similar to the DNU or ensemble msg send? */
   
-  /* requestExecutionOf: aMessage on: receiver */
+  /* requestExecution.... of: aSelector on: aRcvr */
   Oop rcvr = internalStackValue(get_argumentCount());
   Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  int argCnt = get_argumentCount();
   
   assert(rcvr        != Oop::from_bits(0));
   assert(rcvr_domain != Oop::from_bits(0));
   
-  printf("rcvr: "); rcvr.dp();
-  printf("\nrcvr_domain: "); rcvr_domain.dp();
+  /* set domain as receiver */
+  DEBUG_STORE_CHECK(&localSP()[-argCnt], rcvr_domain);
+  localSP()[-argCnt] = rcvr_domain;
   
-  pushRemappableOop(rcvr);
-  pushRemappableOop(rcvr_domain);
+  /* push the rest on the stack */
+  internalPush(roots.messageSelector);
+  internalPush(rcvr);
   
-  externalizeExecutionState();
+  set_argumentCount(argCnt + 2);
+
+  // Now change the selector
+  roots.messageSelector = The_OstDomain.request_exec(argCnt);
+}
+
   {
     createActualMessageTo(lkupClass);    
     assert(get_argumentCount() == 1);
@@ -1067,7 +1076,9 @@ void Squeak_Interpreter::sendLiteralSelectorBytecode() {
 	set_argumentCount(arg_count);
   
   Oop rcvr = internalStackValue(arg_count);
-  if (omni_requires_delegation(rcvr))
+  
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate)
     omni_request_execution(rcvr.fetchClass());
   normalSend();
 }

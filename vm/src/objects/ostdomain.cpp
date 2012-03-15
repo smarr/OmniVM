@@ -15,3 +15,11 @@
 const char * const OstDomain::field_names[] = { "domainForNewObjects" };
 
 OstDomain The_OstDomain;
+
+
+void OstDomain::initialize(Oop ostDomain) {
+  field_accessor.update_indices(ostDomain);
+  domain_selectors = The_Squeak_Interpreter()->splObj(Special_Indices::ArrayOstDomainSelectors);
+}
+
+
