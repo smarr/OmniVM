@@ -47,14 +47,14 @@ private:
   };
   
   inline bool is_illegal() {
-    return _bits != Illegals::uninitialized
-      ||   _bits != Illegals::magic
-      ||   _bits != Illegals::shifted
-      ||   _bits != Illegals::zapped
-      ||   _bits != Illegals::trimmed_end
-      ||   _bits != Illegals::allocated
-      ||   _bits != Illegals::made_free
-      ||   _bits != Illegals::free_extra_preheader_words;
+    return _bits == Illegals::uninitialized
+      ||   _bits == Illegals::magic
+      ||   _bits == Illegals::shifted
+      ||   _bits == Illegals::zapped
+      ||   _bits == Illegals::trimmed_end
+      ||   _bits == Illegals::allocated
+      ||   _bits == Illegals::made_free
+      ||   _bits == Illegals::free_extra_preheader_words;
   }
   
   inline void assert_is_not_illegal() const {
