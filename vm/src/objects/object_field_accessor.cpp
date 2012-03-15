@@ -17,14 +17,10 @@
 int Object_Field_Accessor::index_of_instance_variable(oop_int_t field_name_idx, Oop class_oop) {
   if (field_name_idx > number_of_fields)
     return -1;
-  
-  update_indices(class_oop);
   return indices[field_name_idx];
 }
 
 bool Object_Field_Accessor::set_field(Oop target_oop, oop_int_t field_name_idx, Oop value) {
-  /* Make sure we work with the current class layout */
-  update_indices(target_oop.fetchClass());
   Object_p target = target_oop.as_object();
   
   int field_idx = index_of_instance_variable(field_name_idx, class_oop);
@@ -36,8 +32,8 @@ bool Object_Field_Accessor::set_field(Oop target_oop, oop_int_t field_name_idx, 
 }
 
 Oop Object_Field_Accessor::get_field(Oop source_oop, oop_int_t field_name_idx) {
-  /* Make sure we work with the current class layout */
-  update_indices(source_oop.fetchClass());
+  assert(source_oop != The_Squeak_Interpreter()->roots.nilObj);
+  
   Object_p source = source_oop.as_object();
   
   int field_idx = index_of_instance_variable(field_name_idx, class_oop);
@@ -67,8 +63,6 @@ int Object_Field_Accessor::instance_variable_count_of_superclasses() {
 
 
 void Object_Field_Accessor::update_indices(Oop class_oop) {
-  if (class_oop == this->class_oop)
-    return;
   this->class_oop = class_oop;
   
   Object_p inst_var_names = instance_variable_names();

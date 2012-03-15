@@ -16,6 +16,13 @@
     I left in the Process_Field_Locator since it is
     staticically defined and might enable the compiler to
     optimize better for the specific case of Processes.
+ 
+    Another difference is that this class does not follow up on
+    class changes. It will only updated the class layout when ask
+    to do so explicitly.
+    Thus, it needs to be integrated for instance with flushing of method
+    caches or so. That is currently not done.
+ 
     STEFAN 2011-09-19 */
 class Object_Field_Accessor {
 public:
