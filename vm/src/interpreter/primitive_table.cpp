@@ -171,13 +171,16 @@ Primitive_Table::Primitive_Table() : Abstract_Primitive_Table(576, false) {
   init_here(170, 185, primitiveObsoleteIndexedPrimitive);
 
 
-  init_here(186, primitiveFail);
-  init_here(187, primitiveFail);
-
-
+  // Used to be sound primitives according to:
+  //    dtl 12/11/2010 13:08 VMMaker-dtl.253
+  // 185      have been primitiveObsoleteIndexedPrimitive on the RoarVM
+  // 186, 187 have been primitiveFail on the RoarVM
+  init_here(185, primitiveBaselevelPerform);
+  init_here(186, primitiveBaselevelPerformWithArgs);
+  init_here(187, primitiveBaselevelPerformInSuperclass);
+  
   init_here(188, primitiveExecuteMethodArgsArray);
   init_here(189, primitiveExecuteMethod);
-
 
   init_here(190, 194, primitiveObsoleteIndexedPrimitive);
 

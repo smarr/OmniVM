@@ -200,3 +200,8 @@ bool primitiveFloatLess(Oop r, Oop a);
 bool primitiveFloatGreater(Oop r, Oop a);
 bool primitiveFloatEqual(Oop r, Oop a);
 
+
+void primitiveBaselevelPerform();
+void primitiveBaselevelPerformWithArgs();
+void primitiveBaselevelPerformInSuperclass();
+

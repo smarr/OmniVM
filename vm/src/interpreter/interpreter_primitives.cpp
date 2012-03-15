@@ -1629,6 +1629,27 @@ void Squeak_Interpreter::primitiveObsoleteIndexedPrimitive() {
   dispatchFunctionPointer(e.functionAddress, true);
 }
 
+void Squeak_Interpreter::primitiveBaselevelPerform() {
+  bool base = executes_on_baselevel();
+  if (!base) indicate_switch_to_baselevel();  // do not change the context frame, will only be transiently for the performed method, not the rest of the execution in this context
+  
+  primitivePerform();
+}
+
+void Squeak_Interpreter::primitiveBaselevelPerformWithArgs() {
+  bool base = executes_on_baselevel();
+  if (!base) indicate_switch_to_baselevel();  // do not change the context frame, will only be transiently for the performed method, not the rest of the execution in this context
+  
+  primitivePerformWithArgs();
+}
+
+void Squeak_Interpreter::primitiveBaselevelPerformInSuperclass() {
+  bool base = executes_on_baselevel();
+  if (!base) indicate_switch_to_baselevel();  // do not change the context frame, will only be transiently for the performed method, not the rest of the execution in this context
+  
+  primitivePerformInSuperclass();
+}
+
 void Squeak_Interpreter::primitivePerform() {
   Oop performSelector = roots.messageSelector;
   Oop performMethod = roots.newMethod;
@@ -1641,16 +1662,6 @@ void Squeak_Interpreter::primitivePerform() {
     roots.messageSelector.print(dittoing_stdout_printer), stdout_printer->nl();
   }
   
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-   
-  // Exact match should be common case, lets try that first.
-  // If they are not identical, we need to check that we have foreign sync read.
-  if (omni_requires_delegation(newReceiver)) {
-    fatal("Not yet implemented. Should raise an exception and survive...");
-  }
-  
-  /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
-
   // Note: following lookup may fail
 
   // slide args down over sel
@@ -1666,9 +1677,9 @@ void Squeak_Interpreter::primitivePerform() {
   findNewMethodInClass(lookupClass);
 
   {
-  Object_p nmo = newMethod_obj();
-  if (nmo->isCompiledMethod())
-    success(nmo->argumentCount() == get_argumentCount());
+    Object_p nmo = newMethod_obj();
+    if (nmo->isCompiledMethod())
+      success(nmo->argumentCount() == get_argumentCount());
   }
 
   if (successFlag) {
@@ -1689,7 +1700,7 @@ void Squeak_Interpreter::primitivePerform() {
 
 
 void Squeak_Interpreter::primitivePerformInSuperclass() {
-  untested();
+  // untested(); //STEFAN: still not really tested, but seems to do what it is supposed to do in the few cases I encountered
   Oop lookupClass = stackTop();
   Oop rcvr = stackValue(get_argumentCount());
   Object_p cco;

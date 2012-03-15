@@ -209,7 +209,10 @@ template(primitiveWait) \
 template(primitiveYield) \
 template(startProfiling) \
 template(stopProfiling) \
-template(primitiveDoNamedPrimitiveWithArgs)
+template(primitiveDoNamedPrimitiveWithArgs)     \
+template(primitiveBaselevelPerform)             \
+template(primitiveBaselevelPerformWithArgs)     \
+template(primitiveBaselevelPerformInSuperclass)
 
 # define DCL(n) void* n(...);
 
