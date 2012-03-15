@@ -445,6 +445,7 @@
 		0A278516128DBF7400336BDE /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		0A2785E3128DC3A000336BDE /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		0A2785ED128DC42800336BDE /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
+		0A322559150F964E005323DF /* ostdomain_selector_indices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ostdomain_selector_indices.h; sourceTree = "<group>"; };
 		0A4D8249135C51D500CD74D8 /* sqNamedPrims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqNamedPrims.c; sourceTree = "<group>"; };
 		0A4D824A135C51D500CD74D8 /* sqVirtualMachine.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqVirtualMachine.c; sourceTree = "<group>"; };
 		0A4D8250135C523B00CD74D8 /* sqUnixCharConv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqUnixCharConv.c; sourceTree = "<group>"; };
@@ -984,6 +985,7 @@
 				0A94A2AE142A0C880022D6B6 /* domain_info.h */,
 				0AA35139150AAB9000E9433F /* ostdomain.h */,
 				0AA3513B150B6BCA00E9433F /* ostdomain.cpp */,
+				0A322559150F964E005323DF /* ostdomain_selector_indices.h */,
 			);
 			name = objects;
 			path = src/objects;
