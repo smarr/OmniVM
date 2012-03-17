@@ -1336,9 +1336,20 @@ void Squeak_Interpreter::primitiveLoadImageSegment() {
 
 void Squeak_Interpreter::primitiveLoadInstVar() {
   Oop r = popStack();
-  if (!r.is_mem()) {unPop(1); primitiveFail(); return; }
-  push(r.as_object()->fetchPointer(primitiveIndex - 264));
-}
+  
+  if (!r.is_mem()) {
+    unPop(1);
+    primitiveFail();
+    return;
+  }
+  
+  bool delegate = omni_requires_delegation(r);
+  if (delegate) {
+    omni_read_field(r, primitiveIndex - 264);
+  }
+  else
+    push(r.as_object()->fetchPointer(primitiveIndex - 264));
+} 
 
 
 void Squeak_Interpreter::primitiveLogN() {
