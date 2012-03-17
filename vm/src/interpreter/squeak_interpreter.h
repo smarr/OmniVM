@@ -1013,12 +1013,19 @@ public:
   Oop send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass);
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
-  inline bool omni_requires_delegation(Oop rcvr) const;
-  inline void omni_request_execution(Oop lkupClass);
+  bool omni_requires_delegation(Oop rcvr) const;
+  void omni_request_execution(Oop lkupClass);
+  void omni_read_field(Oop obj_oop, int idx);
+  void omni_internal_read_field(Oop obj_oop, int idx);
+  inline void omni_write_field(Oop obj_oop, int idx, Oop value);
+  
   
   inline void omni_set_domain_for_new_object(Object_p obj) {
-    if (executes_on_baselevel())
-      obj->set_domain(The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop()));
+    if (executes_on_baselevel() && _localDomain->as_oop() != roots.nilObj) {
+      Oop domain_for_new_obj = The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop());
+      assert_eq(_localDomain->as_oop().bits(), domain_for_new_obj.bits(), "should be equal");
+      obj->set_domain(domain_for_new_obj);
+    }
     else
       obj->set_domain(roots.nilObj);
   }
@@ -1577,8 +1584,9 @@ public:
   }
   
   void assert_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
-    if ((Always_Check_Method_Is_Correct  |  check_assertions) && process_is_scheduled_and_executing())
+    if ((Always_Check_Method_Is_Correct  |  check_assertions) && process_is_scheduled_and_executing()) {
       assert_always_method_is_correct_internalizing(will_be_fetched, where);
+    }
   }
   
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
