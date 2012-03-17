@@ -1582,7 +1582,9 @@ public:
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
     if (process_is_scheduled_and_executing()) {
       Safepoint_Ability sa(false);
+      bool correct_exec_level = _executes_on_baselevel;
       internalizeExecutionState();
+      _executes_on_baselevel = correct_exec_level; // work around this in debug mode (REM: we use _executes_on_baselevel to indicate transient changes for baselevelPerform)
       check_method_is_correct(will_be_fetched, where);
     }
   }
