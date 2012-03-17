@@ -562,10 +562,12 @@ public:
                                     stackPointerIndex() - Object_Indices::TempFrameStart + 1);
     
     cntx_obj->set_domain(_localDomain);
-    if (_executes_on_baselevel)
-      cntx_obj->set_domain_execute_on_baselevel();
-    else
-      cntx_obj->set_domain_execute_on_metalevel();
+    // STEFAN: The ommision of setting the execution level here on the context
+    // is done on purpose.
+    // Setting the exec level should always be done explicitly
+    // when changing the level. I sometimes use the flag for instance for baselevelPerform to
+    // change it temproraily for the next new context, avoids code duplication or checking
+    // so, let's see whether we really need it here.
 
     registers_stored();
   }
