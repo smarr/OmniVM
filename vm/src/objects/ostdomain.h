@@ -32,9 +32,14 @@ public:
     return field_accessor.get_field(domain, 0);
   }
   
-  inline Oop read_field() {
+  inline Oop read_field() const {
     return domain_selectors.as_object()->fetchPointer(OstDomainSelector_Indices::ReadField_Of_);
   }
+  
+  inline Oop write_field() const {
+    return domain_selectors.as_object()->fetchPointer(OstDomainSelector_Indices::Write_ToField_Of_);
+  }
+
   
   inline Oop request_exec(int arg_cnt) {
     if (arg_cnt == 0)

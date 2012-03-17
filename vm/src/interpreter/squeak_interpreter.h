@@ -1015,9 +1015,12 @@ public:
   
   bool omni_requires_delegation(Oop rcvr) const;
   void omni_request_execution(Oop lkupClass);
+  
   void omni_read_field(Oop obj_oop, int idx);
+  void omni_write_field(Oop obj_oop, int idx, Oop value);
+
   void omni_internal_read_field(Oop obj_oop, int idx);
-  inline void omni_write_field(Oop obj_oop, int idx, Oop value);
+  void omni_internal_write_field(Oop obj_oop, int idx, Oop value);
   
   
   inline void omni_set_domain_for_new_object(Object_p obj) {

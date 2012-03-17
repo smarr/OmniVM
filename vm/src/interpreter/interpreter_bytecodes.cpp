@@ -37,10 +37,17 @@ void Squeak_Interpreter::pushLiteralVariableBytecode() {
 }
 
 void Squeak_Interpreter::storeAndPopReceiverVariableBytecode() {
-  fetchNextBytecode();
-  // could watch for suspended context change here
-  receiver_obj()->storePointer(prevBytecode & 7, internalStackTop());
-  internalPop(1);
+  if (omni_requires_delegation(roots.receiver)) {
+    Oop value = internalStackTop();
+    internalPop(1);
+    omni_internal_write_field(roots.receiver, currentBytecode & 0xf, value);
+  }
+  else {
+    fetchNextBytecode();
+    // could watch for suspended context change here
+    receiver_obj()->storePointer(prevBytecode & 7, internalStackTop());
+    internalPop(1);
+  }
 }
 
 void Squeak_Interpreter::storeAndPopTemporaryVariableBytecode() {
@@ -313,12 +320,10 @@ void Squeak_Interpreter::omni_request_execution(Oop lkupClass) {
 }
 
 void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
-  /*** STEFAN TODO: Check whether we need a specific safepoint ability here.
-   Similar to the DNU or ensemble msg send? */
   Safepoint_Ability sa(true);
 
-  Object_p obj = obj_oop.as_object();
-  Oop domain = obj->domain_oop();
+  Object_p obj    = obj_oop.as_object();
+  Oop domain      = obj->domain_oop();
   Oop lookupClass = domain.fetchClass();
   
   /* readField: idx of: obj */
@@ -385,20 +390,73 @@ void Squeak_Interpreter::omni_internal_read_field(Oop obj_oop, int idx) {
 }
 
 
+
+void Squeak_Interpreter::omni_write_field(Oop obj_oop, int idx, Oop value) {
+  Safepoint_Ability sa(true);
+  
+  Object_p obj    = obj_oop.as_object();
+  Oop domain      = obj->domain_oop();
+  Oop lookupClass = domain.fetchClass();
+  
+  /* write: val toField: idx of: obj */
+  
+  push(domain);
+  push(value);
+  pushInteger(idx + 1);  // Moving that up to Smalltalk means a conversion to 1-based indexing
+  push(obj_oop);
     
-    rcvr_domain = popRemappableOop();
-    rcvr = popRemappableOop();
-    push(rcvr);
-    set_argumentCount(get_argumentCount() + 1);
+  set_argumentCount(3);
+  
+  roots.messageSelector = The_OstDomain.write_field();
+  
+  findNewMethodInClass(lookupClass);
+  
+  {
+    Object_p nmo = newMethod_obj();
+    if (nmo->isCompiledMethod())
+      success(nmo->argumentCount() == get_argumentCount());
   }
-  internalizeExecutionState();
   
-  DEBUG_STORE_CHECK(&localSP()[-get_argumentCount()], rcvr_domain);
-  localSP()[-get_argumentCount()] = rcvr_domain;
-  
-  // Just change the selector for the moment
-  roots.messageSelector = splObj(Special_Indices::SelectorOmniRequestExecutionOfOn);
+  if (successFlag) {
+    executeNewMethodFromCache();
+    successFlag = true;
+  }
+  else
+    fatal("not yet implemented");
 }
+
+/** STEFAN: make sure this is in sync with the normal write_field */
+void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop value) {
+  Safepoint_Ability sa(false);
+  
+  Object_p obj = obj_oop.as_object();
+  Oop domain   = obj->domain_oop();
+  
+  /* write: val toField: idx of: obj */
+  
+  
+  assert(obj_oop != Oop::from_bits(0));
+  assert(domain  != Oop::from_bits(0));
+  
+  // we assume that at this point obj_oop was already popped from the stack
+  internalPush(domain);
+  internalPush(value);
+  internalPush(Oop::from_int(idx + 1));  // Moving that up to Smalltalk means a conversion to 1-based indexing
+  internalPush(obj_oop);
+  
+  set_argumentCount(3);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.write_field();
+  
+  internalFindNewMethod();
+  internalExecuteNewMethod();
+  
+  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+    fetchNextBytecode();
+}
+
+
 
 void Squeak_Interpreter::bytecodePrimAdd() {
   Oop rcvr = internalStackValue(1);
