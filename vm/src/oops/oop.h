@@ -98,7 +98,7 @@ private:
   bool is_mem() { return (bits() & Tag_Mask) == Mem_Tag; }
   bool is_int() { return (bits() & Tag_Mask) == Int_Tag; }
 
-  inline Object_p as_object();
+  inline Object_p as_object() const;
   inline Object_p as_object_unchecked();
   inline Object_p as_object_if_mem();
   inline Object*  as_untracked_object_ptr();  // this should only be used when it is absolutly necessary! otherwise use always as_object()

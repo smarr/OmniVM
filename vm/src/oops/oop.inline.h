@@ -82,7 +82,7 @@ inline Object* Oop::as_untracked_object_ptr() {
 # endif
 }
 
-inline Object_p Oop::as_object() {
+inline Object_p Oop::as_object() const {
 # if Use_Object_Table
   return (Object_p)The_Memory_System()->object_for(*this);
 # else
