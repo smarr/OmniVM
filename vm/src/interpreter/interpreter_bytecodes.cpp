@@ -354,7 +354,7 @@ void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
 
 /** STEFAN: make sure this is in sync with the normal read_field */
 void Squeak_Interpreter::omni_internal_read_field(Oop obj_oop, int idx) {
-  Safepoint_Ability sa(true);
+  Safepoint_Ability sa(false);
   
   Object_p obj = obj_oop.as_object();
   Oop domain = obj->domain_oop();
