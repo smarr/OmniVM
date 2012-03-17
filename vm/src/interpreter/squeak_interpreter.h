@@ -244,25 +244,31 @@ public:
 
 # if check_assertions
   bool are_registers_stored;
-  bool is_external_valid;
-  bool is_internal_valid;
+  bool _is_external_valid;
+  bool _is_internal_valid;
+  
+  bool is_external_valid()   const { return _is_external_valid; }
+  bool is_internal_valid()   const { return _is_internal_valid; }
   void registers_unstored()        { assert(get_running_process() != roots.nilObj); are_registers_stored = false; }
   void registers_stored()          { are_registers_stored = true; }
-  void externalized()              { is_external_valid = true; }
-  void internalized()              { is_internal_valid = true; 
+  void externalized()              { _is_external_valid = true; }
+  void internalized()              { _is_internal_valid = true; 
     //assert_eq(_localHomeContext->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
     assert_eq(roots._activeContext.as_object(), _activeContext_obj, "");
     assert_eq(_activeContext_obj->domain(), _localDomain, "Would expect them to be equal at this point.");
   }
-  void unexternalized()            { is_external_valid = false; }
-  void uninternalized()            { is_internal_valid = false; }
+  void unexternalized()            { _is_external_valid = false; }
+  void uninternalized()            { _is_internal_valid = false; }
 
-  void assert_internal()           const { assert(is_internal_valid); }
-  void assert_external()           const { assert(is_external_valid); }
+  void assert_internal()           const { assert(_is_internal_valid); }
+  void assert_external()           const { assert(_is_external_valid); }
   void assert_registers_stored()   const { assert(are_registers_stored); }
   void assert_registers_unstored() const { assert(!are_registers_stored); }
   void assert_stored_if_no_proc()  const { if (check_many_assertions) assert(get_running_process() != roots.nilObj || are_registers_stored); }
 # else
+  bool is_external_valid()   const { fatal("should not be used without assertions on"); return true; }
+  bool is_internal_valid()   const { fatal("should not be used without assertions on"); return true; }
+  
   void registers_unstored()        const {}
   void registers_stored()          const {}
   void externalized()              const {}
