@@ -31,7 +31,11 @@ public:
   inline Oop get_domain_for_new_objects(Oop domain) {
     return field_accessor.get_field(domain, 0);
   }
-   
+  
+  inline Oop read_field() {
+    return domain_selectors.as_object()->fetchPointer(OstDomainSelector_Indices::ReadField_Of_);
+  }
+  
   inline Oop request_exec(int arg_cnt) {
     if (arg_cnt == 0)
       return get_domain_selector(OstDomainSelector_Indices::RequestExecutionOf_On_);

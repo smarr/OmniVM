@@ -15,8 +15,13 @@
 #include "headers.h"
 
 void Squeak_Interpreter::pushReceiverVariableBytecode() {
-  fetchNextBytecode();
-  pushReceiverVariable(prevBytecode & 0xf);
+  if (omni_requires_delegation(roots.receiver)) {
+    omni_internal_read_field(roots.receiver, currentBytecode & 0xf);
+  }
+  else {
+    fetchNextBytecode();
+    pushReceiverVariable(prevBytecode & 0xf);
+  }
 }
 void Squeak_Interpreter::pushTemporaryVariableBytecode() {
   fetchNextBytecode();
@@ -307,9 +312,79 @@ void Squeak_Interpreter::omni_request_execution(Oop lkupClass) {
   roots.messageSelector = The_OstDomain.request_exec(argCnt);
 }
 
+void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
+  /*** STEFAN TODO: Check whether we need a specific safepoint ability here.
+   Similar to the DNU or ensemble msg send? */
+  Safepoint_Ability sa(true);
+
+  Object_p obj = obj_oop.as_object();
+  Oop domain = obj->domain_oop();
+  Oop lookupClass = domain.fetchClass();
+  
+  /* readField: idx of: obj */
+  
+  
+  assert(obj_oop != Oop::from_bits(0));
+  assert(domain  != Oop::from_bits(0));
+
+  // we assume that at this point obj_oop was already popped from the stack
+  push(domain);
+
+  pushInteger(idx + 1);  // Moving that up to Smalltalk means a conversion to 1-based indexing
+  push(obj_oop);
+    
+  set_argumentCount(2);
+  roots.messageSelector = The_OstDomain.read_field();
+  
+  findNewMethodInClass(lookupClass);
+  
   {
-    createActualMessageTo(lkupClass);    
-    assert(get_argumentCount() == 1);
+    Object_p nmo = newMethod_obj();
+    if (nmo->isCompiledMethod())
+      success(nmo->argumentCount() == get_argumentCount());
+  }
+  
+  if (successFlag) {
+    executeNewMethodFromCache();
+    successFlag = true;
+  }
+  else
+    fatal("not yet implemented");
+}
+
+/** STEFAN: make sure this is in sync with the normal read_field */
+void Squeak_Interpreter::omni_internal_read_field(Oop obj_oop, int idx) {
+  Safepoint_Ability sa(true);
+  
+  Object_p obj = obj_oop.as_object();
+  Oop domain = obj->domain_oop();
+  
+
+  /* readField: idx of: obj */
+  
+  
+  assert(obj_oop != Oop::from_bits(0));
+  assert(domain  != Oop::from_bits(0));
+  
+  // we assume that at this point obj_oop was already popped from the stack
+  internalPush(domain);
+  
+  internalPush(Oop::from_int(idx + 1));  // Moving that up to Smalltalk means a conversion to 1-based indexing
+  internalPush(obj_oop);
+  
+  set_argumentCount(2);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.read_field();
+  
+  internalFindNewMethod();
+  internalExecuteNewMethod();
+  
+  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+    fetchNextBytecode();
+}
+
+
     
     rcvr_domain = popRemappableOop();
     rcvr = popRemappableOop();
