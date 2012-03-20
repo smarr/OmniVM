@@ -1050,6 +1050,7 @@ void Squeak_Interpreter::internalActivateNewMethod() {
 
 void Squeak_Interpreter::activateNewMethod() {
   oop_int_t methodHeader = newMethod_obj()->methodHeader();
+  bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
   Object_p nco = allocateOrRecycleContext(methodHeader & Object::LargeContextBit);
 
   if (check_many_assertions
@@ -1102,7 +1103,10 @@ void Squeak_Interpreter::activateNewMethod() {
   pop(get_argumentCount() + 1);
   reclaimableContextCount += 1;
   
-  set_domain_and_execution_level_on_new_context(nco);
+  if (omniMetaExit || !_executes_on_baselevel)
+    nco->set_domain_execute_on_metalevel();
+  else
+    nco->set_domain_execute_on_baselevel();
   
   newActiveContext(newContext, nco);
 }
