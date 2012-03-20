@@ -1691,6 +1691,21 @@ void Squeak_Interpreter::primitivePerform() {
                                            activeContext_obj());
   pop(1);
   Oop lookupClass = newReceiver.fetchClass();
+  
+  /** We do not want to reapply the omni enforcement a second time.
+      Currently that is only detectable by a mismatch between
+      the _executes_on_baselevel flag and the actual context frame.
+      the use of baselevelPerform leads to that inconsistency,
+      and helps us here to avoid the recursion. */
+  if (_executes_on_baselevel && activeContext_obj()->domain_execute_on_baselevel()) {
+    bool delegate = omni_requires_delegation(newReceiver);
+    if (delegate) {
+      omni_request_execution(lookupClass);
+      normalSend();
+      return;
+    }
+  }
+  
   findNewMethodInClass(lookupClass);
 
   {
