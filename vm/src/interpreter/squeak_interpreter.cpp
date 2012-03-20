@@ -1198,7 +1198,9 @@ void Squeak_Interpreter::signalSemaphoreWithIndex(int index) {
 
 
 void Squeak_Interpreter::checkForInterrupts(bool is_safe_to_process_events) {
-  if (doing_primitiveClosureValueNoContextSwitch || suppress_context_switch_for_debugging)
+  if (   doing_primitiveClosureValueNoContextSwitch
+      || suppress_context_switch_for_debugging
+      || _executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
     return;
   static bool last_use_cpu_ms = use_cpu_ms();
   bool use_cpu_ms_changed = last_use_cpu_ms != use_cpu_ms();

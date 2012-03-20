@@ -1087,6 +1087,9 @@ public:
   void printUnbalancedStack(int, fn_t);
 
   void internalQuickCheckForInterrupts() {
+    if (_executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
+      return;
+    
     if (--interruptCheckCounter <= 0) {
       externalizeExecutionState();
       checkForInterrupts();
@@ -1097,6 +1100,9 @@ public:
 
 
   void quickCheckForInterrupts() {
+    if (_executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
+      return;
+
     /*
      "Quick check for possible user or timer interrupts. Decrement a counter
       and only do a real check when counter reaches zero or when a low space
