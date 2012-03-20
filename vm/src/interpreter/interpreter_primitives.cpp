@@ -2269,7 +2269,6 @@ void Squeak_Interpreter::primitiveUnloadModule() {
 }
 
 void Squeak_Interpreter::primitiveVMParameter() {
-  lprintf("primitiveVMParameter really not done\n");
   static const int paramsArraySize = 40;
   if (get_argumentCount() == 0) {
     Object_p ro = splObj_obj(Special_Indices::ClassArray)->instantiateClass(paramsArraySize);
