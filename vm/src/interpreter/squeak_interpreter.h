@@ -254,8 +254,8 @@ public:
   void externalized()              { _is_external_valid = true; }
   void internalized()              { _is_internal_valid = true; 
     //assert_eq(_localHomeContext->domain_info().raw_value, _localDomainInfo.raw_value, "Would expect them to be equal at this point.");
-    assert_eq(roots._activeContext.as_object(), _activeContext_obj, "");
-    assert_eq(_activeContext_obj->domain(), _localDomain, "Would expect them to be equal at this point.");
+    assert_eq((void*)roots._activeContext.as_object(), (void*)_activeContext_obj, "");
+    assert_eq((void*)_activeContext_obj->domain(), (void*)_localDomain, "Would expect them to be equal at this point.");
   }
   void unexternalized()            { _is_external_valid = false; }
   void uninternalized()            { _is_internal_valid = false; }
