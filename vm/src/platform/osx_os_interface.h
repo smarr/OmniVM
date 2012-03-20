@@ -55,7 +55,8 @@ public:
     return ( (info.kp_proc.p_flag & P_TRACED) != 0 );
   }
   
-  static inline void breakpoint() { 
+  static inline void breakpoint() {
+    // The_Squeak_Interpreter->suppress_context_switch_for_debugging = true;
     if (AmIBeingDebugged())
       raise(SIGTRAP);
   }
