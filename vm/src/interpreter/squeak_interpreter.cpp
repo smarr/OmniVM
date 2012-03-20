@@ -133,12 +133,12 @@ void Squeak_Interpreter::initialize(Oop soo, bool from_checkpoint) {
     set_theHomeContext(roots.nilObj, false);
 
     set_method(roots.nilObj);
-    roots.receiver = roots.nilObj;
+    roots.receiver        = roots.nilObj;
     roots.messageSelector = roots.nilObj;
-    roots.newMethod = roots.nilObj;
-    roots.methodClass = roots.nilObj;
-    roots.lkupClass = roots.nilObj;
-    roots.receiverClass = roots.nilObj;
+    roots.newMethod       = roots.nilObj;
+    roots.methodClass     = roots.nilObj;
+    roots.lkupClass       = roots.nilObj;
+    roots.receiverClass   = roots.nilObj;
     roots.newNativeMethod = roots.nilObj;
     flushInterpreterCaches();
     loadInitialContext();
