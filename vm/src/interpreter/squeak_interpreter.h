@@ -1427,7 +1427,17 @@ public:
         pre_prim_active_context = activeContext();
       }
       successFlag = true;
+      // make sure the right exec level is indicated
+      bool old_on_base = _executes_on_baselevel;
+      oop_int_t methodHeader = newMethod_obj()->methodHeader();
+      bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
+      if (omniMetaExit)
+        _executes_on_baselevel = false;
+      
       dispatchFunctionPointer(primitiveFunctionPointer, do_primitive_on_main);
+      
+      _executes_on_baselevel = old_on_base;
+      
       // branch direct to prim fn
       if (DoBalanceChecks  &&  !balancedStackAfterPrimitive(delta, primitiveIndex, nArgs, pre_prim_active_context))
         printUnbalancedStack(primitiveIndex, primitiveFunctionPointer);
