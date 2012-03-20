@@ -1914,7 +1914,15 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
     if (255 < primitiveIndex  &&  primitiveIndex < 520) {
       // "Internal return instvars"
       if (264 <= primitiveIndex) {
-        internalPopThenPush(1, internalStackTop().as_object()->fetchPointer(primitiveIndex - 264));
+        Oop top = internalStackTop();
+        bool delegate = omni_requires_delegation(top);
+        if (delegate) {
+          // do I need to externalize here first?
+          omni_read_field(top, primitiveIndex - 264);
+        }
+        else
+          internalPopThenPush(1,
+                              top.as_object()->fetchPointer(primitiveIndex - 264));
         return;
       }
       // "Internal return constants"
