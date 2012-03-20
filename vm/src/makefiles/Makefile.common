@@ -274,6 +274,10 @@ RVM_HEADERS = \
   debug_helper.h \
   tracked_ptr.h \
   tracked_ptr_registry.h \
+  \
+  ostdomain.h \
+  ostdomain_selector_indices.h \
+  object_field_accessor.h \
   
 
 ifeq "$(PLATFORM)" "Intel"
@@ -359,6 +363,7 @@ vpath %.c $(SRC_DIR)/from_squeak/intplugins/SoundPlugin
 vpath %.c $(SRC_DIR)/from_squeak/intplugins/UnixOSProcessPlugin
 vpath %.c $(SRC_DIR)/from_squeak/intplugins/SocketPlugin
 vpath %.c $(SRC_DIR)/from_squeak/unix
+vpath %.c $(SRC_DIR)/from_squeak/unix/plugins/FilePlugin
 vpath %.c $(SRC_DIR)/from_squeak/unix/plugins/SocketPlugin
 vpath %.c $(SRC_DIR)/from_squeak/unix/plugins/SoundPlugin
 vpath %.c $(SRC_DIR)/from_squeak/unix/vm
@@ -525,6 +530,8 @@ OBJS = \
   debug_helper.opt \
   \
   OmniPlugin.opt \
+  ostdomain.opt \
+  object_field_accessor.opt \
 
 
 
