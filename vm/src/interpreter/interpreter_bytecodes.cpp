@@ -271,21 +271,34 @@ bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr) const {
   // Delegation is only necessary for execution in the base level.
   if (executes_on_metalevel())
     return false;
+
+  // Nothing to do if the receiver is an int or garbage.
+  if (rcvr.is_int() || rcvr == Oop::from_bits(Oop::Illegals::allocated))
+    return false;
+
+  // If the receiver isn't in any domain, then there isn't anything to delegate to.
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  if (rcvr_domain.bits() == 0 /* NULL */ || rcvr_domain == roots.nilObj)
+    return false;
+
+  
   Object_p exec_domain = _localDomain;
   Oop exec_oop = exec_domain->as_oop();
-  
-  // If the executing interpreter instance runs code in the reflective domain
-  // then we do not do any enforcement.
-  if (exec_oop == roots.nilObj)
-    return false;
-  
-  if (rcvr.is_int())
-    return false;
-  
-  Oop rcvr_domain = rcvr.as_object()->domain_oop();
     
-  if (rcvr_domain == roots.nilObj)
+  
+  
+  // STEFAN TODO: giving up here for the moment, still dont remember where
+  //              that might be coming from, just nil it for now
+  //assert(rcvr_domain != Oop::from_bits(Oop::Illegals::free_extra_preheader_words));
+  if (rcvr_domain == Oop::from_bits(Oop::Illegals::free_extra_preheader_words)) {
+    rcvr.as_object()->set_domain(roots.nilObj);
+    rcvr_domain = roots.nilObj;
     return false;
+  }
+  
+  if (check_assertions) {
+    rcvr.as_object()->domain_oop().assert_is_not_illegal();
+  }
 
   // every other case requires delegation of the action to the domain
   // object to decide what exactly to do, in terms of language semantics
