@@ -122,8 +122,12 @@ void Squeak_Interpreter::initialize(Oop soo, bool from_checkpoint) {
     FOR_ALL_HELD_IN_SHARED_MEMORY(INIT_SHARED_MEMORY_VARS)
   }
 
-  The_OstDomain.initialize(splObj(Special_Indices::ClassOstDomain));
-
+  // check briefly for compatibility
+  if (splObj_length() >= Special_Indices::ClassOstDomain)
+    The_OstDomain.initialize(splObj(Special_Indices::ClassOstDomain));
+  else
+    lprintf("Image might not be compatible, does not have enough special objects in the special objects array");
+      
   if (!from_checkpoint) {
     set_activeContext(roots.nilObj);
     set_theHomeContext(roots.nilObj, false);

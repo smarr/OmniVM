@@ -1472,7 +1472,7 @@ public:
 
 
 
-  Oop splObj(oop_int_t i) {
+  Oop splObj(oop_int_t i) const {
     return roots.specialObjectsOop.as_object()->fetchPointer(i);
   }
 
@@ -1480,7 +1480,9 @@ public:
     return splObj(i).as_object();
   }
 
-
+  u_oop_int_t splObj_length() const {
+    return roots.specialObjectsOop.as_object()->lengthOf();
+  }
 
 
   Object_p classString()   { return splObj_obj(Special_Indices::ClassString); }
