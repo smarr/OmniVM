@@ -262,7 +262,9 @@
 
 # if Use_Mark_Sweep_GC_With_Object_Table
 #  define Use_Object_Table 1
-#  define Enforce_Backpointer 1
+#  ifndef Enforce_Backpointer
+#    define Enforce_Backpointer 1
+#  endif
 # else
 #  define Use_Object_Table 0
 #  ifndef Enforce_Backpointer
