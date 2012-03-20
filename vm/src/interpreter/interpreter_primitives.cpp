@@ -2268,6 +2268,7 @@ void Squeak_Interpreter::primitiveVMParameter() {
           lprintf("primitiveVMParameter: attempt to get %d\n", argi);
           primitiveFail();
           return;
+        case 0:  result = 0x798677; break; // ASCII value of OVM (OmniVM is to long to fit into SmallInt)
         case 24: result = The_Memory_System()->get_shrinkThreshold(); break;
         case 25: result = The_Memory_System()->get_growHeadroom(); break;
     }
