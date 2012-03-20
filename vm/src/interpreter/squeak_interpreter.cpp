@@ -1919,7 +1919,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
       }
       // "Internal return constants"
       switch (primitiveIndex) {
-        case 256: return;
+        case 256: return; // return self bytecode???
         case 257: internalPopThenPush(1, roots.trueObj); return;
         case 258: internalPopThenPush(1, roots.falseObj); return;
         case 259: internalPopThenPush(1, roots.nilObj); return;
