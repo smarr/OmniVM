@@ -123,7 +123,7 @@ void Squeak_Interpreter::initialize(Oop soo, bool from_checkpoint) {
   }
 
   // check briefly for compatibility
-  if (splObj_length() >= Special_Indices::ClassOstDomain)
+  if (splObj_length() >= (u_oop_int_t)Special_Indices::ClassOstDomain)
     The_OstDomain.initialize(splObj(Special_Indices::ClassOstDomain));
   else
     lprintf("Image might not be compatible, does not have enough special objects in the special objects array");
@@ -1951,7 +1951,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
     
     if (successFlag)
       return;
-  }
+  } // if (primitiveIndex  > 0)
   // "if not primitive, or primitive failed, activate the method"
   internalActivateNewMethod();
   // "check for possible interrupts at each real send"
@@ -2637,6 +2637,8 @@ void Squeak_Interpreter::run_primitive_on_main_from_elsewhere(fn_t f) {
 
 void Squeak_Interpreter::dispatchFunctionPointer(fn_t f, bool on_main) {
   assert_method_is_correct_internalizing(true, "start of dispatchFunctionPointer");
+  
+  
   assert(f);
   Safepoint_Ability sa(true); // prims expect to cope w/ GC -- dmu 5/10
   
@@ -3396,12 +3398,12 @@ void Squeak_Interpreter::switch_to_metalevel() {
   _activeContext_obj->set_domain_execute_on_metalevel();
 }
 
-
-
 void Squeak_Interpreter::indicate_switch_to_baselevel() {
   _executes_on_baselevel = true;
 }
 void Squeak_Interpreter::indicate_switch_to_metalevel() {
   _executes_on_baselevel = false;
 }
+
+
 
