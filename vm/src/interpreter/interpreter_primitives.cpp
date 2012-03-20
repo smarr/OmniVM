@@ -1451,6 +1451,10 @@ void Squeak_Interpreter::primitiveNew() {
     omni_set_domain_for_new_object(newObj);
     
     push(newObj->as_oop());
+    
+    assert(!newObj->domain_oop().is_illegal());
+    assert((executes_on_metalevel() && newObj->domain_oop() == roots.nilObj)
+           || newObj->domain_oop() == _localDomain->as_oop()); // The standard case, and the test cases create new objects in the current domain.
   }
 }
 
