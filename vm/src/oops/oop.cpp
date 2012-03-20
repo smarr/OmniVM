@@ -18,6 +18,8 @@
 void Oop::print(Printer* p) {
   if (is_int())
     p->printf("%d", integerValue());
+  else if (_bits == 0)
+    p->printf("Oop::bits(0)");
   else
     as_object()->print(p);
 }
