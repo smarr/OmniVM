@@ -154,9 +154,19 @@ void Squeak_Interpreter::extendedStoreAndPopBytecode() {
   internalPop(1);
 }
 void Squeak_Interpreter::singleExtendedSendBytecode() {
+  // OMNI TODO: we need here also the usual omni_requires_delegation check, no?
+  //            be careful, the use of perform:withArguments:inSuperclass: causes
+  //            this bytecode to be used to, will probably end up in recursion
+  //            we really need a clear meta-reflection handling :(
+  
   u_char d = fetchByte();
   roots.messageSelector = literal(d & 0x1f);
   set_argumentCount( d >> 5 );
+  
+  Oop rcvr = internalStackValue(get_argumentCount());
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate)
+    omni_request_execution(rcvr.fetchClass());
   normalSend();
 }
 void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
