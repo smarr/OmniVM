@@ -227,6 +227,8 @@ void Squeak_Interpreter::primitiveBlockCopy() {
   nco->storePointerIntoYoung(Object_Indices::SenderIndex, roots.nilObj);
 
   nco->save_block_method_and_IP();
+  
+  nco->set_domain(localDomain()->as_oop());
 
   popThenPush(2, nco->as_oop());
  }
