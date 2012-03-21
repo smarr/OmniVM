@@ -1918,7 +1918,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
         bool delegate = omni_requires_delegation(top);
         if (delegate) {
           // do I need to externalize here first?
-          omni_read_field(top, primitiveIndex - 264);
+          omni_internal_read_field(top, primitiveIndex - 264);
         }
         else
           internalPopThenPush(1,
