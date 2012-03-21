@@ -486,6 +486,12 @@ void Object::do_all_oops_of_object_for_marking(Abstract_Mark_Sweep_Collector* gc
   }
   if (Extra_Preheader_Word_Experiment)
     gc->mark((Oop*)extra_preheader_word());
+  
+  if (Include_Domain_In_Object_Header) {
+    Oop domain = domain_oop();
+    if (!domain.is_illegal() )
+      gc->mark(&domain);
+  }
 }
 
 

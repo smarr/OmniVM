@@ -47,7 +47,8 @@ private:
   };
   
   inline bool is_illegal() {
-    return _bits == Illegals::uninitialized
+    return _bits == 0
+      ||   _bits == Illegals::uninitialized
       ||   _bits == Illegals::magic
       ||   _bits == Illegals::shifted
       ||   _bits == Illegals::zapped
