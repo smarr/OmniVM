@@ -60,3 +60,11 @@ void disableTracing() {
   }
 }
 
+void disable_context_switches() {
+  The_Squeak_Interpreter()->suppress_context_switch_for_debugging = true;
+}
+void reenable_context_switches() {
+  The_Squeak_Interpreter()->suppress_context_switch_for_debugging = false;
+}
+
+

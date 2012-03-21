@@ -23,6 +23,9 @@ void pst(); // print stack trace
 void enableTracing();
 void disableTracing();
 
+void disable_context_switches();
+void reenable_context_switches();
+
 extern "C" {
   int printCallStack();
   int printAllStacks();
