@@ -30,12 +30,11 @@ public:
   static const oop_int_t RequestExecution_With_With_With_With_With_With_With_Of_On_ = 22;
   static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_Of_On_ = 23;
   static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_With_Of_On_ = 24;
-  static const oop_int_t RequestExecutionOf_Lookup_On_ = 25;
-  static const oop_int_t RequestExecutionOf_Lookup_On_With_ = 26;
-  static const oop_int_t RequestExecutionOf_On_ = 27;
-  static const oop_int_t SpawnHere_ = 28;
-  static const oop_int_t Write_ToField_Of_ = 29;
-  static const oop_int_t WriteGlobal_Value_ = 30;
+  static const oop_int_t RequestExecutionOf_On_ = 25;
+  static const oop_int_t RequestExecutionOf_With_Lookup_On_ = 26;
+  static const oop_int_t SpawnHere_ = 27;
+  static const oop_int_t Write_ToField_Of_ = 28;
+  static const oop_int_t WriteGlobal_Value_ = 29;
   
 };
 

@@ -166,7 +166,7 @@ void Squeak_Interpreter::singleExtendedSendBytecode() {
   Oop rcvr = internalStackValue(get_argumentCount());
   bool delegate = omni_requires_delegation(rcvr);
   if (delegate)
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   normalSend();
 }
 void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
@@ -315,7 +315,7 @@ bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr) const {
   return true;
 }
 
-void Squeak_Interpreter::omni_request_execution(Oop lkupClass) {
+void Squeak_Interpreter::omni_request_execution() {
   /*** STEFAN TODO: Check whether we need a specific safepoint ability here.
                     Similar to the DNU or ensemble msg send? */
   
@@ -340,6 +340,44 @@ void Squeak_Interpreter::omni_request_execution(Oop lkupClass) {
 
   // Now change the selector
   roots.messageSelector = The_OstDomain.request_exec(argCnt);
+}
+
+void Squeak_Interpreter::omni_request_execution_in_lookup_class(Oop lkupClass) {
+  pushRemappableOop(lkupClass); // make GC safe
+  
+  /* requestExecutionOf: aSelector with: argArray lookup: cls on: obj */
+  
+  Object_p argumentArray_obj = splObj_obj(Special_Indices::ClassArray)->instantiateClass(get_argumentCount());
+  
+  lkupClass = popRemappableOop(); // remap after GC
+  
+  Oop rcvr = internalStackValue(get_argumentCount());
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  int original_arg_cnt = get_argumentCount();
+
+  // fill array with arguments
+  oopcpy_no_store_check(argumentArray_obj->as_oop_p() + sizeof(argumentArray_obj->baseHeader)/sizeof(Oop),
+                        localSP() - (original_arg_cnt - 1),
+                        original_arg_cnt,
+                        argumentArray_obj);
+	argumentArray_obj->beRootIfOld();
+  
+  /* set domain as receiver */
+  DEBUG_STORE_CHECK(&localSP()[-original_arg_cnt], rcvr_domain);
+  localSP()[-original_arg_cnt] = rcvr_domain;
+  
+  /* push all the arguments */
+  internalPopThenPush(original_arg_cnt, roots.messageSelector);
+  internalPush(argumentArray_obj->as_oop());
+  internalPush(lkupClass);
+  internalPush(rcvr);
+  
+  set_argumentCount(4);
+  
+  roots.messageSelector = The_OstDomain.request_exec_in_lookup_class();
+  roots.lkupClass       = rcvr_domain.fetchClass();
+  roots.receiverClass   = roots.lkupClass;
 }
 
 void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
@@ -516,7 +554,7 @@ void Squeak_Interpreter::bytecodePrimAdd() {
   roots.messageSelector = specialSelector(0);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   
   normalSend();
 }
@@ -556,7 +594,7 @@ void Squeak_Interpreter::bytecodePrimSubtract() {
   roots.messageSelector = specialSelector(1);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -597,7 +635,7 @@ void Squeak_Interpreter::bytecodePrimMultiply() {
   roots.messageSelector = specialSelector(8);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   
   normalSend();
 }
@@ -642,7 +680,7 @@ void Squeak_Interpreter::bytecodePrimDivide() {
   roots.messageSelector = specialSelector(9);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   
   normalSend();
 }
@@ -662,7 +700,7 @@ void Squeak_Interpreter::bytecodePrimMod() {
   set_argumentCount(1);
   
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -689,7 +727,7 @@ void Squeak_Interpreter::bytecodePrimLessThan() {
   roots.messageSelector = specialSelector(2);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -716,7 +754,7 @@ void Squeak_Interpreter::bytecodePrimGreaterThan() {
   roots.messageSelector = specialSelector(3);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -742,7 +780,7 @@ void Squeak_Interpreter::bytecodePrimLessOrEqual() {
   roots.messageSelector = specialSelector(4);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -769,7 +807,7 @@ void Squeak_Interpreter::bytecodePrimGreaterOrEqual() {
   roots.messageSelector = specialSelector(5);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -795,7 +833,7 @@ void Squeak_Interpreter::bytecodePrimEqual() {
   roots.messageSelector = specialSelector(6);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -821,7 +859,7 @@ void Squeak_Interpreter::bytecodePrimNotEqual() {
   roots.messageSelector = specialSelector(7);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -849,7 +887,7 @@ void Squeak_Interpreter::bytecodePrimMakePoint() {
   roots.messageSelector = specialSelector(11);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   
   normalSend();
 }
@@ -873,7 +911,7 @@ void Squeak_Interpreter::bytecodePrimBitShift() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -893,7 +931,7 @@ void Squeak_Interpreter::bytecodePrimDiv() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -916,7 +954,7 @@ void Squeak_Interpreter::bytecodePrimBitAnd() {
 
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -937,7 +975,7 @@ void Squeak_Interpreter::bytecodePrimBitOr() {
 
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -963,7 +1001,7 @@ void Squeak_Interpreter::bytecodePrimAt() {
   roots.messageSelector = specialSelector(16);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -990,7 +1028,7 @@ void Squeak_Interpreter::bytecodePrimAtPut() {
   roots.messageSelector = specialSelector(17);
   set_argumentCount( 2 );
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -1001,7 +1039,7 @@ void Squeak_Interpreter::bytecodePrimSize() {
   
   Oop rcvr = internalStackTop();
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -1013,7 +1051,7 @@ void Squeak_Interpreter::bytecodePrimNext() {
   
   Oop rcvr = internalStackTop();
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -1025,7 +1063,7 @@ void Squeak_Interpreter::bytecodePrimNextPut() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -1037,7 +1075,7 @@ void Squeak_Interpreter::bytecodePrimAtEnd() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -1080,7 +1118,7 @@ void Squeak_Interpreter::bytecodePrimBlockCopy() {
     roots.messageSelector = specialSelector(24);
     set_argumentCount(1);
     
-    if (delegate) omni_request_execution(rcvr.fetchClass());
+    if (delegate) omni_request_execution();
     normalSend();
     return;
   }
@@ -1143,7 +1181,7 @@ void Squeak_Interpreter::bytecodePrimDo() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   
   normalSend();
 }
@@ -1153,7 +1191,7 @@ void Squeak_Interpreter::bytecodePrimNew() {
 
   Oop rcvr = internalStackTop();
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -1163,7 +1201,7 @@ void Squeak_Interpreter::bytecodePrimNewWithArg() {
   
   Oop rcvr = internalStackValue(1);
   if (omni_requires_delegation(rcvr))
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
 
   normalSend();
 }
@@ -1186,7 +1224,7 @@ void Squeak_Interpreter::bytecodePrimPointX() {
   roots.messageSelector = specialSelector(30);
   set_argumentCount(0);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -1205,7 +1243,7 @@ void Squeak_Interpreter::bytecodePrimPointY() {
   roots.messageSelector = specialSelector(31);
   set_argumentCount(0);
   
-  if (delegate) omni_request_execution(rcvr.fetchClass());
+  if (delegate) omni_request_execution();
   normalSend();
 }
 
@@ -1235,7 +1273,7 @@ void Squeak_Interpreter::sendLiteralSelectorBytecode() {
   
   bool delegate = omni_requires_delegation(rcvr);
   if (delegate)
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
   normalSend();
 }
 

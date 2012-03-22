@@ -1700,7 +1700,7 @@ void Squeak_Interpreter::primitivePerform() {
   if (_executes_on_baselevel && activeContext_obj()->domain_execute_on_baselevel()) {
     bool delegate = omni_requires_delegation(newReceiver);
     if (delegate) {
-      omni_request_execution(lookupClass);
+      omni_request_execution();
       normalSend();
       return;
     }

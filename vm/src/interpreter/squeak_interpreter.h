@@ -826,9 +826,18 @@ public:
      "Assume: messageSelector and get_argumentCount() have been set, and that 
       the receiver and arguments have been pushed onto the stack,"
      */
-    roots.lkupClass = method_obj()->methodClass().as_object()->superclass();
-    assert(roots.lkupClass.verify_oop());
-    roots.receiverClass = internalStackValue(get_argumentCount()).fetchClass();
+    Oop       rcvr = internalStackValue(get_argumentCount());
+    Oop  lkupClass = method_obj()->methodClass().as_object()->superclass();
+    assert(lkupClass.verify_oop());
+
+    bool  delegate = omni_requires_delegation(rcvr);
+    if (delegate) {
+      omni_request_execution_in_lookup_class(lkupClass);
+    }
+    else {
+      roots.lkupClass     = lkupClass;
+      roots.receiverClass = rcvr.fetchClass();
+    }
     commonSend();
   }
 
@@ -1014,7 +1023,8 @@ public:
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
   bool omni_requires_delegation(Oop rcvr) const;
-  void omni_request_execution(Oop lkupClass);
+  void omni_request_execution();
+  void omni_request_execution_in_lookup_class(Oop lkupClass);
   
   void omni_read_field(Oop obj_oop, int idx);
   void omni_write_field(Oop obj_oop, int idx, Oop value);

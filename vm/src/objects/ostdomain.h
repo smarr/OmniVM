@@ -33,22 +33,29 @@ public:
   }
   
   inline Oop read_field() const {
-    return domain_selectors.as_object()->fetchPointer(OstDomainSelector_Indices::ReadField_Of_);
+    return domain_selectors.as_object()->fetchPointer(
+              OstDomainSelector_Indices::ReadField_Of_);
   }
   
   inline Oop write_field() const {
-    return domain_selectors.as_object()->fetchPointer(OstDomainSelector_Indices::Write_ToField_Of_);
+    return domain_selectors.as_object()->fetchPointer(
+              OstDomainSelector_Indices::Write_ToField_Of_);
   }
 
   
   inline Oop request_exec(int arg_cnt) {
     if (arg_cnt == 0)
-      return get_domain_selector(OstDomainSelector_Indices::RequestExecutionOf_On_);
+      return get_domain_selector(
+              OstDomainSelector_Indices::RequestExecutionOf_On_);
     
     oop_int_t selector_id = OstDomainSelector_Indices::RequestExecution_Of_On_ + arg_cnt - 1;
     return get_domain_selector(selector_id);
   }
 
+  inline Oop request_exec_in_lookup_class() {
+    return domain_selectors.as_object()->fetchPointer(
+              OstDomainSelector_Indices::RequestExecutionOf_With_Lookup_On_);
+  }
 
 } The_OstDomain;
 
