@@ -60,8 +60,8 @@ public:
   u_char* _instructionPointer;
   Oop*    _stackPointer;
   
-  u_char* instructionPointer() { assert_external(); return _instructionPointer; }
-  Oop*    stackPointer()       { assert_external(); return _stackPointer; }
+  u_char* instructionPointer() const { assert_external(); return _instructionPointer; }
+  Oop*    stackPointer()       const { assert_external(); return _stackPointer; }
   
   void set_instructionPointer(u_char* x) { registers_unstored(); uninternalized(); _instructionPointer = x; }
   void set_stackPointer(Oop* x)          { registers_unstored(); uninternalized(); _stackPointer = x; }
@@ -441,8 +441,8 @@ public:
     _method_obj = m;
   }
 
-  Oop      theHomeContext()     { assert_external(); return roots._theHomeContext; }
-  Object_p theHomeContext_obj() { assert_external(); return _theHomeContext_obj;   }
+  Oop      theHomeContext()     const { assert_external(); return roots._theHomeContext; }
+  Object_p theHomeContext_obj() const { assert_external(); return _theHomeContext_obj;   }
   
   void set_theHomeContext(Oop m, bool really_changing) {
     if (really_changing) {
