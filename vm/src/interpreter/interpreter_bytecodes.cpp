@@ -121,7 +121,13 @@ void Squeak_Interpreter::extendedPushBytecode() {
   fetchNextBytecode();
   int i = descriptor & 0x3f;
   switch ((descriptor >> 6) & 3) {
-    case 0: pushReceiverVariable(i); break;
+    case 0: {
+      if (omni_requires_delegation(roots.receiver))
+        omni_internal_read_field(roots.receiver, i);
+      else
+        pushReceiverVariable(i);
+      break;
+    }
     case 1: pushTemporaryVariable(i); break;
     case 2: pushLiteralConstant(i); break;
     case 3: pushLiteralVariable(i); break;
@@ -133,9 +139,12 @@ void Squeak_Interpreter::extendedStoreBytecode() {
   fetchNextBytecode();
   u_char vi = d & 63;
   switch ((d >> 6) & 3) {
-    case 0:
-      // could watch for suspended context change here
-      receiver_obj()->storePointer(vi, internalStackTop());
+    case 0:      
+      if (omni_requires_delegation(roots.receiver))
+        omni_internal_write_field(roots.receiver, vi, internalStackTop());
+      else
+        // could watch for suspended context change here
+        receiver_obj()->storePointer(vi, internalStackTop());
       break;
     case 1:
       localHomeContext()->storePointerIntoContext(
@@ -181,20 +190,31 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
   u_char b2 = fetchByte();
   u_char b3 = fetchByte();
   switch (b2 >> 5) {
-    case 0:
+    case 0: {
       roots.messageSelector = literal(b3);
       set_argumentCount( b2 & 31 );
+      
+      Oop rcvr = internalStackValue(get_argumentCount());
+      bool delegate = omni_requires_delegation(rcvr);
+      if (delegate)
+        omni_request_execution();
+      
       normalSend();
       break;
+    }
     case 1:
       roots.messageSelector = literal(b3);
       set_argumentCount( b2 & 31);
       superclassSend();
       break;
-    case 2:
+    case 2: {
       fetchNextBytecode();
-      pushReceiverVariable(b3);
+      if (omni_requires_delegation(roots.receiver))
+        omni_internal_read_field(roots.receiver, b3);
+      else
+        pushReceiverVariable(b3);
       break;
+    }
     case 3:
       fetchNextBytecode();
       pushLiteralConstant(b3);
@@ -204,16 +224,27 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
       pushLiteralVariable(b3);
       break;
     case 5:
-      fetchNextBytecode();
-      // could watch for suspended context change here
-      receiver_obj()->storePointer(b3, internalStackTop());
+      if (omni_requires_delegation(roots.receiver))
+        omni_internal_write_field(roots.receiver, b3, internalStackTop());
+      else {
+        fetchNextBytecode();
+        // could watch for suspended context change here
+        receiver_obj()->storePointer(b3, internalStackTop());
+      }
       break;
     case 6: {
-      fetchNextBytecode();
-      Oop top = internalStackTop();
-      internalPop(1);
-      // could watch for suspended context change here
-      receiver_obj()->storePointer(b3, top);
+      if (omni_requires_delegation(roots.receiver)) {
+        Oop top = internalStackTop();
+        internalPop(1);
+        omni_internal_write_field(roots.receiver, b3, top);
+      }
+      else {
+        fetchNextBytecode();
+        Oop top = internalStackTop();
+        internalPop(1);
+        // could watch for suspended context change here
+        receiver_obj()->storePointer(b3, top);
+      }
       break;
     }
     case 7:
@@ -241,6 +272,13 @@ void Squeak_Interpreter::secondExtendedSendBytecode() {
   set_argumentCount( descriptor >> 6 );
   assert (!internalStackValue(get_argumentCount()).is_mem()
           || The_Memory_System()->object_table->probably_contains((void*)internalStackValue(get_argumentCount()).bits()));
+
+  Oop rcvr = internalStackValue(get_argumentCount());
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate)
+    omni_request_execution();
+
+  
   normalSend();
 }
 
