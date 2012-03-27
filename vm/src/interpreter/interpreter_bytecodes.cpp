@@ -40,7 +40,7 @@ void Squeak_Interpreter::storeAndPopReceiverVariableBytecode() {
   if (omni_requires_delegation(roots.receiver)) {
     Oop value = internalStackTop();
     internalPop(1);
-    omni_internal_write_field(roots.receiver, currentBytecode & 0xf, value);
+    omni_internal_write_field(roots.receiver, currentBytecode & 7, value);
   }
   else {
     fetchNextBytecode();
