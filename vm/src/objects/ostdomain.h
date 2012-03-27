@@ -19,7 +19,7 @@ private:
   Object_Field_Accessor field_accessor;
   Oop domain_selectors;
   
-  inline Oop get_domain_selector(oop_int_t selector_id) {
+  inline Oop get_domain_selector(oop_int_t selector_id) const {
     return domain_selectors.as_object()->fetchPointer(selector_id);
   }
   
@@ -28,22 +28,19 @@ public:
   
   void initialize(Oop ostDomain);
   
-  inline Oop get_domain_for_new_objects(Oop domain) {
+  inline Oop get_domain_for_new_objects(Oop domain) const {
     return field_accessor.get_field(domain, 0);
   }
   
   inline Oop read_field() const {
-    return domain_selectors.as_object()->fetchPointer(
-              OstDomainSelector_Indices::ReadField_Of_);
+    return get_domain_selector(OstDomainSelector_Indices::ReadField_Of_);
   }
   
   inline Oop write_field() const {
-    return domain_selectors.as_object()->fetchPointer(
-              OstDomainSelector_Indices::Write_ToField_Of_);
+    return get_domain_selector(OstDomainSelector_Indices::Write_ToField_Of_);
   }
 
-  
-  inline Oop request_exec(int arg_cnt) {
+  inline Oop request_exec(int arg_cnt) const {
     if (arg_cnt == 0)
       return get_domain_selector(
               OstDomainSelector_Indices::RequestExecutionOf_On_);
@@ -52,9 +49,37 @@ public:
     return get_domain_selector(selector_id);
   }
 
-  inline Oop request_exec_in_lookup_class() {
-    return domain_selectors.as_object()->fetchPointer(
+  inline Oop request_exec_in_lookup_class() const {
+    return get_domain_selector(
               OstDomainSelector_Indices::RequestExecutionOf_With_Lookup_On_);
+  }
+  
+  inline Oop prim_at_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimAt_On_);
+  }
+  
+  inline Oop prim_at_put_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimAt_On_Put_);
+  }
+  
+  inline Oop prim_basic_at_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimBasicAt_On_);
+  }
+  
+  inline Oop prim_basic_at_put_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimBasicAt_On_Put_);
+  }
+
+  inline Oop prim_inst_var_at_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimInstVarAt_On_);
+  }
+
+  inline Oop prim_inst_var_at_put_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimInstVarAt_On_Put_);
+  }
+
+  inline Oop prim_shallow_copy() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimShallowCopy_);
   }
 
 } The_OstDomain;

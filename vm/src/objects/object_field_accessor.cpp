@@ -14,7 +14,7 @@
 # include "headers.h"
 
 
-int Object_Field_Accessor::index_of_instance_variable(oop_int_t field_name_idx, Oop class_oop) {
+int Object_Field_Accessor::index_of_instance_variable(oop_int_t field_name_idx, Oop class_oop) const {
   if (field_name_idx > number_of_fields)
     return -1;
   return indices[field_name_idx];
@@ -31,7 +31,7 @@ bool Object_Field_Accessor::set_field(Oop target_oop, oop_int_t field_name_idx, 
   target->storePointer(field_idx, value);
 }
 
-Oop Object_Field_Accessor::get_field(Oop source_oop, oop_int_t field_name_idx) {
+Oop Object_Field_Accessor::get_field(Oop source_oop, oop_int_t field_name_idx) const {
   assert(source_oop != The_Squeak_Interpreter()->roots.nilObj);
   
   Object_p source = source_oop.as_object();
@@ -45,19 +45,19 @@ Oop Object_Field_Accessor::get_field(Oop source_oop, oop_int_t field_name_idx) {
 }
 
 
-void Object_Field_Accessor::print_results() {
+void Object_Field_Accessor::print_results() const {
   for (int i = 0; i < number_of_fields; i++) 
     lprintf("indices[%s] = %d\n", field_names[i], indices[i]);
 }
 
 
-Object_p Object_Field_Accessor::instance_variable_names() {
+Object_p Object_Field_Accessor::instance_variable_names() const {
   Object_p class_obj = class_oop.as_object();
   return class_obj->fetchPointer(class_obj->instance_variable_names_index_of_class(field_names[0])).as_object();
 }
 
 
-int Object_Field_Accessor::instance_variable_count_of_superclasses() {
+int Object_Field_Accessor::instance_variable_count_of_superclasses() const {
   return Object::ClassFormat::fixedFields( class_oop.as_object()->superclass().as_object()->formatOfClass() );
 }
 
