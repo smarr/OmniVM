@@ -348,6 +348,13 @@ void Squeak_Interpreter::primitiveClone() {
   Oop x = stackTop();
   if (x.is_int())
     return;
+  
+  bool delegate = omni_requires_delegation(x);
+  if (delegate) {
+    omni_request_primitive_clone();
+    return;
+  }
+  
   Oop nc = x.as_object()->clone();
   if (nc.is_int()) { primitiveFail(); return; }
   popThenPush(1, nc);
@@ -1105,8 +1112,16 @@ void Squeak_Interpreter::primitiveInputWord() {
 }
 
 void Squeak_Interpreter::primitiveInstVarAt() {
-  oop_int_t index = stackIntegerValue(0);
   Oop rcvr = stackValue(1);
+
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate) {
+    omni_request_primitive_at(The_OstDomain.prim_inst_var_at_on());
+    return;
+  }
+  
+  
+  oop_int_t index = stackIntegerValue(0);
   
   if (!rcvr.is_mem()) {
     primitiveFail();
@@ -1127,9 +1142,16 @@ void Squeak_Interpreter::primitiveInstVarAt() {
   }
 }
 void Squeak_Interpreter::primitiveInstVarAtPut() {
+  Oop rcvr = stackValue(2);
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate) {
+    omni_request_primitive_atPut(The_OstDomain.prim_inst_var_at_put_on());
+    return;
+  }
+  
   Oop newValue = stackTop();
   u_oop_int_t index = stackIntegerValue(1);
-  Oop rcvr = stackValue(2);
+
   if (!rcvr.is_mem()) primitiveFail();
   if (!successFlag) return;
   Object_p ro = rcvr.as_object();

@@ -1026,11 +1026,19 @@ public:
   void omni_request_execution();
   void omni_request_execution_in_lookup_class(Oop lkupClass);
   
+  void omni_request_primitive_at   (Oop primSelector);
+  void omni_request_primitive_atPut(Oop primSelector);
+  void omni_request_primitive_clone();
+  
   void omni_read_field(Oop obj_oop, int idx);
   void omni_write_field(Oop obj_oop, int idx, Oop value);
 
   void omni_internal_read_field(Oop obj_oop, int idx);
   void omni_internal_write_field(Oop obj_oop, int idx, Oop value);
+  
+  void omni_commonSend(Oop lookupClass); // helper similar to commonSend()
+  void omni_commonInternalSend();
+  
   
   
   inline void omni_set_domain_for_new_object(Object_p obj) {

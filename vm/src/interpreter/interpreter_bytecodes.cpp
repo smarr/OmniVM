@@ -380,6 +380,57 @@ void Squeak_Interpreter::omni_request_execution_in_lookup_class(Oop lkupClass) {
   roots.receiverClass   = roots.lkupClass;
 }
 
+void Squeak_Interpreter::omni_request_primitive_at(Oop primSelector) {
+  // this is code that should be called from a primitive only, and primitives are supposed to work on the externalized state
+  Oop index  = stackTop();
+  Oop rcvr   = stackValue(1);
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  popThenPush(2, rcvr_domain);
+  push(index);
+  push(rcvr);
+  
+  set_argumentCount(2);
+  roots.messageSelector = primSelector;
+  roots.lkupClass = rcvr_domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);  // rcvr_domain.fetchClass()
+}
+
+void Squeak_Interpreter::omni_request_primitive_atPut(Oop primSelector) {
+  Oop value = stackTop();
+  Oop index = stackValue(1);
+  Oop rcvr  = stackValue(2);
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  popThenPush(3, rcvr_domain);
+  push(index);
+  push(rcvr);
+  push(value);
+  
+  set_argumentCount(3);
+  roots.messageSelector = primSelector;
+  roots.lkupClass = rcvr_domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);
+}
+
+void Squeak_Interpreter::omni_request_primitive_clone() {
+  Oop value = stackTop();
+  
+  Oop domain = value.as_object()->domain_oop();
+  
+  popThenPush(1, domain);
+  push(value);
+  
+  set_argumentCount(1);
+  
+  roots.messageSelector = The_OstDomain.prim_shallow_copy();
+  roots.lkupClass = domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);
+}
+
 void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
   Safepoint_Ability sa(true);
 
@@ -402,6 +453,10 @@ void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
   set_argumentCount(2);
   roots.messageSelector = The_OstDomain.read_field();
   
+  omni_commonSend(lookupClass);
+}
+
+void Squeak_Interpreter::omni_commonSend(Oop lookupClass) {
   findNewMethodInClass(lookupClass);
   
   {
@@ -416,6 +471,15 @@ void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
   }
   else
     fatal("not yet implemented");
+}
+
+void Squeak_Interpreter::omni_commonInternalSend() {
+  Safepoint_Ability sa(false);
+  internalFindNewMethod();
+  internalExecuteNewMethod();
+  
+  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+    fetchNextBytecode();
 }
 
 /** STEFAN: make sure this is in sync with the normal read_field */
@@ -443,11 +507,7 @@ void Squeak_Interpreter::omni_internal_read_field(Oop obj_oop, int idx) {
   roots.lkupClass = domain.fetchClass();
   roots.messageSelector = The_OstDomain.read_field();
   
-  internalFindNewMethod();
-  internalExecuteNewMethod();
-  
-  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
-    fetchNextBytecode();
+  omni_commonInternalSend();
 }
 
 
@@ -470,20 +530,7 @@ void Squeak_Interpreter::omni_write_field(Oop obj_oop, int idx, Oop value) {
   
   roots.messageSelector = The_OstDomain.write_field();
   
-  findNewMethodInClass(lookupClass);
-  
-  {
-    Object_p nmo = newMethod_obj();
-    if (nmo->isCompiledMethod())
-      success(nmo->argumentCount() == get_argumentCount());
-  }
-  
-  if (successFlag) {
-    executeNewMethodFromCache();
-    successFlag = true;
-  }
-  else
-    fatal("not yet implemented");
+  omni_commonSend(lookupClass);
 }
 
 /** STEFAN: make sure this is in sync with the normal write_field */
@@ -510,11 +557,7 @@ void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop val
   roots.lkupClass = domain.fetchClass();
   roots.messageSelector = The_OstDomain.write_field();
   
-  internalFindNewMethod();
-  internalExecuteNewMethod();
-  
-  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
-    fetchNextBytecode();
+  omni_commonInternalSend();
 }
 
 

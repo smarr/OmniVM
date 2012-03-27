@@ -1778,6 +1778,17 @@ void Squeak_Interpreter::print_all_processes_in_scheduler(Printer* pr, bool prin
 
 
 void Squeak_Interpreter::commonAt(bool stringy) {
+  Oop rcvr = stackValue(1);
+  
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate) {
+    omni_request_primitive_at(roots.messageSelector == specialSelector(16)
+                                ? The_OstDomain.prim_at_on()
+                                : The_OstDomain.prim_basic_at_on());
+    return;
+  }
+
+  
   /*
    "This code is called if the receiver responds primitively to at:.
    If this is so, it will be installed in the atCache so that subsequent calls of at:
@@ -1785,8 +1796,9 @@ void Squeak_Interpreter::commonAt(bool stringy) {
    | index rcvr atIx result |
    */
   oop_int_t index = positive32BitValueOf(stackTop());
-  Oop rcvr = stackValue(1);
+
   if (!successFlag || !rcvr.is_mem()) { primitiveFail(); return; }
+  
   Object_p ro = rcvr.as_object();
   /*
    "NOTE:  The at-cache, since it is specific to the non-super response to #at:.
@@ -1820,6 +1832,17 @@ void Squeak_Interpreter::commonAt(bool stringy) {
 
 
 void Squeak_Interpreter::commonAtPut(bool stringy) {
+  Oop rcvr = stackValue(2);
+  
+  bool delegate = omni_requires_delegation(rcvr);
+  if (delegate) {
+    omni_request_primitive_atPut(roots.messageSelector == specialSelector(17)
+                                  ? The_OstDomain.prim_at_put_on()
+                                  : The_OstDomain.prim_basic_at_put_on());
+    return;
+  }
+
+  
   /*
    "This code is called if the receiver responds primitively to at:Put:.
    If this is so, it will be installed in the atPutCache so that subsequent calls of at:
@@ -1827,7 +1850,7 @@ void Squeak_Interpreter::commonAtPut(bool stringy) {
    */
   Oop value = stackTop();
   oop_int_t index = positive32BitValueOf(stackValue(1));
-  Oop rcvr = stackValue(2);
+
   if (!successFlag || !rcvr.is_mem()) {
     primitiveFail();
     return;
