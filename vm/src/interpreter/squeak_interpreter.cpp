@@ -1005,8 +1005,9 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   DEBUG_STORE_CHECK(&where[Object_Indices::SenderIndex], activeContext());
   where[Object_Indices::SenderIndex] = activeContext();
 
-  Oop contents = Oop::from_int(
-                                                                 ((Object_Indices::LiteralStart + Object::literalCountOfHeader(methodHeader)) * bytesPerWord) + 1);
+  Oop contents = Oop::from_int(((Object_Indices::LiteralStart
+                                 + Object::literalCountOfHeader(methodHeader))
+                                * bytesPerWord) + 1);
   DEBUG_STORE_CHECK(&where[Object_Indices::InstructionPointerIndex], contents);
   where[Object_Indices::InstructionPointerIndex] = contents;
   
