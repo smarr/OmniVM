@@ -136,23 +136,31 @@ void Squeak_Interpreter::extendedPushBytecode() {
 
 void Squeak_Interpreter::extendedStoreBytecode() {
   u_char d = fetchByte();
-  fetchNextBytecode();
+  
   u_char vi = d & 63;
   switch ((d >> 6) & 3) {
     case 0:      
-      if (omni_requires_delegation(roots.receiver))
-        omni_internal_write_field(roots.receiver, vi, internalStackTop());
-      else
+      if (omni_requires_delegation(roots.receiver)) {
+        Oop value = internalStackTop();
+        internalPop(1);
+        omni_internal_write_field(roots.receiver, vi, value);
+      }
+      else {
+        fetchNextBytecode();
         // could watch for suspended context change here
         receiver_obj()->storePointer(vi, internalStackTop());
+      }
       break;
     case 1:
+      fetchNextBytecode();
       localHomeContext()->storePointerIntoContext(
                                                 vi + Object_Indices::TempFrameStart, internalStackTop());
       break;
     case 2:
+      fetchNextBytecode();
       fatal("illegal store");
     case 3:
+      fetchNextBytecode();
       literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
       break;
   }
