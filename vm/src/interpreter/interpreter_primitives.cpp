@@ -1836,12 +1836,15 @@ void Squeak_Interpreter::primitiveQuo() {
 void Squeak_Interpreter::primitiveRelinquishProcessor() {
   static Oop last_wayward_idle_process = Oop::from_bits(0);
   Oop this_process = roots.running_process_or_nil;
-  if (last_wayward_idle_process.bits() != this_process.bits())
-      lprintf("Deactivating caller process of primitiveRelinquishProcessor; assuming it's the idle process\n");;
-  last_wayward_idle_process = this_process;
   
-  if (Logical_Core::num_cores > 1)
-    this_process.as_object()->store_allowable_cores_of_process(0LL); // not runnable anywhere
+  if (last_wayward_idle_process.bits() != this_process.bits()) {
+    last_wayward_idle_process = this_process;
+  
+    if (Logical_Core::num_cores > 1) {
+      lprintf("Deactivating caller process of primitiveRelinquishProcessor; assuming it's the idle process\n");
+      this_process.as_object()->store_allowable_cores_of_process(0LL); // not runnable anywhere
+    }
+  }
   pop(1);
   yield("stopping idle process");
 }
