@@ -822,13 +822,17 @@ void Object::print_frame(Printer* p) {
 
 
   Oop* stack = &as_oop_p()[Object_Indices::ContextFixedSizePlusHeader];
-  int ip = mo == NULL ? -17 :
-    fetchInteger(Object_Indices::InstructionPointerIndex)
-      - ((Object_Indices::LiteralStart + mo->literalCount() * bytesPerWord) + 1);
+  int rawIP = (mo == NULL) // STEFAN: added the rawIP (1-based) that corresponds to what the images shows in the bytecodes
+                ? -17
+                : fetchInteger(Object_Indices::InstructionPointerIndex) + 1;
+  int ip = (mo == NULL)
+                ? -17
+                : fetchInteger(Object_Indices::InstructionPointerIndex)
+                    - ((Object_Indices::LiteralStart + mo->literalCount() * bytesPerWord) + 1);
 
-  p->printf("[%s] 0x%x, ip %3d, sp %2d:  ",
+  p->printf("[%s] 0x%x, ip %3d (raw: %3d), sp %2d:  ",
             domain_execute_on_baselevel() ? "b" : "M",
-            this, ip, sp);
+            this, ip, rawIP, sp);
 
 
   Oop sel, mclass;

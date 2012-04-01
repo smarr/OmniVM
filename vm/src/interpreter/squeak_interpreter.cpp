@@ -3262,6 +3262,41 @@ void Squeak_Interpreter::print_method_info(const char* msg) {
   }
 }
 
+void Squeak_Interpreter::print_stack_frame() {
+  // ip + current bytecode
+  // stack
+  
+  int rawIP;
+  int ip;
+  const char* execLevel = executes_on_baselevel() ? "b" : "M";
+  int sp;
+  
+  if (is_internal_valid()) {
+    rawIP = localIP() - method_obj()->as_u_char_p()
+          - Object::BaseHeaderSize + 1;
+    sp = localStackPointerIndex() - Object_Indices::TempFrameStart + 1;
+  }
+  else {
+    rawIP = instructionPointer() - method_obj()->as_u_char_p()
+          - Object::BaseHeaderSize + 1;
+    sp = stackPointerIndex()  - Object_Indices::TempFrameStart + 1;
+  }
+  ip = rawIP - 
+        (Object_Indices::LiteralStart
+         + method_obj()->literalCount() * bytesPerWord) - 2;
+  
+  error_printer->printf("[%s]\tip %3d (raw %3d), sp %3d\n",
+                        execLevel,
+                        ip,
+                        rawIP,
+                        sp);
+  
+  for (int i = sp; i >= 0; i--) {
+    error_printer->printf("\t[%2d]\t", i);
+    internalStackValue(sp - i).dp();
+  }
+}
+
 
 void Squeak_Interpreter::preGCAction_here(bool fullGC) {
   if (check_many_assertions) activeContext_obj()->check_all_IPs_in_chain();

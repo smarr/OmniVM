@@ -20,6 +20,9 @@ void pat(); // print all stack traces
 void pet(); // print execution trace
 void pst(); // print stack trace
 
+void print_current_method();
+void print_stack_frame();
+
 void enableTracing();
 void disableTracing();
 

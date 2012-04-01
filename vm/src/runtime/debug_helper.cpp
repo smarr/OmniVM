@@ -43,6 +43,14 @@ void pat() {
 }
 int printAllStacks() { pat(); return 0; }
 
+void print_current_method() {
+  The_Squeak_Interpreter()->print_method_info("debug helper");
+}
+
+void print_stack_frame() {
+  The_Squeak_Interpreter()->print_stack_frame();
+}
+
 
 void enableTracing() {
   Triggerable_Execution_Tracer* tracer = 

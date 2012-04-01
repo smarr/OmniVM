@@ -467,6 +467,7 @@ public:
   Object_p lkupClass_obj();
 
   void print_method_info(const char* msg);
+  void print_stack_frame();
   void preGCAction_here(bool fullGC);
   void postGCAction_here(bool fullGC);
   void preGCAction_everywhere(bool fullGC);
@@ -1095,6 +1096,12 @@ public:
   int stackPointerIndex() {
     return stackPointer() - activeContext_obj()->as_oop_p() - Object::BaseHeaderSize/sizeof(Oop);
   }
+  
+  int localStackPointerIndex() {
+    return localSP() - activeContext_obj()->as_oop_p() - Object::BaseHeaderSize/sizeof(Oop);
+  }
+
+  
   void run_primitive_on_main_from_elsewhere(fn_t);
   void dispatchFunctionPointer(fn_t f, bool on_main);
   void dispatchFunctionPointer(int i, Primitive_Table *pt) {
