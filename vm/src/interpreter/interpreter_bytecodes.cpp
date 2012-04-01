@@ -1162,7 +1162,7 @@ void Squeak_Interpreter::bytecodePrimAtEnd() {
   roots.messageSelector = specialSelector(21);
   set_argumentCount(0);
   
-  Oop rcvr = internalStackValue(1);
+  Oop rcvr = internalStackTop();
   if (omni_requires_delegation(rcvr))
     omni_request_execution();
   
