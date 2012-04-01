@@ -25,6 +25,9 @@ void dp(Oop x) { x.dp(); }
 void Oop::dp() { print(stderr_printer); stderr_printer->nl(); }  // debugging print routines
 void dp(Object* x) {x->dp(); } // print Object
 
+void dpf(Oop x)     { x.as_object()->print_with_fields(); }
+void dpf(Object* x) { x->print_with_fields(); } 
+
 // Interpreter
 
 void pet() {

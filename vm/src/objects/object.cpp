@@ -59,6 +59,18 @@ bool Object::verify_preheader_words() {
 
 void Object::dp() { print(stderr_printer); stderr_printer->nl(); }
 
+void Object::print_with_fields() {
+  dp();
+  
+  int i = 1;
+  
+  FOR_EACH_OOP_IN_OBJECT_EXCEPT_CLASS(this, oopp) {
+    stderr_printer->printf("\t[%3d]\t", i);
+    oopp->dp();
+    i++;
+  }
+}
+
 void Object::print(Printer* p) {
   if (!my_heap_contains_me()) {
     p->printf("Wild pointer; object not in any heap");

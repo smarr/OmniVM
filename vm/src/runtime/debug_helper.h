@@ -16,6 +16,9 @@ void dp(Oop x); // print Oop
 void dp(int x); // print Oop
 void dp(Object* x); // print Object
 
+void dpf(Oop x);
+void dpf(Object* x);
+
 void pat(); // print all stack traces
 void pet(); // print execution trace
 void pst(); // print stack trace
