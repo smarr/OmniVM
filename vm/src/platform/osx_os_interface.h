@@ -57,7 +57,8 @@ public:
   
   static inline void breakpoint() {
     // The_Squeak_Interpreter->suppress_context_switch_for_debugging = true;
-    if (AmIBeingDebugged())
+    static bool breakHere = true; // disable breakpoint
+    if (breakHere && AmIBeingDebugged())
       raise(SIGTRAP);
   }
   
