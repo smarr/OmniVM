@@ -14,6 +14,8 @@
 
 # include "headers.h"
 
+# ifdef domain_info_t
+
 /**
  * It is supposed to be filled with NULL on initialization.
  */
@@ -79,3 +81,5 @@ TEST(Preheader, DomainHeaderLayout) {
   
   ASSERT_TRUE(Oop::from_bits(h.domain.raw_value).is_int());
 }
+
+# endif
