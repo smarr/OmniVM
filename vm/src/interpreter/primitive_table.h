@@ -216,6 +216,6 @@ template(primitiveBaselevelPerformInSuperclass)
 
 # define DCL(n) void* n(...);
 
-FOR_ALL_PRIMITIVES_DO(DCL);
+FOR_ALL_PRIMITIVES_DO(DCL)
 # undef DCL
 
