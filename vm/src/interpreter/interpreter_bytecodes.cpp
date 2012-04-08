@@ -1179,7 +1179,7 @@ void Squeak_Interpreter::bytecodePrimClass() {
   Oop rcvr = internalStackTop();
   
   if (omni_requires_delegation(rcvr)) {
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
     normalSend();
     return;
   }
@@ -1223,7 +1223,7 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
   // OMNI this looks like a slow operation, so try to fail fast
   //      usually we try to do the normal path first, like integer handling
   if (omni_requires_delegation(block)) {
-    omni_request_execution(block.fetchClass());
+    omni_request_execution();
     normalSend();
     return;
   }
