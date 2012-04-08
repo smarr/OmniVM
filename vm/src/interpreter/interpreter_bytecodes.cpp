@@ -696,9 +696,9 @@ void Squeak_Interpreter::bytecodePrimMultiply() {
   if (areIntegers(rcvr, arg)) {
     oop_int_t ri = rcvr.integerValue();
     oop_int_t ai = arg.integerValue();
-    oop_int_t r  = ri * ai;
-    if (ai == 0  ||  (r / ai  ==  ri    &&    Oop::isIntegerValue(r))) {
-      internalPopThenPush(2, Oop::from_int(r));
+    long long result_with_overflow = (long long)ri * ai;
+    if (ai == 0  || Oop::isIntegerValue(result_with_overflow)) {
+      internalPopThenPush(2, Oop::from_int(result_with_overflow));
       fetchNextBytecode();
       return;
     }
@@ -1179,7 +1179,7 @@ void Squeak_Interpreter::bytecodePrimClass() {
   Oop rcvr = internalStackTop();
   
   if (omni_requires_delegation(rcvr)) {
-    omni_request_execution(rcvr.fetchClass());
+    omni_request_execution();
     normalSend();
     return;
   }
@@ -1223,7 +1223,7 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
   // OMNI this looks like a slow operation, so try to fail fast
   //      usually we try to do the normal path first, like integer handling
   if (omni_requires_delegation(block)) {
-    omni_request_execution(block.fetchClass());
+    omni_request_execution();
     normalSend();
     return;
   }

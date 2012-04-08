@@ -242,13 +242,13 @@ void Squeak_Interpreter::primitiveBytesLeft() {
    */
   switch (methodArgumentCount()) {
     case 0:
-      popThenPushInteger(1, The_Memory_System()->bytesLeft(false));
+      popThenPushInteger(1, The_Memory_System()->bytesLeft(/* false */));
       return;
 
     case 1: {
       bool swapSpace = booleanValueOf(stackTop());
       if (!successFlag) return;
-      popThenPushInteger(2, The_Memory_System()->bytesLeft(swapSpace));
+      popThenPushInteger(2, The_Memory_System()->bytesLeft(/* swapSpace */));
       return;
     }
     default:
@@ -983,7 +983,7 @@ void Squeak_Interpreter::primitiveFullGC() {
   pop(1);
   The_Memory_System()->incrementalGC();
   The_Memory_System()->fullGC("primitiveFullGC");
-  pushInteger(The_Memory_System()->bytesLeft(true));
+  pushInteger(The_Memory_System()->bytesLeft(/* true */));
 }
 
 void Squeak_Interpreter::primitiveGetAttribute() {
@@ -1001,9 +1001,10 @@ void Squeak_Interpreter::primitiveGetAttribute() {
   popThenPush(2, s->as_oop());
 }
 
+
 void Squeak_Interpreter::primitiveGetNextEvent() {
   assert_external();
-  const bool print = false;
+  const bool print = Print_Keys;
   int evtBuf[evtBuf_size];
   for (int i = 0;  i < evtBuf_size;  ++i)  evtBuf[i] = 0;
   bool got_one = The_Interactions.getNextEvent_on_main(evtBuf); // do this from here so we can GC if need be
@@ -1048,10 +1049,11 @@ void Squeak_Interpreter::primitiveGetNextEvent() {
   }
   if (!successFlag) return;
 
-  if (print && evtBuf[0] == 2)
-    lprintf("primitiveGetNextEvent key: %d, state %d\n", evtBuf[2], evtBuf[3]);
+  if (print && evtBuf[0] == 2 /* EventTypeKeyboard*/ )
+    lprintf("primitiveGetNextEvent key: %d, state %d '%c'\n", evtBuf[2], evtBuf[3], evtBuf[2]);
   pop(1);
 }
+
 
 void Squeak_Interpreter::primitiveGreaterOrEqual() {
   oop_int_t a = popInteger();
@@ -1088,7 +1090,7 @@ void Squeak_Interpreter::primitiveImageName() {
 void Squeak_Interpreter::primitiveIncrementalGC() {
   pop(1);
   The_Memory_System()->finalize_weak_arrays_since_we_dont_do_incrementalGC();
-  pushInteger(The_Memory_System()->bytesLeft(false));
+  pushInteger(The_Memory_System()->bytesLeft(/* false */));
 }
 
 void Squeak_Interpreter::primitiveInputSemaphore() {
@@ -1226,7 +1228,7 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   Oop runSelector = roots.messageSelector;
   Oop runReceiver = stackValue(get_argumentCount());
   pop(get_argumentCount() + 1);
-  
+
   
   /// OMNI ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
   
@@ -1258,9 +1260,20 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   successFlag = true;
 }
 
+static void print_keystroke_word(int keystrokeWord) {
+  if (Print_Keys  &&  keystrokeWord >= 0) {
+    lprintf("%s %u 0x%x 0%o\n", 
+            "primitiveKbdPeek", 
+            keystrokeWord,
+            keystrokeWord,
+            keystrokeWord);
+  }
+}
+
 void Squeak_Interpreter::primitiveKbdNext() {
   pop(1);
   int keystrokeWord = ioGetKeystroke();
+  print_keystroke_word(keystrokeWord);
   if (keystrokeWord >= 0)  pushInteger(keystrokeWord);
   else                     push(roots.nilObj);
 
@@ -1273,6 +1286,7 @@ void Squeak_Interpreter::primitiveKbdPeek() {
 # else
   int keystrokeWord = ioPeekKeystroke();
 # endif
+  print_keystroke_word(keystrokeWord);
   if (keystrokeWord >= 0)  pushInteger(keystrokeWord);
   else                     push(roots.nilObj);
 }
@@ -1852,8 +1866,21 @@ void Squeak_Interpreter::primitiveRelinquishProcessor() {
 
 void Squeak_Interpreter::primitiveResume() {
   Oop proc = stackTop();
-  success(get_argumentCount() == 0  &&  proc.fetchClass() == splObj(Special_Indices::ClassProcess) );
-  if (successFlag)  resume(proc, "primitiveResume");
+  success(get_argumentCount() == 0);
+  
+  if (!successFlag)
+    return;
+  
+  Oop procClass = splObj(Special_Indices::ClassProcess);
+  Oop clsOop = proc.fetchClass();
+  if ( clsOop != clsOop ) {
+    if ( !procClass.as_object()->is_superclass_of(clsOop) ) {
+      primitiveFail();
+      return;
+    }
+  }
+  
+  resume(proc, "primitiveResume");
   addedScheduledProcessMessage_class().send_to_other_cores();
 }
 
@@ -2205,9 +2232,13 @@ void Squeak_Interpreter::primitiveSuspend() {
   }
 
   Oop procToSuspend = stackTop();
-  if ( procToSuspend.fetchClass() != splObj(Special_Indices::ClassProcess) ) {
-    primitiveFail();
-    return;
+  Oop procClass = splObj(Special_Indices::ClassProcess);
+  Oop clsOop = procToSuspend.fetchClass();
+  if ( clsOop != clsOop ) {
+    if ( !procClass.as_object()->is_superclass_of(clsOop) ) {
+      primitiveFail();
+      return;
+    }
   }
   Oop old_list;
   {
@@ -2225,13 +2256,12 @@ void Squeak_Interpreter::primitiveSuspend() {
 }
 
 
-static void terminate_to(Oop aContext, Oop thisCntx) {
+static void terminate_to(Oop aContext, Oop thisCntx, Oop nilOop) {
   // Warning: only works if called for this very process
   Object_p aco = aContext.as_object();
   Object_p tco = thisCntx.as_object();
   
   if (tco->hasSender(aContext)) {
-    Oop nilOop = The_Squeak_Interpreter()->roots.nilObj;
     Object_p nextCntx;
     for (Object_p currentCntx = tco->fetchPointer(Object_Indices::SenderIndex).as_object();
          currentCntx != aco;
@@ -2255,7 +2285,7 @@ void Squeak_Interpreter::primitiveTerminateTo() {
     primitiveFail();
     return;
   }
-  terminate_to(aContext, thisCntx);
+  terminate_to(aContext, thisCntx, roots.nilObj);
   push(thisCntx);
 }
 
@@ -2498,7 +2528,7 @@ void Squeak_Interpreter::primitiveClosureValue() {
 
 
 void Squeak_Interpreter::primitiveClosureValueNoContextSwitch() {
-  The_Squeak_Interpreter()->doing_primitiveClosureValueNoContextSwitch = true;
+  doing_primitiveClosureValueNoContextSwitch = true;
   primitiveClosureValue(); 
 }
 
@@ -2636,19 +2666,19 @@ void Squeak_Interpreter::primitiveFloatDivide(Oop r, Oop a) {
 bool Squeak_Interpreter::primitiveFloatLess(Oop r, Oop a) {
   double rd = loadFloatOrIntFrom(r);
   double ad = loadFloatOrIntFrom(a);
-  return  successFlag  ?  rd < ad  :  0.0;
+  return  successFlag  &&  rd < ad;
 }
 
 bool Squeak_Interpreter::primitiveFloatGreater(Oop r, Oop a) {
   double rd = loadFloatOrIntFrom(r);
   double ad = loadFloatOrIntFrom(a);
-  return  successFlag  ?  rd > ad  :  0.0;
+  return  successFlag  &&  rd > ad;
 }
 
 bool Squeak_Interpreter::primitiveFloatEqual(Oop r, Oop a) {
   double rd = loadFloatOrIntFrom(r);
   double ad = loadFloatOrIntFrom(a);
-  return  successFlag  ?  rd == ad  :  0.0;
+  return  successFlag  &&  rd == ad;
 }
 
 # if Include_Closure_Support

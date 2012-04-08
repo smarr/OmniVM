@@ -91,8 +91,10 @@ readImageFromFile: f HeapSize: desiredHeapSize StartingAt: imageOffset
 
   // "position file after the header"
   if (Verbose_Debug_Prints) fprintf(stdout, "reading objects in snapshot\n");
-  if (fseek(image_file, headerStart + headerSize, SEEK_SET))
-    perror("seek"), fatal();
+  if (fseek(image_file, headerStart + headerSize, SEEK_SET)) {
+    perror("seek");
+    fatal();
+  }
 
   // "read in the image in bulk, then swap the bytes if necessary"
   xfread(memory, 1, dataSize, image_file);
@@ -139,11 +141,13 @@ void Squeak_Image_Reader::imageNamePut_on_all_cores(char* bytes, unsigned int le
   // Use a shared buffer to reduce the size of the message to optimize the
   // footprint of message buffer allocation -- dmu & sm
   char* shared_buffer = (char*)Memory_Semantics::shared_malloc(len);
+  
   bcopy(bytes, shared_buffer, len);
   imageNamePutMessage_class m(shared_buffer, len);
-  if (On_Tilera) m.send_to_all_cores();
-  else           m.handle_me();
-  free(shared_buffer);
+  if (Using_Processes) m.send_to_all_cores();
+  else                 m.handle_me();
+  
+  Memory_Semantics::shared_free(shared_buffer);
 }
 
 
