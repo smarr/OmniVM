@@ -84,6 +84,15 @@ public:
   int32 primFailCode;
 
 
+private:
+  void broadcast_u_int64(u_int64*);
+  void broadcast_int32(int32* w);
+  void broadcast_bool(bool* b);
+  void broadcast_datum(int size, void* p, u_int64 d);
+  
+public:  
+
+  
 # define FOR_ALL_BROADCAST(template) \
   template(int32,int32,semaphoresToSignalCountA, 0) \
   template(int32,int32,semaphoresToSignalCountB, 0) \
@@ -200,6 +209,8 @@ public:
   
   Safepoint_Tracker* safepoint_tracker;
   Safepoint_Master_Control* safepoint_master_control;
+  Safepoint_Ability *safepoint_ability;
+
 
   u_char*   _localIP;  
   Oop*      _localSP;
@@ -1625,14 +1636,10 @@ public:
   void print_execution_trace();
   void trace_for_debugging();
 
+  void check_method_is_correct(bool, const char*); // for debugging
+  
   void assert_method_is_correct(bool will_be_fetched, const char* where) {
     if (Always_Check_Method_Is_Correct | check_assertions) check_method_is_correct(will_be_fetched, where);
-  }
-  
-  void assert_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
-    if ((Always_Check_Method_Is_Correct | check_assertions) && process_is_scheduled_and_executing())
-      assert_always_method_is_correct_internalizing(will_be_fetched, where);
-    }
   }
   
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
@@ -1644,8 +1651,14 @@ public:
       check_method_is_correct(will_be_fetched, where);
     }
   }
-  void check_method_is_correct(bool, const char*); // for debugging
-
+  
+  void assert_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
+    if ((Always_Check_Method_Is_Correct | check_assertions) && process_is_scheduled_and_executing())
+      assert_always_method_is_correct_internalizing(will_be_fetched, where);
+  }
+  
+  
+  
   void undo_prefetch() {
     if (Check_Prefetch) assert_always(!have_executed_currentBytecode);
     set_instructionPointer(instructionPointer() - 1); // send bytecode incremented this in fetchNextBytecode, but we want original value so yield can store it
@@ -1683,18 +1696,7 @@ private:
   void update_cache_and_call_external_function(Object_p fno, oop_int_t ii, fn_t addr, bool on_main);  
   void update_cache_and_report_failure_to_load_external_function(Object_p mno, Object_p fno);  
   
-private:
-  void broadcast_u_int64(u_int64*);
-  void broadcast_int32(int32* w);
-  void broadcast_bool(bool* b);
-private:
-  void broadcast_datum(int size, void* p, u_int64 d);
-  
-
-
 public:
-  Safepoint_Ability *safepoint_ability;
-
   void distribute_initial_interpreter();
   void receive_initial_interpreter();
   
