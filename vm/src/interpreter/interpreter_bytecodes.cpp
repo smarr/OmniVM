@@ -1225,6 +1225,7 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
   // OMNI this looks like a slow operation, so try to fail fast
   //      usually we try to do the normal path first, like integer handling
   if (omni_requires_delegation(block)) {
+    roots.messageSelector = specialSelector(selector_index);
     omni_request_execution();
     normalSend();
     return;
