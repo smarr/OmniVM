@@ -1872,12 +1872,9 @@ void Squeak_Interpreter::primitiveResume() {
     return;
   
   Oop procClass = splObj(Special_Indices::ClassProcess);
-  Oop clsOop = proc.fetchClass();
-  if ( clsOop != clsOop ) {
-    if ( !procClass.as_object()->is_superclass_of(clsOop) ) {
-      primitiveFail();
-      return;
-    }
+  if (!proc.isKindOf(procClass)) {
+    primitiveFail();
+    return;
   }
   
   resume(proc, "primitiveResume");
@@ -2233,13 +2230,11 @@ void Squeak_Interpreter::primitiveSuspend() {
 
   Oop procToSuspend = stackTop();
   Oop procClass = splObj(Special_Indices::ClassProcess);
-  Oop clsOop = procToSuspend.fetchClass();
-  if ( clsOop != clsOop ) {
-    if ( !procClass.as_object()->is_superclass_of(clsOop) ) {
-      primitiveFail();
-      return;
-    }
+  if (!procToSuspend.isKindOf(procClass)) {
+    primitiveFail();
+    return;
   }
+  
   Oop old_list;
   {
     Scheduler_Mutex sm("primitiveSuspend");
