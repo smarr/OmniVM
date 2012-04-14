@@ -559,6 +559,16 @@ Oop Object::clone() {
   
   // newObj->beRootIfOld();
   
+  // OMNI: what should be the clone semantic? 
+  //       Who should be the owner of the new object?
+  //       I would say the domain which performs the clone, it is already authorized to clone anyway.
+  //       So, we can make it easy for ourselfs and just copy that info, too.
+  //       And we can easily override that in the image.
+  Oop domain = remappedObject->domain_oop();
+  assert(domain.bits() == 0 || domain.is_mem());
+  
+  newObj->set_domain(remappedObject->domain_oop());
+  
   return newObj->as_oop(); 
 }
 
