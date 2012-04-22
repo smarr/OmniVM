@@ -118,6 +118,74 @@ static int primitiveExecutesOnMetaLevel() {
   return 0;
 }
 
+/** {{{ ONOMirror class>>#evaluate: block onBaseLevel: domain }}} */
+/** original implementation was in Smalltalk, but that did not work
+    properly anymore once I intrduced support for literals.
+    Now we need this as a primitive
+ 
+ONODomain >> #evaluateInContextOnBaseLevel: aBlock
+ | oldDomain result |
+ <omniMetaExit>
+ oldDomain := ONOMirror domainOf: thisContext.
+ ONOMirror setDomainOf: thisContext to: self.
+ ONOMirror switchToBaseLevel.
+ 
+ result := aBlock value.
+ 
+ ONOMirror switchToMetaLevel.
+ ONOMirror setDomainOf: thisContext to: oldDomain.
+ 
+ ^ result
+ **/
+static int primitiveEvaluateOnBaseLevel() {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  if (interp->get_argumentCount() != 2) {
+    interp->primitiveFail();
+    return 0;
+  }
+  
+  Oop domain = interp->stackObjectValue(0);
+  if (interp->failed())
+    return 0;
+
+  Oop block = interp->stackObjectValue(1);
+  if (interp->failed())
+    return 0;
+    
+  // since we do not yet support arguments, but the used code expects being 
+  // called directly with the right calling convention
+  interp->popThenPush(3, block);
+  interp->set_argumentCount(0);
+  
+  Oop klass = block.fetchClass();
+# if Include_Closure_Support
+  if (klass == interp->splObj(Special_Indices::ClassBlockClosure)) {
+    interp->primitiveClosureValueNoContextSwitch();
+  }
+  else 
+# endif
+  if (klass == interp->splObj(Special_Indices::ClassBlockContext)) {
+    Object_p bco = block.as_object();
+    interp->primitiveValue();
+
+  } 
+  else
+    interp->primitiveFail();
+  
+  
+  /** Now the magic: setting the domain infos */
+  interp->activeContext_obj()->set_domain(domain);
+  interp->switch_to_baselevel();
+  interp->_localDomain = domain.as_object();
+  
+
+  return 0;
+}
+
+
+
+
 
 /** Required to be picked up by the loading mechanism as an internal plugin */
 static int setInterpreter(struct VirtualMachine* /* anInterpreter */) {
@@ -134,6 +202,9 @@ void* OmniPlugin_exports[][3] = {
   
   {(void*) "OmniPlugin", (void*)"primitiveExecutesOnMetaLevel", (void*)primitiveExecutesOnMetaLevel},
   {(void*) "OmniPlugin", (void*)"primitiveExecutesOnBaseLevel", (void*)primitiveExecutesOnBaseLevel},
+  
+  {(void*) "OmniPlugin", (void*)"primitiveEvaluateOnBaseLevel", (void*)primitiveEvaluateOnBaseLevel},
+  
   
   /* Required by the internal loading mechanism */
   {(void*) "OmniPlugin", (void*)"setInterpreter",         (void*)setInterpreter},

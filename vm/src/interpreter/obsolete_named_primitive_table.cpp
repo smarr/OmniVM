@@ -153,6 +153,7 @@ Obsolete_Named_Primitive_Table::entry Obsolete_Named_Primitive_Table::contents[]
   { "primitiveSwitchToMetaLevel",     "OmniPlugin", "primitiveSwitchToMetaLevel",    false },
   { "primitiveExecutesOnBaseLevel",   "OmniPlugin", "primitiveExecutesOnBaseLevel",  false },
   { "primitiveExecutesOnMetaLevel",   "OmniPlugin", "primitiveExecutesOnMetaLevel",  false },
+  { "primitiveEvaluateOnBaseLevel",   "OmniPlugin", "primitiveEvaluateOnBaseLevel",  false },
 
 
 
