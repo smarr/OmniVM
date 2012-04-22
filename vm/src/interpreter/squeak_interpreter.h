@@ -1035,6 +1035,7 @@ public:
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
   bool omni_requires_delegation(Oop rcvr) const;
+  bool omni_requires_delegation_for_literals() const;
   void omni_request_execution();
   void omni_request_execution_in_lookup_class(Oop lkupClass);
   
@@ -1047,7 +1048,9 @@ public:
 
   void omni_internal_read_field(Oop obj_oop, int idx);
   void omni_internal_write_field(Oop obj_oop, int idx, Oop value);
-  
+  void omni_internal_read_literal(oop_int_t idx);
+  void omni_internal_write_literal(Oop lit, Oop value);
+
   void omni_commonSend(Oop lookupClass); // helper similar to commonSend()
   void omni_commonInternalSend();
   

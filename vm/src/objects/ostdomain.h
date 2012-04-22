@@ -39,6 +39,15 @@ public:
   inline Oop write_field() const {
     return get_domain_selector(OstDomainSelector_Indices::Write_ToField_Of_);
   }
+  
+  inline Oop read_literal() const {
+    return get_domain_selector(OstDomainSelector_Indices::ReadLiteral_);
+  }
+  
+  inline Oop write_literal() const {
+    return get_domain_selector(OstDomainSelector_Indices::Write_ToLiteral_);
+  }
+
 
   inline Oop request_exec(int arg_cnt) const {
     if (arg_cnt == 0)

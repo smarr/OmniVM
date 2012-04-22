@@ -19,7 +19,7 @@ public:
   static const oop_int_t PrimInstVarAt_On_Put_ = 11;
   static const oop_int_t PrimShallowCopy_ = 12;
   static const oop_int_t ReadField_Of_ = 13;
-  static const oop_int_t ReadGlobal_ = 14;
+  static const oop_int_t ReadLiteral_ = 14;
   static const oop_int_t RequestExecution_Of_On_ = 15;
   static const oop_int_t RequestExecution_With_Of_On_ = 16;
   static const oop_int_t RequestExecution_With_With_Of_On_ = 17;
@@ -34,7 +34,7 @@ public:
   static const oop_int_t RequestExecutionOf_With_Lookup_On_ = 26;
   static const oop_int_t SpawnHere_ = 27;
   static const oop_int_t Write_ToField_Of_ = 28;
-  static const oop_int_t WriteGlobal_Value_ = 29;
+  static const oop_int_t Write_ToLiteral_ = 29;
   
 };
 

@@ -32,8 +32,12 @@ void Squeak_Interpreter::pushLiteralConstantBytecode() {
   pushLiteralConstant(prevBytecode & 0x1f);
 }
 void Squeak_Interpreter::pushLiteralVariableBytecode() {
-  fetchNextBytecode();
-  pushLiteralVariable(prevBytecode & 0x1f);
+  if (omni_requires_delegation_for_literals())
+    omni_internal_read_literal(currentBytecode & 0x1f);
+  else {
+    fetchNextBytecode();
+    pushLiteralVariable(prevBytecode & 0x1f);
+  }
 }
 
 void Squeak_Interpreter::storeAndPopReceiverVariableBytecode() {
@@ -130,7 +134,13 @@ void Squeak_Interpreter::extendedPushBytecode() {
     }
     case 1: pushTemporaryVariable(i); break;
     case 2: pushLiteralConstant(i); break;
-    case 3: pushLiteralVariable(i); break;
+    case 3: {
+      if (omni_requires_delegation_for_literals())
+        omni_internal_read_literal(i);
+      else
+        pushLiteralVariable(i);
+      break;
+    }
   }
 }
 
@@ -139,7 +149,7 @@ void Squeak_Interpreter::extendedStoreBytecode() {
   
   u_char vi = d & 63;
   switch ((d >> 6) & 3) {
-    case 0:      
+    case 0: {   
       if (omni_requires_delegation(roots.receiver)) {
         Oop value = internalStackTop();
         internalPop(1);
@@ -151,6 +161,7 @@ void Squeak_Interpreter::extendedStoreBytecode() {
         receiver_obj()->storePointer(vi, internalStackTop());
       }
       break;
+    }
     case 1:
       fetchNextBytecode();
       localHomeContext()->storePointerIntoContext(
@@ -159,10 +170,18 @@ void Squeak_Interpreter::extendedStoreBytecode() {
     case 2:
       fetchNextBytecode();
       fatal("illegal store");
-    case 3:
-      fetchNextBytecode();
-      literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
+    case 3: {
+      if (omni_requires_delegation_for_literals()) {
+        Oop val = internalStackTop();
+        internalPop(1);
+        omni_internal_write_literal(literal(vi), val);
+      }
+      else {
+        fetchNextBytecode();
+        literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
+      }
       break;
+    }
   }
 }
 
@@ -227,10 +246,15 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
       fetchNextBytecode();
       pushLiteralConstant(b3);
       break;
-    case 4:
-      fetchNextBytecode();
-      pushLiteralVariable(b3);
+    case 4: {
+      if (omni_requires_delegation_for_literals())
+        omni_internal_read_literal(b3);
+      else {
+        fetchNextBytecode();
+        pushLiteralVariable(b3);
+      }
       break;
+    }
     case 5:
       if (omni_requires_delegation(roots.receiver))
         omni_internal_write_field(roots.receiver, b3, internalStackTop());
@@ -255,10 +279,18 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
       }
       break;
     }
-    case 7:
-      fetchNextBytecode();
-      literal(b3).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
+    case 7: {
+      if (omni_requires_delegation_for_literals()) {
+        Oop val = internalStackTop();
+        internalPop(1);
+        omni_internal_write_literal(literal(b3), val);
+      }
+      else {
+        fetchNextBytecode();
+        literal(b3).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
+      }
       break;
+    }
   }
 }
 void Squeak_Interpreter::singleExtendedSuperBytecode() {
@@ -321,6 +353,16 @@ void Squeak_Interpreter::longJumpIfTrue() {
 }
 void Squeak_Interpreter::longJumpIfFalse() {
   jumpIfFalseBy(long_cond_jump_offset());
+}
+
+bool Squeak_Interpreter::omni_requires_delegation_for_literals() const {
+  // Delegation is only necessary for execution in the base level.
+  if (executes_on_metalevel())
+    return false;
+  
+  // every other case requires delegation of the action to the domain
+  // object to decide what exactly to do, in terms of language semantics
+  return true;
 }
 
 bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr) const {
@@ -606,6 +648,48 @@ void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop val
   omni_commonInternalSend();
 }
 
+
+void Squeak_Interpreter::omni_internal_read_literal(oop_int_t idx) {
+  Safepoint_Ability sa(false);
+  
+  Oop lit = literal(idx);
+  Oop domain = _localDomain->as_oop();
+  
+  /* readLiteral: literal */
+  
+  
+  
+  internalPush(domain);
+  internalPush(lit);
+  
+  set_argumentCount(1);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.read_literal();
+  
+  omni_commonInternalSend();
+}
+
+
+void Squeak_Interpreter::omni_internal_write_literal(Oop lit, Oop value) {
+  Safepoint_Ability sa(false);
+  
+  Oop domain   = _localDomain->as_oop();
+  
+  /* write: val toLiteral: obj */
+  
+  // we assume that at this point 'value' was already popped from the stack
+  internalPush(domain);
+  internalPush(value);
+  internalPush(lit);
+  
+  set_argumentCount(2);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.write_literal();
+  
+  omni_commonInternalSend();
+}
 
 
 void Squeak_Interpreter::bytecodePrimAdd() {
