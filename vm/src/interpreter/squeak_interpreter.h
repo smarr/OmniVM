@@ -842,7 +842,7 @@ public:
     Oop  lkupClass = method_obj()->methodClass().as_object()->superclass();
     assert(lkupClass.verify_oop());
 
-    bool  delegate = omni_requires_delegation(rcvr);
+    bool  delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
     if (delegate) {
       omni_request_execution_in_lookup_class(lkupClass);
     }
@@ -1034,8 +1034,8 @@ public:
   Oop send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass);
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
-  bool omni_requires_delegation(Oop rcvr) const;
-  bool omni_requires_delegation_for_literals() const;
+  bool omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const;
+  bool omni_requires_delegation_for_literals(oop_int_t selector_mask) const;
   void omni_request_execution();
   void omni_request_execution_in_lookup_class(Oop lkupClass);
   

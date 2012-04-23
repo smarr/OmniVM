@@ -349,7 +349,7 @@ void Squeak_Interpreter::primitiveClone() {
   if (x.is_int())
     return;
   
-  bool delegate = omni_requires_delegation(x);
+  bool delegate = omni_requires_delegation(x, OstDomainSelector_Indices::PrimShallowCopy__Mask);
   if (delegate) {
     omni_request_primitive_clone();
     return;
@@ -1116,7 +1116,7 @@ void Squeak_Interpreter::primitiveInputWord() {
 void Squeak_Interpreter::primitiveInstVarAt() {
   Oop rcvr = stackValue(1);
 
-  bool delegate = omni_requires_delegation(rcvr);
+  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On__Mask);
   if (delegate) {
     omni_request_primitive_at(The_OstDomain.prim_inst_var_at_on());
     return;
@@ -1145,7 +1145,7 @@ void Squeak_Interpreter::primitiveInstVarAt() {
 }
 void Squeak_Interpreter::primitiveInstVarAtPut() {
   Oop rcvr = stackValue(2);
-  bool delegate = omni_requires_delegation(rcvr);
+  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On_Put__Mask);
   if (delegate) {
     omni_request_primitive_atPut(The_OstDomain.prim_inst_var_at_put_on());
     return;
@@ -1235,7 +1235,7 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   // STEFAN: add my exec barrier code here
 # warning TODO: what is going on here exactly? what do we need to do here? don't think this has been tested or carefully thought through yet, STEFAN 2011-11-10
 # warning TODO: verify that this here is the correct reviever, since there are two here
-  if (omni_requires_delegation(runReceiver)) {
+  if (omni_requires_delegation(runReceiver, OstDomainSelector_Indices::RequestExecutionMask)) {
     fatal("Not yet implemented. Should raise an exception and survive...");
   }
   
@@ -1381,7 +1381,7 @@ void Squeak_Interpreter::primitiveLoadInstVar() {
     return;
   }
   
-  bool delegate = omni_requires_delegation(r);
+  bool delegate = omni_requires_delegation(r, OstDomainSelector_Indices::ReadField_Of__Mask);
   if (delegate) {
     omni_read_field(r, primitiveIndex - 264);
   }
@@ -1734,7 +1734,7 @@ void Squeak_Interpreter::primitivePerform() {
       the use of baselevelPerform leads to that inconsistency,
       and helps us here to avoid the recursion. */
   if (_executes_on_baselevel && activeContext_obj()->domain_execute_on_baselevel()) {
-    bool delegate = omni_requires_delegation(newReceiver);
+    bool delegate = omni_requires_delegation(newReceiver, OstDomainSelector_Indices::RequestExecutionMask);
     if (delegate) {
       omni_request_execution();
       normalSend();

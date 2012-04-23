@@ -1781,9 +1781,12 @@ void Squeak_Interpreter::print_all_processes_in_scheduler(Printer* pr, bool prin
 void Squeak_Interpreter::commonAt(bool stringy) {
   Oop rcvr = stackValue(1);
   
-  bool delegate = omni_requires_delegation(rcvr);
+  bool normal_at = roots.messageSelector == specialSelector(16);
+  bool delegate = omni_requires_delegation(rcvr, normal_at
+                                                  ? OstDomainSelector_Indices::PrimAt_On__Mask
+                                                  : OstDomainSelector_Indices::PrimBasicAt_On__Mask);
   if (delegate) {
-    omni_request_primitive_at(roots.messageSelector == specialSelector(16)
+    omni_request_primitive_at(normal_at
                                 ? The_OstDomain.prim_at_on()
                                 : The_OstDomain.prim_basic_at_on());
     return;
@@ -1835,9 +1838,12 @@ void Squeak_Interpreter::commonAt(bool stringy) {
 void Squeak_Interpreter::commonAtPut(bool stringy) {
   Oop rcvr = stackValue(2);
   
-  bool delegate = omni_requires_delegation(rcvr);
+  bool normal_atput = roots.messageSelector == specialSelector(17);
+  bool delegate = omni_requires_delegation(rcvr, normal_atput
+                                                    ? OstDomainSelector_Indices::PrimAt_On_Put__Mask
+                                                    : OstDomainSelector_Indices::PrimBasicAt_On_Put__Mask);
   if (delegate) {
-    omni_request_primitive_atPut(roots.messageSelector == specialSelector(17)
+    omni_request_primitive_atPut(normal_atput
                                   ? The_OstDomain.prim_at_put_on()
                                   : The_OstDomain.prim_basic_at_put_on());
     return;
@@ -1939,7 +1945,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
       // "Internal return instvars"
       if (264 <= primitiveIndex) {
         Oop top = internalStackTop();
-        bool delegate = omni_requires_delegation(top);
+        bool delegate = omni_requires_delegation(top, OstDomainSelector_Indices::ReadField_Of__Mask);
         if (delegate) {
           // do I need to externalize here first?
           omni_internal_read_field(top, primitiveIndex - 264);
