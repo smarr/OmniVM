@@ -16,6 +16,8 @@ void dp(Oop x); // print Oop
 void dp(int x); // print Oop
 void dp(Object* x); // print Object
 
+Oop  at(Oop x, oop_int_t i); // get value at index i in object x
+
 void dpf(Oop x);
 void dpf(Object* x);
 

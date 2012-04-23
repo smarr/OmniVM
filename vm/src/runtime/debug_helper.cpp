@@ -28,6 +28,11 @@ void dp(Object* x) {x->dp(); } // print Object
 void dpf(Oop x)     { x.as_object()->print_with_fields(); }
 void dpf(Object* x) { x->print_with_fields(); } 
 
+Oop at(Oop x, oop_int_t i) {
+  return x.as_object()->fetchPointer(i);
+}
+
+
 // Interpreter
 
 void pet() {

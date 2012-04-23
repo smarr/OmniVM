@@ -118,7 +118,7 @@ private:
   bool verify_object_or_null() { return bits() == 0  ||  verify_object(); }
   bool okayOop();
 
-
+  // Debug Helper
   void print(Printer* p = dittoing_stdout_printer);
   void print_process_or_nil(Printer* p);
   void print_briefly(Printer*); // used for slot contents
