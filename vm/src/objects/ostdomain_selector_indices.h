@@ -5,36 +5,73 @@
 
 class OstDomainSelector_Indices {
 public:
-  static const oop_int_t AdoptObject_ = 0;
-  static const oop_int_t DomainForNewObjects = 1;
-  static const oop_int_t EvaluateInContext_ = 2;
-  static const oop_int_t EvaluateInContextOnBaseLevel_ = 3;
-  static const oop_int_t Initialize = 4;
-  static const oop_int_t NewProcessFor_ = 5;
-  static const oop_int_t PrimAt_On_ = 6;
-  static const oop_int_t PrimAt_On_Put_ = 7;
-  static const oop_int_t PrimBasicAt_On_ = 8;
-  static const oop_int_t PrimBasicAt_On_Put_ = 9;
-  static const oop_int_t PrimInstVarAt_On_ = 10;
-  static const oop_int_t PrimInstVarAt_On_Put_ = 11;
-  static const oop_int_t PrimShallowCopy_ = 12;
-  static const oop_int_t ReadField_Of_ = 13;
-  static const oop_int_t ReadLiteral_ = 14;
-  static const oop_int_t RequestExecution_Of_On_ = 15;
-  static const oop_int_t RequestExecution_With_Of_On_ = 16;
-  static const oop_int_t RequestExecution_With_With_Of_On_ = 17;
-  static const oop_int_t RequestExecution_With_With_With_Of_On_ = 18;
-  static const oop_int_t RequestExecution_With_With_With_With_Of_On_ = 19;
-  static const oop_int_t RequestExecution_With_With_With_With_With_Of_On_ = 20;
-  static const oop_int_t RequestExecution_With_With_With_With_With_With_Of_On_ = 21;
-  static const oop_int_t RequestExecution_With_With_With_With_With_With_With_Of_On_ = 22;
+  static const oop_int_t AdoptObject_                                                 = 0;
+  static const oop_int_t DomainForNewObjects                                          = 1;
+  static const oop_int_t EvaluateInContext_                                           = 2;
+  static const oop_int_t EvaluateInContextOnBaseLevel_                                = 3;
+  static const oop_int_t Initialize                                                   = 4;
+  static const oop_int_t NewProcessFor_                                               = 5;
+  static const oop_int_t PrimAt_On_                                                   = 6;
+  static const oop_int_t PrimAt_On_Put_                                               = 7;
+  static const oop_int_t PrimBasicAt_On_                                              = 8;
+  static const oop_int_t PrimBasicAt_On_Put_                                          = 9;
+  static const oop_int_t PrimInstVarAt_On_                                            = 10;
+  static const oop_int_t PrimInstVarAt_On_Put_                                        = 11;
+  static const oop_int_t PrimShallowCopy_                                             = 12;
+  static const oop_int_t ReadField_Of_                                                = 13;
+  static const oop_int_t ReadLiteral_                                                 = 14;
+  static const oop_int_t RequestExecution_Of_On_                                      = 15;
+  static const oop_int_t RequestExecution_With_Of_On_                                 = 16;
+  static const oop_int_t RequestExecution_With_With_Of_On_                            = 17;
+  static const oop_int_t RequestExecution_With_With_With_Of_On_                       = 18;
+  static const oop_int_t RequestExecution_With_With_With_With_Of_On_                  = 19;
+  static const oop_int_t RequestExecution_With_With_With_With_With_Of_On_             = 20;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_Of_On_        = 21;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_With_Of_On_   = 22;
   static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_Of_On_ = 23;
   static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_With_Of_On_ = 24;
-  static const oop_int_t RequestExecutionOf_On_ = 25;
-  static const oop_int_t RequestExecutionOf_With_Lookup_On_ = 26;
-  static const oop_int_t SpawnHere_ = 27;
-  static const oop_int_t Write_ToField_Of_ = 28;
-  static const oop_int_t Write_ToLiteral_ = 29;
+  static const oop_int_t RequestExecutionOf_On_                                       = 25;
+  static const oop_int_t RequestExecutionOf_With_Lookup_On_                           = 26;
+  static const oop_int_t SpawnHere_                                                   = 27;
+  static const oop_int_t Write_ToField_Of_                                            = 28;
+  static const oop_int_t Write_ToLiteral_                                             = 29;
   
+  
+  
+  static const oop_int_t AdoptObject__Mask                                            = 0x1 << Tag_Size;
+  static const oop_int_t DomainForNewObjects_Mask                                     = 0x2 << Tag_Size;
+  static const oop_int_t EvaluateInContext__Mask                                      = 0x4 << Tag_Size;
+  static const oop_int_t EvaluateInContextOnBaseLevel__Mask                           = 0x8 << Tag_Size;
+  static const oop_int_t Initialize_Mask                                              = 0x10 << Tag_Size;
+  static const oop_int_t NewProcessFor__Mask                                          = 0x20 << Tag_Size;
+  static const oop_int_t PrimAt_On__Mask                                              = 0x40 << Tag_Size;
+  static const oop_int_t PrimAt_On_Put__Mask                                          = 0x80 << Tag_Size;
+  static const oop_int_t PrimBasicAt_On__Mask                                         = 0x100 << Tag_Size;
+  static const oop_int_t PrimBasicAt_On_Put__Mask                                     = 0x200 << Tag_Size;
+  static const oop_int_t PrimInstVarAt_On__Mask                                       = 0x400 << Tag_Size;
+  static const oop_int_t PrimInstVarAt_On_Put__Mask                                   = 0x800 << Tag_Size;
+  static const oop_int_t PrimShallowCopy__Mask                                        = 0x1000 << Tag_Size;
+  static const oop_int_t ReadField_Of__Mask                                           = 0x2000 << Tag_Size;
+  static const oop_int_t ReadLiteral__Mask                                            = 0x4000 << Tag_Size;
+  static const oop_int_t RequestExecution_Of_On__Mask                                 = 0x8000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_Of_On__Mask                            = 0x10000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_Of_On__Mask                       = 0x20000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_Of_On__Mask                  = 0x40000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_Of_On__Mask             = 0x80000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_With_Of_On__Mask        = 0x100000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_Of_On__Mask   = 0x200000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_With_Of_On__Mask = 0x400000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_Of_On__Mask = 0x800000 << Tag_Size;
+  static const oop_int_t RequestExecution_With_With_With_With_With_With_With_With_With_Of_On__Mask = 0x1000000 << Tag_Size;
+  static const oop_int_t RequestExecutionOf_On__Mask                                  = 0x2000000 << Tag_Size;
+  static const oop_int_t RequestExecutionOf_With_Lookup_On__Mask                      = 0x4000000 << Tag_Size;
+  static const oop_int_t SpawnHere__Mask                                              = 0x8000000 << Tag_Size;
+  static const oop_int_t Write_ToField_Of__Mask                                       = 0x10000000 << Tag_Size;
+  static const oop_int_t Write_ToLiteral__Mask                                        = 0x20000000 << Tag_Size;
+  
+  
+  /** Make it easier to identify whether any of them is customize, remember that it's and int
+   and we need to shift the Tag_Bit */
+  static const oop_int_t RequestExecutionMask = 0x7FF8000 << Tag_Size;
 };
 

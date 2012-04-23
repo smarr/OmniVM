@@ -12,7 +12,7 @@
 
 # include "headers.h"
 
-const char * const OstDomain::field_names[] = { "domainForNewObjects" };
+const char * const OstDomain::field_names[] = { "domainForNewObjects", "domainCustomizations" };
 
 OstDomain The_OstDomain;
 

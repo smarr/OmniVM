@@ -24,12 +24,34 @@ private:
   }
   
 public:
-  OstDomain() : field_accessor(Object_Field_Accessor(field_names, 1)) {}
+  OstDomain() : field_accessor(Object_Field_Accessor(field_names, 2)) {}
   
   void initialize(Oop ostDomain);
   
   inline Oop get_domain_for_new_objects(Oop domain) const {
     return field_accessor.get_field(domain, 0);
+  }
+  
+  inline Oop get_domain_customization_encoding(Oop domain) const {
+    return field_accessor.get_field(domain, 1);
+  }
+  
+  /** customization_encoding
+          is the direct Oop in the domain, 
+          usually obtained with get_domain_customization_encoding(..).
+      selector
+          can be any OstDomainSelector_Indices */
+  static inline bool domain_customizes_selector(Oop customization_encoding, oop_int_t selector) {
+    return (1 << selector) & customization_encoding.bits();
+  }
+  
+  /** customization_encoding
+          is the direct Oop in the domain, 
+          usually obtained with get_domain_customization_encoding(..).
+      mask
+          can be any mask defined in OstDomainSelector_Indices */
+  static inline bool domain_customizes_selectors(Oop customization_encoding, oop_int_t mask) {
+    return mask & customization_encoding.bits();
   }
   
   inline Oop read_field() const {

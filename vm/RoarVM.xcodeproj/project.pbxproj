@@ -102,6 +102,7 @@
 		0A4D825D135C526F00CD74D8 /* sqUnixSoundMacOSX.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A4D825C135C526F00CD74D8 /* sqUnixSoundMacOSX.c */; };
 		0A5D7C99135CC84700D13E53 /* sqUnixSound.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A5D7C98135CC84700D13E53 /* sqUnixSound.c */; };
 		0A5D7C9C135CC86800D13E53 /* sqUnixSocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A5D7C9B135CC86800D13E53 /* sqUnixSocket.c */; };
+		0A5DDFD21545886C00E36583 /* ostdomain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A5DDFD11545886C00E36583 /* ostdomain.cpp */; };
 		0A6A4834135ADF0A00933643 /* os_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A6A4832135ADF0A00933643 /* os_interface.cpp */; };
 		0A6A4837135AE32D00933643 /* external_primitive_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A6A4835135AE32D00933643 /* external_primitive_table.cpp */; };
 		0A87AD8A1379573F00337878 /* performance_counters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A87AD891379573E00337878 /* performance_counters.cpp */; };
@@ -454,6 +455,7 @@
 		0A5D7C9B135CC86800D13E53 /* sqUnixSocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqUnixSocket.c; sourceTree = "<group>"; };
 		0A5D7C9E135CC8D700D13E53 /* sqUnixOpenGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sqUnixOpenGL.h; path = plugins/B3DAcceleratorPlugin/sqUnixOpenGL.h; sourceTree = "<group>"; };
 		0A5D7CA0135CC9D400D13E53 /* SoundPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundPlugin.h; sourceTree = "<group>"; };
+		0A5DDFD11545886C00E36583 /* ostdomain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ostdomain.cpp; sourceTree = "<group>"; };
 		0A6A4832135ADF0A00933643 /* os_interface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = os_interface.cpp; sourceTree = "<group>"; };
 		0A6A4835135AE32D00933643 /* external_primitive_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = external_primitive_table.cpp; sourceTree = "<group>"; };
 		0A72A76314432D7C0008E8AC /* tmc_os_interface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tmc_os_interface.cpp; sourceTree = "<group>"; };
@@ -1126,6 +1128,7 @@
 				0A6A4832135ADF0A00933643 /* os_interface.cpp */,
 				0A6A4835135AE32D00933643 /* external_primitive_table.cpp */,
 				3411740F13C9ACB200CE97B6 /* preheader.cpp */,
+				0A5DDFD11545886C00E36583 /* ostdomain.cpp */,
 			);
 			name = tests;
 			path = src/tests;
@@ -1503,6 +1506,7 @@
 				0AB9801E15322571003B71F7 /* buffered_channel.cpp in Sources */,
 				0AB98022153225D2003B71F7 /* gtest-all.cc in Sources */,
 				0AB9802315322601003B71F7 /* debug_helper.cpp in Sources */,
+				0A5DDFD21545886C00E36583 /* ostdomain.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
