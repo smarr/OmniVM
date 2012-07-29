@@ -492,6 +492,24 @@ void Squeak_Interpreter::omni_request_primitive_at(Oop primSelector) {
   omni_commonSend(roots.lkupClass);  // rcvr_domain.fetchClass()
 }
 
+void Squeak_Interpreter::omni_internal_request_primitive_at(Oop primSelector) {
+  // this is code that should be called from a primitive only, and primitives are supposed to work on the externalized state
+  Oop index  = internalStackTop();
+  Oop rcvr   = internalStackValue(1);
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  internalPopThenPush(2, rcvr_domain);
+  internalPush(index);
+  internalPush(rcvr);
+  
+  set_argumentCount(2);
+  roots.messageSelector = primSelector;
+  roots.lkupClass = rcvr_domain.fetchClass();
+  
+  omni_commonInternalSend();
+}
+
+
 void Squeak_Interpreter::omni_request_primitive_atPut(Oop primSelector) {
   Oop value = stackTop();
   Oop index = stackValue(1);
@@ -508,6 +526,24 @@ void Squeak_Interpreter::omni_request_primitive_atPut(Oop primSelector) {
   roots.lkupClass = rcvr_domain.fetchClass();
   
   omni_commonSend(roots.lkupClass);
+}
+
+void Squeak_Interpreter::omni_internal_request_primitive_atPut(Oop primSelector) {
+  Oop value = internalStackTop();
+  Oop index = internalStackValue(1);
+  Oop rcvr  = internalStackValue(2);
+  Oop rcvr_domain = rcvr.as_object()->domain_oop();
+  
+  internalPopThenPush(3, rcvr_domain);
+  internalPush(index);
+  internalPush(rcvr);
+  internalPush(value);
+  
+  set_argumentCount(3);
+  roots.messageSelector = primSelector;
+  roots.lkupClass = rcvr_domain.fetchClass();
+  
+  omni_commonInternalSend();
 }
 
 void Squeak_Interpreter::omni_request_primitive_clone() {
@@ -1164,10 +1200,16 @@ void Squeak_Interpreter::bytecodePrimAt() {
   Oop index = internalStackTop();
   Oop rcvr = internalStackValue(1);
   
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On__Mask);
+  bool delegateExec = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
   
   successFlag = rcvr.is_mem() && index.is_int();
-  if (!delegate && successFlag) {
+  if (!delegateExec && successFlag) {
+    bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On__Mask);
+    if (delegatePrim) {
+      omni_internal_request_primitive_at(The_OstDomain.prim_at_on());
+      return;
+    }
+    
     At_Cache::Entry* e = atCache.get_entry(rcvr, false);
     if (e->matches(rcvr)) {
       Oop result = commonVariableAt(rcvr, index.integerValue(), e, true);
@@ -1181,7 +1223,7 @@ void Squeak_Interpreter::bytecodePrimAt() {
   roots.messageSelector = specialSelector(16);
   set_argumentCount(1);
   
-  if (delegate) omni_request_execution();
+  if (delegateExec) omni_request_execution();
   normalSend();
 }
 
@@ -1190,10 +1232,16 @@ void Squeak_Interpreter::bytecodePrimAtPut() {
   Oop index = internalStackValue(1);
   Oop rcvr = internalStackValue(2);
   
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On_Put__Mask);
+  bool delegateExec = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
   
   successFlag = rcvr.is_mem() && index.is_int();
-  if (!delegate && successFlag) {
+  if (!delegateExec && successFlag) {
+    bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On_Put__Mask);
+    if (delegatePrim) {
+      omni_internal_request_primitive_atPut(The_OstDomain.prim_at_put_on());
+      return;
+    }
+    
     At_Cache::Entry* e = atCache.get_entry(rcvr, true);
     if (e->matches(rcvr)) {
       commonVariableAtPut(rcvr, index.integerValue(), value, e);
@@ -1208,7 +1256,7 @@ void Squeak_Interpreter::bytecodePrimAtPut() {
   roots.messageSelector = specialSelector(17);
   set_argumentCount( 2 );
   
-  if (delegate) omni_request_execution();
+  if (delegateExec) omni_request_execution();
   normalSend();
 }
 

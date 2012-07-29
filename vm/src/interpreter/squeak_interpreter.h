@@ -1043,6 +1043,9 @@ public:
   void omni_request_primitive_atPut(Oop primSelector);
   void omni_request_primitive_clone();
   
+  void omni_internal_request_primitive_at   (Oop primSelector);
+  void omni_internal_request_primitive_atPut(Oop primSelector);
+
   void omni_read_field(Oop obj_oop, int idx);
   void omni_write_field(Oop obj_oop, int idx, Oop value);
 
