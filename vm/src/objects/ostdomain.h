@@ -112,6 +112,18 @@ public:
   inline Oop prim_shallow_copy() const {
     return get_domain_selector(OstDomainSelector_Indices::PrimShallowCopy_);
   }
+  
+  inline Oop prim_next() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimNext_);
+  }
+  
+  inline Oop prim_next_put() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimNext_Put_);
+  }
+  
+  inline Oop prim_replace_from_to_with_starting_at_on() const {
+    return get_domain_selector(OstDomainSelector_Indices::PrimReplaceFrom_To_With_StartingAt_On_);
+  }
 
 } The_OstDomain;
 

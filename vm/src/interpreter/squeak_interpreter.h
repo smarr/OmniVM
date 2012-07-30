@@ -1043,6 +1043,10 @@ public:
   void omni_request_primitive_atPut(Oop primSelector);
   void omni_request_primitive_clone();
   
+  void omni_request_primitive_next();
+  void omni_request_primitive_nextPut();
+  void omni_request_primitive_replaceFromToWithStartingAt();
+  
   void omni_internal_request_primitive_at   (Oop primSelector);
   void omni_internal_request_primitive_atPut(Oop primSelector);
 

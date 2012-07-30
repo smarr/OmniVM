@@ -562,6 +562,70 @@ void Squeak_Interpreter::omni_request_primitive_clone() {
   omni_commonSend(roots.lkupClass);
 }
 
+
+void Squeak_Interpreter::omni_request_primitive_next() {
+  Oop rcvr = stackTop();
+  
+  Oop domain = rcvr.as_object()->domain_oop();
+  
+  popThenPush(1, domain);
+  push(rcvr);
+  
+  set_argumentCount(1);
+  
+  roots.messageSelector = The_OstDomain.prim_next();
+  roots.lkupClass       = domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);
+}
+
+
+void Squeak_Interpreter::omni_request_primitive_nextPut() {
+  Oop val  = stackTop();
+  Oop rcvr = stackValue(1);
+  
+  Oop domain = rcvr.as_object()->domain_oop();
+  
+  popThenPush(2, domain);
+  push(rcvr);
+  push(val);
+  
+  set_argumentCount(2);
+  
+  roots.messageSelector = The_OstDomain.prim_next_put();
+  roots.lkupClass       = domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);
+}
+
+
+void Squeak_Interpreter::omni_request_primitive_replaceFromToWithStartingAt() {
+  Oop rcvr  = stackValue(4);
+  
+  Oop start = stackValue(3);
+  Oop stop  = stackValue(2);
+  Oop repl  = stackValue(1);
+  Oop replStart = stackValue(0);
+
+  Oop domain = rcvr.as_object()->domain_oop();
+  
+  popThenPush(5, domain);
+  
+  push(start);
+  push(stop);
+  push(repl);
+  push(replStart);
+  push(rcvr);
+  
+  set_argumentCount(5);
+  
+  roots.messageSelector = The_OstDomain.prim_replace_from_to_with_starting_at_on();
+  roots.lkupClass       = domain.fetchClass();
+  
+  omni_commonSend(roots.lkupClass);
+}
+
+
 void Squeak_Interpreter::omni_read_field(Oop obj_oop, int idx) {
   Safepoint_Ability sa(true);
 

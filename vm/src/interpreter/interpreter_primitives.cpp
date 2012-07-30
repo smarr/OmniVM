@@ -1539,6 +1539,13 @@ void Squeak_Interpreter::primitiveNext() {
    */
   Oop stream = stackTop();
   if (!stream.is_mem()) { primitiveFail(); return; }
+  
+  bool delagate = omni_requires_delegation(stream, OstDomainSelector_Indices::PrimNext__Mask);
+  if (delagate) {
+    omni_request_primitive_next();
+    return;
+  }
+  
   Object_p so = stream.as_object();
   if (!so->isPointers()  ||  so->lengthOf() <  Object_Indices::StreamReadLimitIndex + 1) {
     primitiveFail();
@@ -1588,6 +1595,13 @@ void Squeak_Interpreter::primitiveNextPut() {
   // only succeed if in atPutCache
   Oop value = stackTop();
   Oop stream = stackValue(1);
+  
+  bool delagate = omni_requires_delegation(stream, OstDomainSelector_Indices::PrimNext_Put__Mask);
+  if (delagate) {
+    omni_request_primitive_nextPut();
+    return;
+  }
+  
   Object_p so;
   if (!stream.isPointers()  || (so = stream.as_object())->lengthOf() < Object_Indices::StreamReadLimitIndex + 1) {
     primitiveFail();
@@ -2169,15 +2183,23 @@ void Squeak_Interpreter::primitiveStringAtPut() {
 
 void Squeak_Interpreter::primitiveStringReplace() {
   Oop array = stackValue(4);
+  
+  bool delagate = omni_requires_delegation(array, OstDomainSelector_Indices::PrimReplaceFrom_To_With_StartingAt_On__Mask);
+  if (delagate) {
+    omni_request_primitive_replaceFromToWithStartingAt();
+    return;
+  }
+  
   oop_int_t start = stackIntegerValue(3);
   oop_int_t stop = stackIntegerValue(2);
   Oop repl = stackValue(1);
   oop_int_t replStart = stackIntegerValue(0);
-
+  
   if (!successFlag ||  !array.is_mem()  ||  !repl.is_mem()) {
     primitiveFail();
     return;
   }
+  
   Object_p ao = array.as_object();
   oop_int_t totalLength = ao->lengthOf();
   oop_int_t arrayInstSize = ao->fixedFieldsOfArray();
