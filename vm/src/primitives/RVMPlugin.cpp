@@ -172,7 +172,24 @@ Oop sample_one_core(int what_to_sample) {
 
 
 void* primitiveBreakpoint() {
-  if (The_Squeak_Interpreter()->get_argumentCount()) { The_Squeak_Interpreter()->primitiveFail(); }
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  
+  if (interp->get_argumentCount() == 1) {
+    Oop x = interp->stackTop();
+    if (!x.isBytes()) {
+      interp->primitiveFail();
+    }
+    else {
+      stdout_printer->lprintf("breakpoint: ");
+      x.as_object()->print_bytes(stdout_printer);
+      stdout_printer->nl();
+      interp->pop(1);
+    }
+  }
+  else if (interp->get_argumentCount() > 1) { 
+    interp->primitiveFail();
+  }
+  
   breakpoint();
   return NULL;
 }
