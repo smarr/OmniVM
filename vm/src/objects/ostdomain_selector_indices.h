@@ -30,7 +30,8 @@ public:
   static const oop_int_t RequestExecutionOf_On_                                       = 22;
   static const oop_int_t RequestExecutionOf_With_Lookup_On_                           = 23;
   static const oop_int_t Write_ToField_Of_                                            = 24;
-  static const oop_int_t Write_ToLiteral_                                             = 25;
+  static const oop_int_t Write_ToField_Of_Return_                                     = 25;
+  static const oop_int_t Write_ToLiteral_                                             = 26;
   
   
   
@@ -59,15 +60,17 @@ public:
   static const oop_int_t RequestExecutionOf_On__Mask                                  = 0x400000 << Tag_Size;
   static const oop_int_t RequestExecutionOf_With_Lookup_On__Mask                      = 0x800000 << Tag_Size;
   static const oop_int_t Write_ToField_Of__Mask                                       = 0x1000000 << Tag_Size;
-  static const oop_int_t Write_ToLiteral__Mask                                        = 0x2000000 << Tag_Size;
+  static const oop_int_t Write_ToField_Of_Return__Mask                                = 0x2000000 << Tag_Size;
+  static const oop_int_t Write_ToLiteral__Mask                                        = 0x4000000 << Tag_Size;
   
   
-  /** Make it easier to identify whether any of them is customize, remember that it's and int
-   and we need to shift the Tag_Bit */
+  /** Make it easier to identify whether any of them is customize.
+   Remember that it's a SmallInt and we need to shift by the Tag_Bit */
   static const oop_int_t RequestExecutionMask = 0xFFF000 << Tag_Size;
+  static const oop_int_t WriteToFieldMask     = 0x3000000 << Tag_Size;
 };
 
 
 
-/** Identity Hash: 0EDEDD9C93458A155B0A1A220E0F7187  **/
+/** Identity Hash: 331B2C12B751E9A3B2474EA009928AE5  **/
 
