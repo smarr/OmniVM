@@ -45,7 +45,6 @@ ON_TILERA_OR_ELSE(int, void) assert_eq_failure(const char* func, const char* fil
 
 void breakpoint() {
   OS_Interface::breakpoint();
-  dittoing_stdout_printer->printf("breakpoint\n");
 }
 
 void unt(const char* m, const char* f) {

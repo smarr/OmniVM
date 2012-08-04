@@ -174,6 +174,7 @@ Oop sample_one_core(int what_to_sample) {
 void* primitiveBreakpoint() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
   
+  // #breakpoint: msg
   if (interp->get_argumentCount() == 1) {
     Oop x = interp->stackTop();
     if (!x.isBytes()) {
@@ -188,6 +189,11 @@ void* primitiveBreakpoint() {
   }
   else if (interp->get_argumentCount() > 1) { 
     interp->primitiveFail();
+    stdout_printer->lprintf("breakpoint (unsupported number of parameters)\n");
+  }
+  // #breakpoint
+  else {
+    stdout_printer->lprintf("breakpoint\n");
   }
   
   breakpoint();
