@@ -32,6 +32,20 @@ Oop at(Oop x, oop_int_t i) {
   return x.as_object()->fetchPointer(i);
 }
 
+void dpf_top() {
+  dpf_n(0);
+}
+void dpf_n(int offset) {
+  Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+  if (interp->is_internal_valid()) {
+    dpf(interp->internalStackValue(offset));
+  }
+  else if (interp->is_external_valid()) {
+    dpf(interp->stackValue(offset));
+  }
+}
+
+
 
 // Interpreter
 

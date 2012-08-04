@@ -71,7 +71,7 @@ document reenable_context_switches
 end
 
 
-# _____ as long as apple does not support aliases in GDB ________
+# _____ as long as Apple does not support aliases in GDB ________
 
 define pat
     call pat()
@@ -107,6 +107,21 @@ end
 document dpf
 |   Prints a Smalltalk object and its fields
 end
+
+define stackTop
+    call dpf_top()
+end
+document stackTop
+|   Prints a the Smalltalk object and its fields, that's currently top of stack
+end
+
+define stack
+    call dpf_n($arg0)
+end
+document stackTop
+|   Prints a the Smalltalk object and its fields, that's at offset n
+end
+
 
 
 define dis_cs
