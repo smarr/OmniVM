@@ -1947,7 +1947,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
         Oop top = internalStackTop();
         bool delegate = omni_requires_delegation(top, OstDomainSelector_Indices::ReadField_Of__Mask);
         if (delegate) {
-          // do I need to externalize here first?
+          internalPop(1);
           omni_internal_read_field(top, primitiveIndex - 264);
         }
         else
