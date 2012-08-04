@@ -62,6 +62,10 @@ public:
     return get_domain_selector(OstDomainSelector_Indices::Write_ToField_Of_);
   }
   
+  inline Oop write_field_with_return() const {
+    return get_domain_selector(OstDomainSelector_Indices::Write_ToField_Of_Return_);
+  }
+  
   inline Oop read_literal() const {
     return get_domain_selector(OstDomainSelector_Indices::ReadLiteral_);
   }

@@ -41,10 +41,18 @@ void Squeak_Interpreter::pushLiteralVariableBytecode() {
 }
 
 void Squeak_Interpreter::storeAndPopReceiverVariableBytecode() {
-  if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::Write_ToField_Of__Mask)) {
-    Oop value = internalStackTop();
-    internalPop(1);
-    omni_internal_write_field(roots.receiver, currentBytecode & 7, value);
+  if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
+    Oop value  = internalStackTop();
+    
+    // REM: we might pop the Receiver (ReceiverIndex) here
+    //      that should be ok, because, I hope, the next time we need it
+    //      is when we return, and then we push it back
+    //      and it is not deleted, just not protected by the stack
+    //      pointer anymore.
+    Oop newTop = internalStackValue(1);
+    internalPop(2);
+    
+    omni_internal_write_field(roots.receiver, currentBytecode & 7, value, newTop);
   }
   else {
     fetchNextBytecode();
@@ -149,8 +157,8 @@ void Squeak_Interpreter::extendedStoreBytecode() {
   
   u_char vi = d & 63;
   switch ((d >> 6) & 3) {
-    case 0: {   
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::Write_ToField_Of__Mask)) {
+    case 0: {
+      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
         Oop value = internalStackTop();
         internalPop(1);
         omni_internal_write_field(roots.receiver, vi, value);
@@ -186,7 +194,47 @@ void Squeak_Interpreter::extendedStoreBytecode() {
 }
 
 void Squeak_Interpreter::extendedStoreAndPopBytecode() {
-  extendedStoreBytecode();
+  u_char d = fetchByte();
+  
+  u_char vi = d & 63;
+  switch ((d >> 6) & 3) {
+    case 0: {
+      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
+        Oop value  = internalStackTop();
+        Oop newTop = internalStackValue(1);
+        internalPop(2);
+        omni_internal_write_field(roots.receiver, vi, value, newTop);
+        return; 
+      }
+      else {
+        fetchNextBytecode();
+        // could watch for suspended context change here
+        receiver_obj()->storePointer(vi, internalStackTop());
+      }
+      break;
+    }
+    case 1:
+      fetchNextBytecode();
+      localHomeContext()->storePointerIntoContext(
+                                                  vi + Object_Indices::TempFrameStart, internalStackTop());
+      break;
+    case 2:
+      fetchNextBytecode();
+      fatal("illegal store");
+    case 3: {
+      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::Write_ToLiteral__Mask)) {
+        Oop val = internalStackTop();
+        internalPop(1);
+        omni_internal_write_literal(literal(vi), val);
+        return;
+      }
+      else {
+        fetchNextBytecode();
+        literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
+      }
+      break;
+    }
+  }
   internalPop(1);
 }
 void Squeak_Interpreter::singleExtendedSendBytecode() {
@@ -256,8 +304,11 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
       break;
     }
     case 5:
-      if (omni_requires_delegation(roots.receiver))
-        omni_internal_write_field(roots.receiver, b3, internalStackTop());
+      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
+        Oop top = internalStackTop();
+        internalPop(1);
+        omni_internal_write_field(roots.receiver, b3, top);
+      }
       else {
         fetchNextBytecode();
         // could watch for suspended context change here
@@ -265,10 +316,11 @@ void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
       }
       break;
     case 6: {
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::Write_ToField_Of__Mask)) {
-        Oop top = internalStackTop();
-        internalPop(1);
-        omni_internal_write_field(roots.receiver, b3, top);
+      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
+        Oop top    = internalStackTop();
+        Oop newTop = internalStackValue(1);
+        internalPop(2);
+        omni_internal_write_field(roots.receiver, b3, top, newTop);
       }
       else {
         fetchNextBytecode();
@@ -754,6 +806,43 @@ void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop val
   
   omni_commonInternalSend();
 }
+
+void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop value, Oop newTop) {
+  Safepoint_Ability sa(false);
+  
+  Object_p obj = obj_oop.as_object();
+  Oop domain   = obj->domain_oop();
+  
+  Oop* const currentStackPtr = &(localSP()[1]); // this is the value that is going to get lost
+  // by pushing the domain(new receiver) over it. eventually, it is returned by the function,
+  // however, we want to make sure that it is the correct value for most of the time
+  // so, will restore it after the send is done.
+  
+  
+  /* write: val toField: idx of: obj */
+  
+  
+  assert(obj_oop != Oop::from_bits(0));
+  assert(domain  != Oop::from_bits(0));
+  
+  // we assume that at this point obj_oop was already popped from the stack
+  internalPush(domain);
+  internalPush(value);
+  internalPush(Oop::from_int(idx + 1));  // Moving that up to Smalltalk means a conversion to 1-based indexing
+  internalPush(obj_oop);
+  internalPush(newTop);
+  
+  set_argumentCount(4);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.write_field_with_return();
+  
+  omni_commonInternalSend();
+  
+# warning we need to make that GC safe!!!!
+  *currentStackPtr = newTop; // reset the old bottom value, might be the receiver of the context frame (now the old frame)
+}
+
 
 
 void Squeak_Interpreter::omni_internal_read_literal(oop_int_t idx) {
