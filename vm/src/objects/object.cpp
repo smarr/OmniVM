@@ -57,7 +57,25 @@ bool Object::verify_preheader_words() {
 }
 
 
-void Object::dp() { print(stderr_printer); stderr_printer->nl(); }
+void Object::dp() {
+  print(stderr_printer); 
+
+  // OMNI
+  stderr_printer->printf(" ((");
+  
+  Oop domain = domain_oop();
+  if (domain.is_illegal()) {
+    stderr_printer->printf("illegal");
+  }
+  else {
+    domain.as_object()->print(stderr_printer);
+  }
+  
+  stderr_printer->printf("))");
+  
+  
+  stderr_printer->nl();
+}
 
 void Object::print_with_fields() {
   dp();
