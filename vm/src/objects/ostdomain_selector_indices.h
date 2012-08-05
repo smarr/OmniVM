@@ -32,6 +32,7 @@ public:
   static const oop_int_t Write_ToField_Of_                                            = 24;
   static const oop_int_t Write_ToField_Of_Return_                                     = 25;
   static const oop_int_t Write_ToLiteral_                                             = 26;
+  static const oop_int_t Write_ToLiteral_Return_                                      = 27;
   
   
   
@@ -62,15 +63,17 @@ public:
   static const oop_int_t Write_ToField_Of__Mask                                       = 0x1000000 << Tag_Size;
   static const oop_int_t Write_ToField_Of_Return__Mask                                = 0x2000000 << Tag_Size;
   static const oop_int_t Write_ToLiteral__Mask                                        = 0x4000000 << Tag_Size;
+  static const oop_int_t Write_ToLiteral_Return__Mask                                 = 0x8000000 << Tag_Size;
   
   
   /** Make it easier to identify whether any of them is customize.
    Remember that it's a SmallInt and we need to shift by the Tag_Bit */
   static const oop_int_t RequestExecutionMask = 0xFFF000 << Tag_Size;
   static const oop_int_t WriteToFieldMask     = 0x3000000 << Tag_Size;
+  static const oop_int_t WriteToLiteralMask   = 0xC000000 << Tag_Size;
 };
 
 
 
-/** Identity Hash: 331B2C12B751E9A3B2474EA009928AE5  **/
+/** Identity Hash: F8D5D0371E17BBBAC17C6C7DD0253C4C  **/
 

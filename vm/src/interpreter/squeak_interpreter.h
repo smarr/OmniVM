@@ -1058,6 +1058,7 @@ public:
   void omni_internal_write_field(Oop obj_oop, int idx, Oop value, Oop newTop);
   void omni_internal_read_literal(oop_int_t idx);
   void omni_internal_write_literal(Oop lit, Oop value);
+  void omni_internal_write_literal(Oop lit, Oop value, Oop newTop);
 
   void omni_commonSend(Oop lookupClass); // helper similar to commonSend()
   void omni_commonInternalSend();

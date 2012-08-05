@@ -223,9 +223,10 @@ void Squeak_Interpreter::extendedStoreAndPopBytecode() {
       fatal("illegal store");
     case 3: {
       if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::Write_ToLiteral__Mask)) {
-        Oop val = internalStackTop();
-        internalPop(1);
-        omni_internal_write_literal(literal(vi), val);
+        Oop val    = internalStackTop();
+        Oop newTop = internalStackValue(1);        
+        internalPop(2);
+        omni_internal_write_literal(literal(vi), val, newTop);
         return;
       }
       else {
@@ -885,6 +886,37 @@ void Squeak_Interpreter::omni_internal_write_literal(Oop lit, Oop value) {
   roots.messageSelector = The_OstDomain.write_literal();
   
   omni_commonInternalSend();
+}
+
+
+void Squeak_Interpreter::omni_internal_write_literal(Oop lit, Oop value, Oop newTop) {
+  Safepoint_Ability sa(false);
+  
+  Oop domain   = _localDomain->as_oop();
+  
+  Oop* const currentStackPtr = &(localSP()[1]); // this is the value that is going to get lost
+  // by pushing the domain(new receiver) over it. eventually, it is returned by the function,
+  // however, we want to make sure that it is the correct value for most of the time
+  // so, will restore it after the send is done.
+  
+  
+  /* write: val toLiteral: obj */
+  
+  // we assume that at this point 'value' was already popped from the stack
+  internalPush(domain);
+  internalPush(value);
+  internalPush(lit);
+  internalPush(newTop);
+  
+  set_argumentCount(3);
+  
+  roots.lkupClass = domain.fetchClass();
+  roots.messageSelector = The_OstDomain.write_literal_with_return();
+  
+  omni_commonInternalSend();
+  
+# warning we need to make that GC safe!!!!
+  *currentStackPtr = newTop; // reset the old bottom value, might be the receiver of the context frame (now the old frame)
 }
 
 

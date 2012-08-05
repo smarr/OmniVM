@@ -73,6 +73,10 @@ public:
   inline Oop write_literal() const {
     return get_domain_selector(OstDomainSelector_Indices::Write_ToLiteral_);
   }
+  
+  inline Oop write_literal_with_return() const {
+    return get_domain_selector(OstDomainSelector_Indices::Write_ToLiteral_Return_);
+  }
 
 
   inline Oop request_exec(int arg_cnt) const {
