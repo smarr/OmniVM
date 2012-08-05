@@ -1357,14 +1357,15 @@ void Squeak_Interpreter::bytecodePrimAt() {
   
   successFlag = rcvr.is_mem() && index.is_int();
   if (!delegateExec && successFlag) {
-    bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On__Mask);
-    if (delegatePrim) {
-      omni_internal_request_primitive_at(The_OstDomain.prim_at_on());
-      return;
-    }
-    
     At_Cache::Entry* e = atCache.get_entry(rcvr, false);
     if (e->matches(rcvr)) {
+      // now, we are sure that it is a primitive, and we can delegate it directly to the domain
+      bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On__Mask);
+      if (delegatePrim) {
+        omni_internal_request_primitive_at(The_OstDomain.prim_at_on());
+        return;
+      }
+      
       Oop result = commonVariableAt(rcvr, index.integerValue(), e, true);
       if (successFlag) {
         fetchNextBytecode();
@@ -1383,20 +1384,20 @@ void Squeak_Interpreter::bytecodePrimAt() {
 void Squeak_Interpreter::bytecodePrimAtPut() {
   Oop value = internalStackTop();
   Oop index = internalStackValue(1);
-  Oop rcvr = internalStackValue(2);
+  Oop rcvr  = internalStackValue(2);
   
   bool delegateExec = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
   
   successFlag = rcvr.is_mem() && index.is_int();
-  if (!delegateExec && successFlag) {
-    bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On_Put__Mask);
-    if (delegatePrim) {
-      omni_internal_request_primitive_atPut(The_OstDomain.prim_at_put_on());
-      return;
-    }
-    
+  if (!delegateExec && successFlag) {    
     At_Cache::Entry* e = atCache.get_entry(rcvr, true);
     if (e->matches(rcvr)) {
+      bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On_Put__Mask);
+      if (delegatePrim) {
+        omni_internal_request_primitive_atPut(The_OstDomain.prim_at_put_on());
+        return;
+      }
+      
       commonVariableAtPut(rcvr, index.integerValue(), value, e);
       if (successFlag) {
         fetchNextBytecode();
