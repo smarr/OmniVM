@@ -32,7 +32,7 @@ def determine_launch_executable():
 
 class StartupTest(unittest.TestCase):
     
-    image = os.path.dirname(__file__) + "/../../../images/benchmarks/benchmarks.image"
+    image = os.path.dirname(__file__) + "/../../../images/benchmarks/benchmarking.image"
     rvm = determine_launch_executable()
     on_tilera = len(rvm) == 2
     cpu_count = 59 if on_tilera else multiprocessing.cpu_count()
