@@ -176,8 +176,8 @@ then
         Xext_PATH="/Developer/SDKs/MacOSX10.6.sdk/usr/X11R6/lib"
 		if [ -z "$CXX" ]
 		then
-        	CC=gcc
-        	CXX=g++
+        	CC=clang
+        	CXX=clang++
 		fi
         CONFIG_FLAGS="$CONFIG_FLAGS -I/Developer/SDKs/MacOSX10.6.sdk/usr/X11/include/"
 
