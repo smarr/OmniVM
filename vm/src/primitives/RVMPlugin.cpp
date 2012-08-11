@@ -173,21 +173,32 @@ Oop sample_one_core(int what_to_sample) {
 
 void* primitiveBreakpoint() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
+
+  oop_int_t breakId = 0;
   
   // #breakpoint: msg
-  if (interp->get_argumentCount() == 1) {
-    Oop x = interp->stackTop();
-    if (!x.isBytes()) {
+  // or: #breakpoint: msg id: int
+  if (interp->get_argumentCount() == 1 || interp->get_argumentCount() == 2) {
+
+    
+    if (interp->get_argumentCount() == 2) {
+      breakId = interp->stackIntegerValue(0);
+      interp->pop(1);
+    }
+
+    
+    Oop msg = interp->stackTop();
+    if (!msg.isBytes()) {
       interp->primitiveFail();
     }
     else {
       stdout_printer->lprintf("breakpoint: ");
-      x.as_object()->print_bytes(stdout_printer);
+      msg.as_object()->print_bytes(stdout_printer);
       stdout_printer->nl();
       interp->pop(1);
     }
   }
-  else if (interp->get_argumentCount() > 1) { 
+  else if (interp->get_argumentCount() > 2) { 
     interp->primitiveFail();
     stdout_printer->lprintf("breakpoint (unsupported number of parameters)\n");
   }
@@ -196,7 +207,18 @@ void* primitiveBreakpoint() {
     stdout_printer->lprintf("breakpoint\n");
   }
   
-  breakpoint();
+  static      bool breakHere = true;
+  static oop_int_t ignoreId1 = -1;
+  static oop_int_t ignoreId2 = -1;
+  static oop_int_t ignoreId3 = -1;
+  static oop_int_t ignoreId4 = -1;
+  
+  if (breakHere && breakId != ignoreId1
+                && breakId != ignoreId2
+                && breakId != ignoreId3
+                && breakId != ignoreId4)
+    breakpoint();
+  
   return NULL;
 }
 
