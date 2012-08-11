@@ -613,6 +613,16 @@ partial-cov: $(SRC_DIR)/tests/interprocess_allocator.o $(SRC_DIR)/tests/circular
 	lcov --directory $(SRC_DIR)/tests/ --capture --output-file rvm-gcov.info
 	genhtml --output-directory rvm-cov rvm-gcov.info
 
+
+test-image:
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: CL-Benchmarks
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniVMNoOpt
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: ClojureST
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Benchmarks
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Core
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Languages
+	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: AmbientTalkST-Benchmarks
+
 clean:
 	rm -f *.o $(EXECUTABLE) rvm-test libgtest.a $(TEST_OBJS)
 	rm -f *.gcno *.gcda *.gcov rvm-gcov.info $(SRC_DIR)/tests/*.gcno $(SRC_DIR)/tests/*.gcda $(SRC_DIR)/tests/*.gcov
