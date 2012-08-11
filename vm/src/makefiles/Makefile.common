@@ -615,13 +615,13 @@ partial-cov: $(SRC_DIR)/tests/interprocess_allocator.o $(SRC_DIR)/tests/circular
 
 
 test-image:
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: CL-Benchmarks
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniVMNoOpt
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: ClojureST
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Benchmarks
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Core
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Languages
-	$(AT)./$(EXECUTABLE) ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: AmbientTalkST-Benchmarks
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: CL-Benchmarks
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniVMNoOpt
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: ClojureST
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Benchmarks
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Core
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Tests-Languages
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: AmbientTalkST-Benchmarks
 
 clean:
 	rm -f *.o $(EXECUTABLE) rvm-test libgtest.a $(TEST_OBJS)
