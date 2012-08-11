@@ -75,6 +75,17 @@ public:
   
   bool suppress_context_switch_for_debugging;
   
+  inline bool suppress_context_switching() const {
+    // the current implementation of Omni is not robust to context changes
+    if (!indicated_exec_level_consistent() || _executes_on_baselevel)
+      return true;
+    
+    if (Include_Debugging_Code)
+      return suppress_context_switch_for_debugging;
+    else
+      return false;
+  }
+  
   static const u_int64 all_cores_mask = ~0LL;
   static u_int64 run_mask_value_for_core(int x) { return 1LL << x; }
   void set_run_mask_and_request_yield(u_int64);
@@ -242,6 +253,7 @@ public:
       primitives. */
   void indicate_switch_to_baselevel();
   void indicate_switch_to_metalevel();
+  bool indicated_exec_level_consistent() const;
   
   void set_domain_and_execution_level_on_new_context(Object_p ctx) const {
     ctx->set_domain(_localDomain);
@@ -1135,7 +1147,7 @@ public:
   void printUnbalancedStack(int, fn_t);
 
   void internalQuickCheckForInterrupts() {
-    if (_executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
+    if (suppress_context_switching())  // the current implementation of Omni is not robust to context changes
       return;
     
     if (--interruptCheckCounter <= 0) {
@@ -1148,7 +1160,7 @@ public:
 
 
   void quickCheckForInterrupts() {
-    if (_executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
+    if (suppress_context_switching())  // the current implementation of Omni is not robust to context changes
       return;
 
     /*

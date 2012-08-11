@@ -1204,9 +1204,9 @@ void Squeak_Interpreter::signalSemaphoreWithIndex(int index) {
 
 void Squeak_Interpreter::checkForInterrupts(bool is_safe_to_process_events) {
   if (   doing_primitiveClosureValueNoContextSwitch
-      || suppress_context_switch_for_debugging
-      || _executes_on_baselevel)  // the current implementation of Omni is not robust to context changes
+      || suppress_context_switching())  
     return;
+  
   static bool last_use_cpu_ms = use_cpu_ms();
   bool use_cpu_ms_changed = last_use_cpu_ms != use_cpu_ms();
   last_use_cpu_ms = use_cpu_ms();
@@ -2498,7 +2498,8 @@ void Squeak_Interpreter::restore_from_checkpoint(FILE* f) {
 // Broke out of the interpreter loop to do some multicore stuff:
 
 void Squeak_Interpreter::multicore_interrupt() {
-  if (doing_primitiveClosureValueNoContextSwitch || suppress_context_switch_for_debugging)
+  if (   doing_primitiveClosureValueNoContextSwitch
+      || suppress_context_switching())
     return;
   
   /* Record some performance counters */
@@ -3478,5 +3479,9 @@ void Squeak_Interpreter::indicate_switch_to_metalevel() {
   _executes_on_baselevel = false;
 }
 
-
+// Check whether the current context indicates the same as is indicated
+// in the interpreter.
+bool Squeak_Interpreter::indicated_exec_level_consistent() const {
+  return _executes_on_baselevel == _activeContext_obj->domain_execute_on_baselevel();
+}
 
