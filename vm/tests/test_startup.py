@@ -14,7 +14,7 @@ def determine_launch_executable():
         that it is a Tilera binary.
     """
     devnull = open(os.devnull, 'w')
-    binary = os.path.dirname(__file__) + "/../build/rvm"
+    binary = os.path.dirname(__file__) + "/../build/omnivm"
     try:
         exitcode = subprocess.call([binary], stdout=devnull, stderr=devnull)
     except exceptions.OSError as e:
@@ -88,10 +88,10 @@ class StartupTest(unittest.TestCase):
 
                 os.remove(tmp_name)
                 self.assertTrue(exitcode is 0 or (errmsgFound and heap is not 128),
-                    "Failed starting rvm with -num_cores %d -min_heap_MB %d and no useful error: %s" %(c, heap, " ".join(cmd)))
+                    "Failed starting omnivm with -num_cores %d -min_heap_MB %d and no useful error: %s" %(c, heap, " ".join(cmd)))
                 
-                subprocess.call(["killall", "-9", "rvm"    ])
-                subprocess.call(["killall", "-9", "rvm.bin"])
+                subprocess.call(["killall", "-9", "omnivm"    ])
+                subprocess.call(["killall", "-9", "omnivm.bin"])
                     
     def test_reliability(self):
         self.assertTrue(self.cpu_count > 1)
