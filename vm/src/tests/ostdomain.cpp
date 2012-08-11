@@ -16,19 +16,20 @@
 
 # define ODSI OstDomainSelector_Indices
 
+// This test has been disabled and is done now on the image side instead.
 TEST(OstDomain_CustomizationEncoding, domain_customizes_selectors_AT) {
-  Oop encoding = Oop::from_int(54493200); // This is ATActor, only reqExec overridden
+
+//  Oop encoding = Oop::from_int(54493200); // This is ATActor, only reqExec overridden
   
 //  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding, ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_Of_On__Mask                                 ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_Of_On__Mask                            ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_Of_On__Mask                       ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_Of_On__Mask                  ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_Of_On__Mask             ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_Of_On__Mask        ));
-  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_With_Of_On__Mask   ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_Of_On__Mask                                 ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_Of_On__Mask                            ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_Of_On__Mask                       ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_Of_On__Mask                  ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_Of_On__Mask             ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_Of_On__Mask        ));
+//  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_With_Of_On__Mask   ));
 //  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_With_With_Of_On__Mask ));
 //  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_With_With_With_Of_On__Mask ));
 //  ASSERT_TRUE(OstDomain::domain_customizes_selectors(encoding,  ODSI::RequestExecution_With_With_With_With_With_With_With_With_With_Of_On__Mask));
-
 }
