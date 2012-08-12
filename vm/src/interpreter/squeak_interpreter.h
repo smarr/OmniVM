@@ -745,11 +745,11 @@ public:
     DEBUG_STORE_CHECK(localSP(), x);
     *localSP() = x;
   }
-  Oop internalStackTop() { return *localSP(); }
-  Oop stackTop() {return *stackPointer(); }
+  Oop internalStackTop() const { return *localSP();      }
+  Oop stackTop()         const { return *stackPointer(); }
   Oop popStack() { Oop r = *stackPointer(); set_stackPointer(stackPointer() - 1); return r; }
 
-  Oop stackValue(oop_int_t offset) { return stackPointer()[-offset]; }
+  Oop stackValue(oop_int_t offset) const { return stackPointer()[-offset]; }
 
 
   double stackFloatValue(oop_int_t offset) {
@@ -797,7 +797,7 @@ public:
   Oop literal(oop_int_t offset) {
     return method_obj()->literal(offset);
   }
-  Oop internalStackValue( int offset )  { return localSP()[-offset]; }
+  Oop  internalStackValue( int offset ) const { return localSP()[-offset]; }
   void internalPop(int n) { set_localSP(localSP() - n); }
   void pop(int n) { set_stackPointer(stackPointer() - n); }
   void unPop(int n) { set_stackPointer(stackPointer() + n); }
