@@ -1080,6 +1080,8 @@ public:
   void omni_commonSend(Oop lookupClass); // helper similar to commonSend()
   void omni_commonInternalSend();
   
+  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3);
+  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4);
   
   
   inline void omni_set_domain_for_new_object(Object_p obj) {
@@ -1092,8 +1094,6 @@ public:
       obj->set_domain(roots.nilObj);
   }
   
-  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3);
-  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4);
   
   void findNewMethodInClass(Oop klass);
 
