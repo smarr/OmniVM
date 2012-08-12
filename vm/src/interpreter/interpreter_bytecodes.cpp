@@ -752,7 +752,7 @@ void Squeak_Interpreter::omni_internal_read_field(Oop obj_oop, int idx) {
   
   set_argumentCount(2);
   
-  roots.lkupClass = domain.fetchClass();
+  roots.receiverClass   = roots.lkupClass = domain.fetchClass();
   roots.messageSelector = The_OstDomain.read_field();
   
   omni_commonInternalSend();
@@ -802,7 +802,7 @@ void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop val
   
   set_argumentCount(3);
   
-  roots.lkupClass = domain.fetchClass();
+  roots.receiverClass   = roots.lkupClass = domain.fetchClass();
   roots.messageSelector = The_OstDomain.write_field();
   
   omni_commonInternalSend();
