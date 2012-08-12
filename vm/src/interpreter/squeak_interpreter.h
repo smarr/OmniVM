@@ -947,6 +947,9 @@ public:
 
   void internalActivateNewMethod();
 
+  
+  void internal_copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const;
+  void copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const;
 
   void activateNewMethod();
 # if Include_Closure_Support
@@ -1566,8 +1569,10 @@ public:
   Oop     displayObject();
 
 
+  void obtain_context_object(bool large, Object_p& nco, Oop& newContext);
   Object_p allocateOrRecycleContext(bool needsLarge);
-
+  Oop* initialize_context(Object_p nco, oop_int_t methodHeader);
+  void clear_temps_in_context(Oop* const content_part_of_ctx, int argCnt, int tmpCnt);
 
   bool verify();
 

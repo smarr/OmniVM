@@ -946,33 +946,28 @@ void Squeak_Interpreter::printUnbalancedStack(int primIdx, fn_t fn) {
 }
 
 
-void Squeak_Interpreter::internalActivateNewMethod() {
-  oop_int_t methodHeader = newMethod_obj()->methodHeader();
-  bool needsLarge   = methodHeader & Object::LargeContextBit;
-  bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
-  
-  Object_p nco;
-  Oop newContext;
-
-  if (!needsLarge &&  roots.freeContexts != Object::NilContext()) {
+void Squeak_Interpreter::obtain_context_object(bool large, Object_p& nco, Oop& newContext) {
+  if (!large &&  roots.freeContexts != Object::NilContext()) {
     newContext = roots.freeContexts;
     nco = newContext.as_object();
-    assert(nco->my_heap_contains_me());
-    Oop nfc = nco->fetchPointer(Object_Indices::Free_Chain_Index);
-    assert(nfc == Object::NilContext()  ||  (nfc.is_mem() && nfc.as_object()->headerType() == Header_Type::Short));
-    roots.freeContexts = nfc;
+    
+    Oop nextFreeCtx = nco->fetchPointer(Object_Indices::Free_Chain_Index);
+    assert(    nextFreeCtx == Object::NilContext()
+           ||  (nextFreeCtx.is_mem() && nextFreeCtx.as_object()->headerType() == Header_Type::Short));
+    roots.freeContexts = nextFreeCtx;
   }
   else {
     externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
-      nco = allocateOrRecycleContext(needsLarge);
+      nco = allocateOrRecycleContext(large);
     }
     newContext = nco->as_oop();
     internalizeExecutionState();
-    assert(nco->my_heap_contains_me());
   }
-
+  
+  assert(nco->my_heap_contains_me());
+  
   if ( check_many_assertions
       &&  nco->get_count_of_blocks_homed_to_this_method_ctx() > 0
       &&  nco->fetchPointer(Object_Indices::MethodIndex) != roots.newMethod) {
@@ -980,8 +975,15 @@ void Squeak_Interpreter::internalActivateNewMethod() {
             nco->fetchPointer(Object_Indices::MethodIndex).bits(),
             roots.newMethod.bits(), nco->as_oop().bits(),
             nco->get_count_of_blocks_homed_to_this_method_ctx());
-    lprintf("needsLarge %d\n", needsLarge);
+    lprintf("needsLarge %d\n", large);
   }
+}
+
+Oop* Squeak_Interpreter::initialize_context(Object_p nco, oop_int_t methodHeader) {
+  bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
+  int  initialIP    = ((Object_Indices::LiteralStart + Object::literalCountOfHeader(methodHeader)) * bytesPerWord) + 1;
+  int  tempCount    = Object::temporaryCountOfHeader(methodHeader);
+
   
   // OMNI: set the domain of the new context
   assert(_localDomain != NULL);
@@ -993,23 +995,20 @@ void Squeak_Interpreter::internalActivateNewMethod() {
     nco->set_domain_execute_on_metalevel();
   else
     nco->set_domain_execute_on_baselevel();
-
-  int tempCount = Object::temporaryCountOfHeader(methodHeader);
-  assert(nco->my_heap_contains_me());
-
+  // OMNI
+  
+  
   // assume newContext will be recorded as a root if need be by
   // the call to newActiveContext so use unchecked stores
-
+  
   Oop* where = nco->as_oop_p() + Object::BaseHeaderSize/sizeof(oop_int_t);
   
   DEBUG_STORE_CHECK(&where[Object_Indices::SenderIndex], activeContext());
   where[Object_Indices::SenderIndex] = activeContext();
-
-  Oop contents = Oop::from_int(((Object_Indices::LiteralStart
-                                 + Object::literalCountOfHeader(methodHeader))
-                                * bytesPerWord) + 1);
-  DEBUG_STORE_CHECK(&where[Object_Indices::InstructionPointerIndex], contents);
-  where[Object_Indices::InstructionPointerIndex] = contents;
+  
+  
+  DEBUG_STORE_CHECK(&where[Object_Indices::InstructionPointerIndex], Oop::from_int(initialIP));
+  where[Object_Indices::InstructionPointerIndex] = Oop::from_int(initialIP);
   
   DEBUG_STORE_CHECK(&where[Object_Indices::StackPointerIndex], Oop::from_int(tempCount));
   where[Object_Indices::StackPointerIndex] = Oop::from_int(tempCount);
@@ -1022,92 +1021,81 @@ void Squeak_Interpreter::internalActivateNewMethod() {
   where[Object_Indices::ClosureIndex] = roots.nilObj;
 # endif
   
+  return where;
+}
 
-  // copy rcvr, args
-  int argCount2 = get_argumentCount();
-  // Use get_argumentCount() instead of argCount2 to avoid tripping over
-  // Tilera -O2 compiler bug. -- dmu 6/17/08
-  // Try it with 1.3. dmu 6/23/08
-  for (int i = 0;  i <= argCount2/*get_argumentCount()*/;  ++i) {
-    DEBUG_STORE_CHECK(&where[Object_Indices::ReceiverIndex + i], internalStackValue(argCount2 - i));  
-    where[Object_Indices::ReceiverIndex + i] = internalStackValue(argCount2 - i);
-  }
-
+void Squeak_Interpreter::clear_temps_in_context(Oop* const content_part_of_ctx, int argCnt, int tmpCnt) {
   // clear remaining temps to nil, in case it has been recycled
   Oop nnil = roots.nilObj;
-  for (int i = argCount2 + 1 + Object_Indices::ReceiverIndex;
-       i <=  tempCount + Object_Indices::ReceiverIndex;
+  for (int i = argCnt + 1 + Object_Indices::ReceiverIndex;
+       i <=  tmpCnt + Object_Indices::ReceiverIndex;
        ++i) {
-    DEBUG_STORE_CHECK(&where[i], nnil);
-    where[i] = nnil;
+    DEBUG_STORE_CHECK(&content_part_of_ctx[i], nnil);
+    content_part_of_ctx[i] = nnil;
   }
+}
 
-  internalPop(argCount2 + 1);
+void Squeak_Interpreter::internal_copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const {
+  for (int i = 0;  i <= argCnt;  ++i) {
+    DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + i], internalStackValue(argCnt - i));  
+    content_part_of_ctx[Object_Indices::ReceiverIndex + i] = internalStackValue(argCnt - i);
+  }
+}
+
+void Squeak_Interpreter::copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const {
+  for (int i = 0;  i <= argCnt;  ++i) {
+    DEBUG_STORE_CHECK( &content_part_of_ctx[Object_Indices::ReceiverIndex + i], stackValue(argCnt - i));
+    content_part_of_ctx[Object_Indices::ReceiverIndex + i] = stackValue(argCnt - i);
+  }
+}
+
+void Squeak_Interpreter::internalActivateNewMethod() {
+  oop_int_t methodHeader = newMethod_obj()->methodHeader();
+  bool      needsLarge   = methodHeader & Object::LargeContextBit;
+  int       tempCount    = Object::temporaryCountOfHeader(methodHeader);
+  int       argCount     = get_argumentCount();
+  
+  Object_p  nco;
+  Oop       newContext;
+  obtain_context_object(needsLarge, nco, newContext);
+
+  Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
+  internal_copy_args_into_context(content_part_of_ctx, argCount);
+  clear_temps_in_context(content_part_of_ctx, argCount, tempCount);
+  
+  internalPop(argCount + 1);
   reclaimableContextCount += 1;
-  assert(nco->my_heap_contains_me());
+  
   internalNewActiveContext(newContext, nco);
 }
 
 
+  oop_int_t methodHeader = newMethod_obj()->methodHeader();
+
 void Squeak_Interpreter::activateNewMethod() {
   oop_int_t methodHeader = newMethod_obj()->methodHeader();
-  bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
-  Object_p nco = allocateOrRecycleContext(methodHeader & Object::LargeContextBit);
-
+  int       tempCount    = Object::temporaryCountOfHeader(methodHeader);
+  int argCnt = get_argumentCount();
+  
+  Object_p  nco = allocateOrRecycleContext(methodHeader & Object::LargeContextBit);
+  Oop       newContext = nco->as_oop();
+  
   if (check_many_assertions
-      && nco->get_count_of_blocks_homed_to_this_method_ctx() > 0  &&  nco->fetchPointer(Object_Indices::MethodIndex) != roots.newMethod)
+      &&  nco->get_count_of_blocks_homed_to_this_method_ctx() > 0  
+      &&  nco->fetchPointer(Object_Indices::MethodIndex) != roots.newMethod)
     lprintf("ext act changing method from 0x%x to 0x%x in 0x%x, home_flag %d\n",
             nco->fetchPointer(Object_Indices::MethodIndex).bits(),
             roots.newMethod.bits(),
             nco->as_oop().bits(),
             nco->get_count_of_blocks_homed_to_this_method_ctx());
-  Oop newContext = nco->as_oop();
-
-  int initialIP = (Object_Indices::LiteralStart + Object::literalCountOfHeader(methodHeader)) * bytesPerWord  +  1;
-  int tempCount = Object::temporaryCountOfHeader(methodHeader);
-  // assume newContext will be recorded as a root if need be by
-  // the call to newActiveContext so use unchecked stores
-  Oop* where = nco->as_oop_p() + Object::BaseHeaderSize/sizeof(oop_int_t);
   
-  
-  DEBUG_STORE_CHECK( &where[Object_Indices::SenderIndex], activeContext());
-  where[Object_Indices::SenderIndex] = activeContext();
-  
-  DEBUG_STORE_CHECK( &where[Object_Indices::InstructionPointerIndex], Oop::from_int(initialIP));
-  where[Object_Indices::InstructionPointerIndex] = Oop::from_int(initialIP);
 
-  DEBUG_STORE_CHECK( &where[Object_Indices::StackPointerIndex], Oop::from_int(tempCount));
-  where[Object_Indices::StackPointerIndex] = Oop::from_int(tempCount);
+  Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
+  copy_args_into_context(content_part_of_ctx, argCnt);
+  clear_temps_in_context(content_part_of_ctx, argCnt, tempCount);
 
-  DEBUG_STORE_CHECK( &where[Object_Indices::MethodIndex], roots.newMethod);
-  where[Object_Indices::MethodIndex] = roots.newMethod;
-
-# if Include_Closure_Support
-  DEBUG_STORE_CHECK( &where[Object_Indices::ClosureIndex], roots.nilObj);
-  where[Object_Indices::ClosureIndex] = roots.nilObj;
-# endif
-
-
-  // copy rcvr, args
-  for (int i = 0;  i <= get_argumentCount();  ++i) {
-    DEBUG_STORE_CHECK( &where[Object_Indices::ReceiverIndex + i], stackValue(get_argumentCount() - i));
-    where[Object_Indices::ReceiverIndex + i] = stackValue(get_argumentCount() - i);
-  }
-
-  // clear remaining temps to nil, in case it has been recycled
-  Oop nnil = roots.nilObj;
-  for (int i = get_argumentCount() + 1 + Object_Indices::ReceiverIndex;  i <=  tempCount + Object_Indices::ReceiverIndex;  ++i) {
-    DEBUG_STORE_CHECK(&where[i], nnil);
-    where[i] = nnil;
-  }
-
-  pop(get_argumentCount() + 1);
+  pop(argCnt + 1);
   reclaimableContextCount += 1;
-  
-  if (omniMetaExit || !_executes_on_baselevel)
-    nco->set_domain_execute_on_metalevel();
-  else
-    nco->set_domain_execute_on_baselevel();
   
   newActiveContext(newContext, nco);
 }
