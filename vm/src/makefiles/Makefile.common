@@ -614,7 +614,7 @@ partial-cov: $(SRC_DIR)/tests/interprocess_allocator.o $(SRC_DIR)/tests/circular
 	genhtml --output-directory rvm-cov rvm-gcov.info
 
 
-test-image:
+test-image: $(EXECUTABLE)
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: CL-Benchmarks
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniVMNoOpt
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: ClojureST
