@@ -1070,7 +1070,70 @@ void Squeak_Interpreter::internalActivateNewMethod() {
 }
 
 
+void Squeak_Interpreter::internal_activate_with_arguments(Oop receiver, Oop arg1, Oop arg2, Oop arg3) {
   oop_int_t methodHeader = newMethod_obj()->methodHeader();
+  bool      needsLarge   = methodHeader & Object::LargeContextBit;
+  int       tempCount    = Object::temporaryCountOfHeader(methodHeader);
+  int       argCount     = get_argumentCount();
+  assert_eq(argCount, 3, "This variant is specialized for 4 arguments. "
+            "Make sure that set_argumentCount() is called as for other sends.");
+  
+  Object_p  nco;
+  Oop       newContext;
+  obtain_context_object(needsLarge, nco, newContext);
+  
+  Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
+  
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 0], receiver);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 1], arg1);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 2], arg2);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 3], arg3);
+  
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 0] = receiver;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 1] = arg1;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 2] = arg2;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 3] = arg3;
+  
+  clear_temps_in_context(content_part_of_ctx, argCount, tempCount);
+  
+  reclaimableContextCount += 1;
+  
+  internalNewActiveContext(newContext, nco);
+}
+
+
+void Squeak_Interpreter::internal_activate_with_arguments(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4) {
+  oop_int_t methodHeader = newMethod_obj()->methodHeader();
+  bool      needsLarge   = methodHeader & Object::LargeContextBit;
+  int       tempCount    = Object::temporaryCountOfHeader(methodHeader);
+  int       argCount     = get_argumentCount();
+  assert_eq(argCount, 4, "This variant is specialized for 4 arguments. "
+                         "Make sure that set_argumentCount() is called as for other sends.");
+  
+  Object_p  nco;
+  Oop       newContext;
+  obtain_context_object(needsLarge, nco, newContext);
+  
+  Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
+  
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 0], receiver);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 1], arg1);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 2], arg2);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 3], arg3);
+  DEBUG_STORE_CHECK(&content_part_of_ctx[Object_Indices::ReceiverIndex + 4], arg4);
+  
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 0] = receiver;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 1] = arg1;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 2] = arg2;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 3] = arg3;
+  content_part_of_ctx[Object_Indices::ReceiverIndex + 4] = arg4;
+  
+  clear_temps_in_context(content_part_of_ctx, argCount, tempCount);
+  
+  reclaimableContextCount += 1;
+  
+  internalNewActiveContext(newContext, nco);
+}
 
 void Squeak_Interpreter::activateNewMethod() {
   oop_int_t methodHeader = newMethod_obj()->methodHeader();

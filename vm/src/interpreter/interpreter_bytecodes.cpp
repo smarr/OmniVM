@@ -813,38 +813,57 @@ void Squeak_Interpreter::omni_internal_write_field(Oop obj_oop, int idx, Oop val
   
   Object_p obj = obj_oop.as_object();
   Oop domain   = obj->domain_oop();
-  
-  Oop* const currentStackPtr = &(localSP()[1]); // this is the value that is going to get lost
-  // by pushing the domain(new receiver) over it. eventually, it is returned by the function,
-  // however, we want to make sure that it is the correct value for most of the time
-  // so, will restore it after the send is done.
-  
-  
-  /* write: val toField: idx of: obj */
-  
-  
+
   assert(obj_oop != Oop::from_bits(0));
   assert(domain  != Oop::from_bits(0));
   
-  // we assume that at this point obj_oop was already popped from the stack
-  internalPush(domain);
-  internalPush(value);
-  internalPush(Oop::from_int(idx + 1));  // Moving that up to Smalltalk means a conversion to 1-based indexing
-  internalPush(obj_oop);
-  internalPush(newTop);
-  
+  // current frame is already prepared for being only used when the result
+  // got pushed back on (we know the result already: newTop)
+  // will now use a special send, that is not modifying the current frame
+  // anymore
+
+  // issue direct send:
   set_argumentCount(4);
-  
-  roots.lkupClass = domain.fetchClass();
+  roots.receiverClass   = roots.lkupClass       = domain.fetchClass();
   roots.messageSelector = The_OstDomain.write_field_with_return();
-  
-  omni_commonInternalSend();
-  
-# warning we need to make that GC safe!!!!
-  *currentStackPtr = newTop; // reset the old bottom value, might be the receiver of the context frame (now the old frame)
+  omni_internal_send_create_context_directly(domain, value, Oop::from_int(idx + 1), obj_oop, newTop);
 }
 
+void Squeak_Interpreter::omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3) {
+  debugCommonSend();
+  
+  // since we provide the arguments explicitly to construct the context,
+  // we don't support #dnu and #cannotInterpret:
+  // just as a reminder, would need to check the whole hierarchy to be sure
+  assert(roots.nilObj != roots.lkupClass.as_object()->fetchPointer(Object_Indices::MessageDictionaryIndex));
+  internalFindNewMethod();
+  
+  // we also do not support primitives here
+  assert_eq(primitiveIndex, 0, "Primitives are not supported when send is done with direct context construction.");
+  
+  internal_activate_with_arguments(receiver, arg1, arg2, arg3);
+  
+  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+    fetchNextBytecode();
+}
 
+void Squeak_Interpreter::omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4) {
+  debugCommonSend();
+  
+  // since we provide the arguments explicitly to construct the context,
+  // we don't support #dnu and #cannotInterpret:
+  // just as a reminder, would need to check the whole hierarchy to be sure
+  assert(roots.nilObj != roots.lkupClass.as_object()->fetchPointer(Object_Indices::MessageDictionaryIndex));
+  internalFindNewMethod();
+  
+  // we also do not support primitives here
+  assert_eq(primitiveIndex, 0, "Primitives are not supported when send is done with direct context construction.");
+  
+  internal_activate_with_arguments(receiver, arg1, arg2, arg3, arg4);
+  
+  if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+    fetchNextBytecode();
+}
 
 void Squeak_Interpreter::omni_internal_read_literal(oop_int_t idx) {
   Safepoint_Ability sa(false);
@@ -853,8 +872,6 @@ void Squeak_Interpreter::omni_internal_read_literal(oop_int_t idx) {
   Oop domain = _localDomain->as_oop();
   
   /* readLiteral: literal */
-  
-  
   
   internalPush(domain);
   internalPush(lit);
@@ -894,29 +911,17 @@ void Squeak_Interpreter::omni_internal_write_literal(Oop lit, Oop value, Oop new
   
   Oop domain   = _localDomain->as_oop();
   
-  Oop* const currentStackPtr = &(localSP()[1]); // this is the value that is going to get lost
-  // by pushing the domain(new receiver) over it. eventually, it is returned by the function,
-  // however, we want to make sure that it is the correct value for most of the time
-  // so, will restore it after the send is done.
+  // current frame is already prepared for being only used when the result
+  // got pushed back on (we know the result already: newTop)
+  // will now use a special send, that is not modifying the current frame
+  // anymore
   
-  
-  /* write: val toLiteral: obj */
-  
-  // we assume that at this point 'value' was already popped from the stack
-  internalPush(domain);
-  internalPush(value);
-  internalPush(lit);
-  internalPush(newTop);
-  
+  // issue direct send:
   set_argumentCount(3);
   
-  roots.lkupClass = domain.fetchClass();
+  roots.lkupClass       = domain.fetchClass();
   roots.messageSelector = The_OstDomain.write_literal_with_return();
-  
-  omni_commonInternalSend();
-  
-# warning we need to make that GC safe!!!!
-  *currentStackPtr = newTop; // reset the old bottom value, might be the receiver of the context frame (now the old frame)
+  omni_internal_send_create_context_directly(domain, value, lit, newTop);
 }
 
 

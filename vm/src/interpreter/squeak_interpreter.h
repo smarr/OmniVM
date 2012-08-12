@@ -947,6 +947,8 @@ public:
 
   void internalActivateNewMethod();
 
+  void internal_activate_with_arguments(Oop receiver, Oop arg1, Oop arg2, Oop arg3);
+  void internal_activate_with_arguments(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4);
   
   void internal_copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const;
   void copy_args_into_context(Oop* const content_part_of_ctx, int argCnt) const;
@@ -1090,6 +1092,8 @@ public:
       obj->set_domain(roots.nilObj);
   }
   
+  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3);
+  void omni_internal_send_create_context_directly(Oop receiver, Oop arg1, Oop arg2, Oop arg3, Oop arg4);
   
   void findNewMethodInClass(Oop klass);
 
