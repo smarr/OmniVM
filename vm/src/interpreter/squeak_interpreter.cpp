@@ -1078,9 +1078,20 @@ void Squeak_Interpreter::internal_activate_with_arguments(Oop receiver, Oop arg1
   assert_eq(argCount, 3, "This variant is specialized for 4 arguments. "
             "Make sure that set_argumentCount() is called as for other sends.");
   
+  /* make sure we are GC safe */
+  pushRemappableOop(receiver);
+  pushRemappableOop(arg1);
+  pushRemappableOop(arg2);
+  pushRemappableOop(arg3);
+  
   Object_p  nco;
   Oop       newContext;
   obtain_context_object(needsLarge, nco, newContext);
+  
+  arg3     = popRemappableOop();
+  arg2     = popRemappableOop();
+  arg1     = popRemappableOop();
+  receiver = popRemappableOop();
   
   Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
   
@@ -1110,9 +1121,22 @@ void Squeak_Interpreter::internal_activate_with_arguments(Oop receiver, Oop arg1
   assert_eq(argCount, 4, "This variant is specialized for 4 arguments. "
                          "Make sure that set_argumentCount() is called as for other sends.");
   
+  /* make sure we are GC safe */
+  pushRemappableOop(receiver);
+  pushRemappableOop(arg1);
+  pushRemappableOop(arg2);
+  pushRemappableOop(arg3);
+  pushRemappableOop(arg4);
+  
   Object_p  nco;
   Oop       newContext;
   obtain_context_object(needsLarge, nco, newContext);
+  
+  arg4     = popRemappableOop();
+  arg3     = popRemappableOop();
+  arg2     = popRemappableOop();
+  arg1     = popRemappableOop();
+  receiver = popRemappableOop();
   
   Oop* const content_part_of_ctx = initialize_context(nco, methodHeader);
   
