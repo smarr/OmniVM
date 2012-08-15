@@ -257,6 +257,10 @@ void Squeak_Image_Reader::complete_remapping_of_pointers() {
           if(   Extra_Preheader_Word_Experiment
              && ((Oop*)obj->extra_preheader_word())->is_mem())
               fatal("shouldnt occur");
+          
+          if (   Include_Domain_In_Object_Header
+              && !obj->domain_oop().is_illegal())
+            fatal("should not occur");
         }
       }
     }   
