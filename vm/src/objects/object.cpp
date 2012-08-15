@@ -1035,6 +1035,9 @@ void Object::move_to_heap(int r, int rw_or_rm, bool do_sync) {
   if (Extra_Preheader_Word_Experiment)
     new_obj->set_extra_preheader_word(get_extra_preheader_word());
   
+  if (Include_Domain_In_Object_Header)
+    new_obj->set_domain(domain_oop());
+  
   h->enforce_coherence_after_store(dst_chunk, ehb + bnc);
 
   ((Chunk*)src_chunk)->make_free_object(ehb + bnc, 2); // without this GC screws up
