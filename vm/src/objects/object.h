@@ -197,10 +197,12 @@ public:
   inline void set_backpointer(Oop) const {}
    
 # endif
-private:  
+ 
   oop_int_t* domain_word_address() {
     return preheader()->domain_word_address();
   }
+
+private: 
    
   static const int ExecutionLevelMask = 2;  // STEFAN: am not entierly sure whether Oops also have that bit free for use as pointer have..., surely hope so...
 
