@@ -197,13 +197,16 @@ public:
   inline void set_backpointer(Oop) const {}
    
 # endif
- 
+
+   
+private:
+  /* This is private, because we do not want to expose the raw Oop.
+     We use one bit of the Oop, which might be problematic, to encode the
+     current execution level */
   oop_int_t* domain_word_address() {
     return preheader()->domain_word_address();
   }
 
-private: 
-   
   static const int ExecutionLevelMask = 2;  // STEFAN: am not entierly sure whether Oops also have that bit free for use as pointer have..., surely hope so...
 
 public:   

@@ -484,7 +484,12 @@ void Object::do_all_oops_of_object(Oop_Closure* oc, bool do_checks) {
     oc->value((Oop*)extra_preheader_word(), (Object_p)this);
   
   if (Include_Domain_In_Object_Header) {
-    oc->value((Oop*)domain_word_address(), (Object_p)this);
+    Oop domain = domain_oop();
+    Oop old_domain = domain;
+    oc->value(&domain, (Object_p)this);
+    if (domain != old_domain) {
+      set_domain(domain);
+    }
   }
 }
 
@@ -524,7 +529,7 @@ void Object::do_all_oops_of_object_for_marking(Abstract_Mark_Sweep_Collector* gc
   if (Include_Domain_In_Object_Header) {
     Oop domain = domain_oop();
     if (!domain.is_illegal() )
-      gc->mark((Oop*)domain_word_address());
+      gc->mark((Oop*)&domain);
   }
 }
 
