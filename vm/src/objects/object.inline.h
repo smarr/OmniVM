@@ -427,7 +427,8 @@ inline oop_int_t Object::literalCount() {  return Object::literalCountOfHeader(m
 inline oop_int_t Object::literalCountOfHeader(oop_int_t header) { return (header >> Object_Indices::LiteralCountShift) & Object_Indices::LiteralCountMask; }
 
 inline Oop Object::literal(oop_int_t offset) {
-  # warning STEFAN: recheck this optimization, not entierly sure whether this is valid in all contexts
+// OMNI: revisit if we actually use it, at the moment everything is handled at the bytecode/primitive level
+//  # warning OMNI STEFAN: recheck this optimization, not entierly sure whether this is valid in all contexts
   Oop r = fetchPointer_no_domain_read_barrier(offset + Object_Indices::LiteralStart);
   if (check_many_assertions) {
     assert_always(r.is_int() || The_Memory_System()->object_table->probably_contains((void*)r.bits()));

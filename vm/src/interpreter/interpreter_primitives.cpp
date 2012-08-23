@@ -1503,7 +1503,7 @@ void Squeak_Interpreter::primitiveNewMethod() {
   Oop klass = popStack();
   oop_int_t size = (Object::literalCountOfHeader(header.bits()) + 1) * bytesPerWord + bytecodeCount;
   Object_p thisMethod = klass.as_object()->instantiateClass(size);
-# warning We are not setting domains on methods for the moment, they are meta objects of some sort...
+# warning OMNI: We are not setting domains on methods for the moment, they are meta objects of some sort...
   thisMethod->storePointer(Object_Indices::HeaderIndex, header);
   oop_int_t lc = Object::literalCountOfHeader(header.bits());
   for (int i = 1;  i <= lc;  ++i)

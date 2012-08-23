@@ -58,7 +58,7 @@ inline Oop Oop::from_object(Object* p) {
   return p->backpointer();
 # else
   assert_eq((oop_int_t)p, (oop_int_t)p | Mem_Tag, "They should already be tagged.");
-  # warning STEFAN: check whether we actually need the OR here
+  # warning TODO STEFAN: check whether we actually need the OR here
   return from_bits((oop_int_t)p | Mem_Tag);
 # endif
 }
