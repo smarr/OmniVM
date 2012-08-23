@@ -430,7 +430,7 @@ bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr, oop_int_t selector_m
     return false;
 
   // Nothing to do if the receiver is an int or garbage.
-  if (rcvr.is_int() || rcvr == Oop::from_bits(Oop::Illegals::allocated))
+  if (rcvr.is_int() /* || rcvr == Oop::from_bits(Oop::Illegals::allocated) */)
     return false;
 
   // If the receiver isn't in any domain, then there isn't anything to delegate to.
@@ -439,19 +439,14 @@ bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr, oop_int_t selector_m
     return false;
 
   
-  Object_p exec_domain = _localDomain;
-  Oop exec_oop = exec_domain->as_oop();
-    
-  
-  
   // STEFAN TODO: giving up here for the moment, still dont remember where
   //              that might be coming from, just nil it for now
   //assert(rcvr_domain != Oop::from_bits(Oop::Illegals::free_extra_preheader_words));
-  if (rcvr_domain == Oop::from_bits(Oop::Illegals::free_extra_preheader_words)) {
+  /*if (rcvr_domain == Oop::from_bits(Oop::Illegals::free_extra_preheader_words)) {
     rcvr.as_object()->set_domain(roots.nilObj);
     rcvr_domain = roots.nilObj;
     return false;
-  }
+  }*/
   
   if (check_assertions) {
     rcvr.as_object()->domain_oop().assert_is_not_illegal();
