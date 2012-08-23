@@ -408,55 +408,6 @@ void Squeak_Interpreter::longJumpIfFalse() {
   jumpIfFalseBy(long_cond_jump_offset());
 }
 
-bool Squeak_Interpreter::omni_requires_delegation_for_literals(oop_int_t selector_mask) const {
-  // Delegation is only necessary for execution in the base level.
-  if (executes_on_metalevel())
-    return false;
-  
-  // We now that we do not need to delegate if the domain is nil
-  if (_localDomain->as_oop() == roots.nilObj)
-    return false;
-  
-  // Check whether the domain actually encodes a handler for the
-  // requested delegation
-  Oop customization = The_OstDomain.get_domain_customization_encoding(_localDomain->as_oop());
-  assert(customization.is_int());
-  return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
-}
-
-bool Squeak_Interpreter::omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const {
-  // Delegation is only necessary for execution in the base level.
-  if (executes_on_metalevel())
-    return false;
-
-  // Nothing to do if the receiver is an int or garbage.
-  if (rcvr.is_int() /* || rcvr == Oop::from_bits(Oop::Illegals::allocated) */)
-    return false;
-
-  // If the receiver isn't in any domain, then there isn't anything to delegate to.
-  Oop rcvr_domain = rcvr.as_object()->domain_oop();
-  if (rcvr_domain.bits() == 0 /* NULL */ || rcvr_domain == roots.nilObj)
-    return false;
-
-  
-  // STEFAN TODO: giving up here for the moment, still dont remember where
-  //              that might be coming from, just nil it for now
-  //assert(rcvr_domain != Oop::from_bits(Oop::Illegals::free_extra_preheader_words));
-  /*if (rcvr_domain == Oop::from_bits(Oop::Illegals::free_extra_preheader_words)) {
-    rcvr.as_object()->set_domain(roots.nilObj);
-    rcvr_domain = roots.nilObj;
-    return false;
-  }*/
-  
-  if (check_assertions) {
-    rcvr.as_object()->domain_oop().assert_is_not_illegal();
-  }
-  
-  // Check whether the domain actually encodes a handler for the
-  // requested delegation
-  Oop customization = The_OstDomain.get_domain_customization_encoding(rcvr_domain);
-  return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
-}
 
 void Squeak_Interpreter::omni_request_execution() {
   /*** STEFAN TODO: Check whether we need a specific safepoint ability here.

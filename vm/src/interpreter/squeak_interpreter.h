@@ -234,9 +234,9 @@ public:
   u_char*  localIP()          const { assert_internal(); return _localIP; }
   Oop*     localSP()          const { assert_internal(); return _localSP; }
   Object_p localHomeContext() const { assert_internal(); return _localHomeContext; }
-  Object_p localDomain()      const { assert_internal(); return _localDomain; }
-  bool     executes_on_baselevel() const { return  _executes_on_baselevel; }
-  bool     executes_on_metalevel() const { return !_executes_on_baselevel; }
+  inline Object_p localDomain()           const { assert_internal(); return _localDomain; }
+  inline bool     executes_on_baselevel() const { return  _executes_on_baselevel; }
+  inline bool     executes_on_metalevel() const { return !_executes_on_baselevel; }
   
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
@@ -1051,8 +1051,48 @@ public:
   Oop send_doesNotUnderstand(Object_p currentClass_obj, Oop lkupClass);
 //  Oop send_OmniProtectionViolation(Oop rcvr, int reason);
   
-  bool omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const;
-  bool omni_requires_delegation_for_literals(oop_int_t selector_mask) const;
+  inline bool omni_requires_delegation_for_literals(oop_int_t selector_mask) const {
+    // Delegation is only necessary for execution in the base level.
+    if (executes_on_metalevel())
+      return false;
+    
+    // We now that we do not need to delegate if the domain is nil
+    if (_localDomain->as_oop() == roots.nilObj)
+      return false;
+    
+    // Check whether the domain actually encodes a handler for the
+    // requested delegation
+    Oop customization = The_OstDomain.get_domain_customization_encoding(_localDomain->as_oop());
+    assert(customization.is_int());
+    return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+  }
+  
+  inline bool omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const {
+    // Delegation is only necessary for execution in the base level.
+    if (executes_on_metalevel())
+      return false;
+    
+    // Nothing to do if the receiver is an int or garbage.
+    if (rcvr.is_int() /* || rcvr == Oop::from_bits(Oop::Illegals::allocated) */)
+      return false;
+    
+    // If the receiver isn't in any domain, then there isn't anything to delegate to.
+    Oop rcvr_domain = rcvr.as_object()->domain_oop();
+    if (rcvr_domain.bits() == 0 /* NULL */ || rcvr_domain == roots.nilObj)
+      return false;
+    
+    if (check_assertions) {
+      rcvr.as_object()->domain_oop().assert_is_not_illegal();
+    }
+    
+    // Check whether the domain actually encodes a handler for the
+    // requested delegation
+    Oop customization = The_OstDomain.get_domain_customization_encoding(rcvr_domain);
+    return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+  }
+
+  
+  
   void omni_request_execution();
   void omni_request_execution_in_lookup_class(Oop lkupClass);
   
