@@ -131,7 +131,8 @@
   template(Print_Keys) \
   \
   /* Project Omni aka ÜberVM */ \
-  template(Include_Domain_In_Object_Header)
+  template(Include_Domain_In_Object_Header) \
+  template(Use_Customization_Constant_To_Avoid_Delegations)
 
 
 
@@ -451,6 +452,10 @@
  */
 # ifndef Include_Domain_In_Object_Header
   # define Include_Domain_In_Object_Header 1
+# endif
+
+# ifndef Use_Customization_Constant_To_Avoid_Delegations
+  # define Use_Customization_Constant_To_Avoid_Delegations 1
 # endif
 
 

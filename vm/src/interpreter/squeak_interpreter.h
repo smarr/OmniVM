@@ -1062,9 +1062,12 @@ public:
     
     // Check whether the domain actually encodes a handler for the
     // requested delegation
-    Oop customization = The_OstDomain.get_domain_customization_encoding(_localDomain->as_oop());
-    assert(customization.is_int());
-    return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+    if (Use_Customization_Constant_To_Avoid_Delegations) {
+      Oop customization = The_OstDomain.get_domain_customization_encoding(_localDomain->as_oop());
+      assert(customization.is_int());
+      return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+    }
+    else return true;
   }
   
   inline bool omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const {
@@ -1087,8 +1090,11 @@ public:
     
     // Check whether the domain actually encodes a handler for the
     // requested delegation
-    Oop customization = The_OstDomain.get_domain_customization_encoding(rcvr_domain);
-    return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+    if (Use_Customization_Constant_To_Avoid_Delegations) {
+      Oop customization = The_OstDomain.get_domain_customization_encoding(rcvr_domain);
+      return The_OstDomain.domain_customizes_selectors(customization, selector_mask);
+    }
+    else return true;
   }
 
   
