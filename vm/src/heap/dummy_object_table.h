@@ -38,6 +38,7 @@ public:
 
   inline Oop allocate_oop_and_set_preheader(Object_p obj, int /* r */ COMMA_DCL_ESB) {
     obj->init_extra_preheader_word();
+    return obj->as_oop();
   }
 };
 
