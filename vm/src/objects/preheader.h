@@ -24,20 +24,22 @@
 //
 // STEFAN 2011-09-19
 
-# if Has_Preheader
-
 struct Preheader {
 public:
   
 # if Enforce_Backpointer || Use_Object_Table
   oop_int_t backpointer; // must be first, for instance for free chuck this is set to give the length
-  
-  static oop_int_t* backpointer_address_from_header_address(void* p) { 
-    return &((Preheader*)p)[-1].backpointer;
+# endif
+
+  oop_int_t* backpointer_word() {
+    # if Enforce_Backpointer || Use_Object_Table
+      return &backpointer;
+    # else
+      return NULL;
+    # endif
   }
 
-# endif
-  
+
 # if Extra_Preheader_Word_Experiment
   /* This word is used to do the dispatch of example messages send to an object */
   // STEFAN: was named extra_preheader_word before. Did not refactor everything, just the name here
@@ -106,19 +108,17 @@ public:
   }
 };
 
-
 # if Enforce_Backpointer || Use_Object_Table
 static const int backpointer_oop_size  = 1;
 static const int backpointer_byte_size = sizeof(oop_int_t);
 # endif
 
+
+# if Has_Preheader
 static const int preheader_byte_size = sizeof(Preheader);
 static const int preheader_oop_size  = sizeof(Preheader) / sizeof(oop_int_t);
-
-# else // Has_Preheader
-
+# else
 static const int preheader_byte_size = 0;
 static const int preheader_oop_size  = 0;
-
-
 # endif // !Has_Preheader
+

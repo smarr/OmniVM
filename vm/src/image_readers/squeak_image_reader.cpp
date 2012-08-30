@@ -224,11 +224,10 @@ void Squeak_Image_Reader::byteSwapByteObjects() {
 }
 
 
-# if !Use_Object_Table
-class UpdateOop_Closure: public Oop_Closure {
+class Update_Oop_Closure: public Oop_Closure {
   Object_Table* object_table;
 public:
-  UpdateOop_Closure(Object_Table* ot)  : Oop_Closure() { object_table = ot; }
+  Update_Oop_Closure(Object_Table* ot)  : Oop_Closure() { object_table = ot; }
   void value(Oop* p, Object_p) {
     if (p->is_mem()) {
       Object* obj = object_table->object_for(*p);
@@ -238,13 +237,14 @@ public:
   }
   virtual const char* class_name(char*) { return "UpdateOop_Closure"; }
 };
-# endif
 
 
 void Squeak_Image_Reader::complete_remapping_of_pointers() {
-# if !Use_Object_Table
+  if (Use_Object_Table)
+    return;
+  
   /* Extra pass for updating the pointers && deallocate the object table */
-  UpdateOop_Closure uoc(memory_system->object_table);
+  Update_Oop_Closure uoc(memory_system->object_table);
   FOR_ALL_RANKS(r) {
     for (int hi = 0; hi<Memory_System::max_num_mutabilities; hi++) {
       Multicore_Object_Heap* heap = memory_system->heaps[r][hi];
@@ -268,9 +268,11 @@ void Squeak_Image_Reader::complete_remapping_of_pointers() {
   specialObjectsOop = memory_system->object_table->object_for(specialObjectsOop)->as_oop();
   
   memory_system->object_table->cleanup();
+  
+  // We only use it for reading in the image, should be seperated out in to
+  // a special reader if possible
   delete memory_system->object_table;
   memory_system->object_table = NULL;
-# endif
 }
 
 
@@ -301,7 +303,6 @@ void Squeak_Image_Reader::distribute_objects() {
       memory_system->ask_cpu_core_to_add_object_from_snapshot_allocating_chunk(oop_for_addr(obj), obj);
     }
   }
-  
   // Remap specialObjectsOop
   specialObjectsOop = oop_for_oop(specialObjectsOop);
 
