@@ -20,6 +20,14 @@ private:
   u_int64 _rank_mask;
   
 public:
+# if Force_Direct_Squeak_Interpreter_Access
+  Logical_Core() {
+    _rank = 0;
+    _rank_mask = 1LL << u_int64(0);
+    coordinate.initialize(0);
+  }
+# endif
+  
   Message_Queue  message_queue;
   CPU_Coordinate coordinate;
   

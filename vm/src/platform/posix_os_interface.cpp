@@ -14,9 +14,10 @@
 
 #include "headers.h"
 
-
-pthread_t     POSIX_OS_Interface::threads[Max_Number_Of_Cores];
-pthread_key_t POSIX_OS_Interface::rank_key = 0;
+# if !Force_Direct_Squeak_Interpreter_Access
+  pthread_t     POSIX_OS_Interface::threads[Max_Number_Of_Cores];
+  pthread_key_t POSIX_OS_Interface::rank_key = 0;
+# endif
 
 /**
  * This function makes sure that each rank of the process group is running on
@@ -52,8 +53,10 @@ void* POSIX_OS_Interface::pthread_thread_main(void* param) {
 
   int32_t my_rank = __sync_add_and_fetch(&last_rank, 1);
 
+# if !Force_Direct_Squeak_Interpreter_Access
   pthread_setspecific(rank_key, (const void*)my_rank);
-
+# endif
+  
   OS_Interface::pin_thread_to_core(my_rank);
   
   routine();
@@ -62,7 +65,8 @@ void* POSIX_OS_Interface::pthread_thread_main(void* param) {
 }
 
 
-void POSIX_OS_Interface::create_threads(const size_t num_of_threads, void (*helper_core_main)()) { 
+void POSIX_OS_Interface::create_threads(const size_t num_of_threads, void (*helper_core_main)()) {
+# if !Force_Direct_Squeak_Interpreter_Access
   for (size_t i = 1; i < num_of_threads; i++) {    
     int err = pthread_create(&threads[i], NULL, pthread_thread_main, (void*)helper_core_main);
     if (err < 0) {
@@ -71,14 +75,17 @@ void POSIX_OS_Interface::create_threads(const size_t num_of_threads, void (*help
       perror("Failed to create a thread.");
     }
   }
+# endif
 }
 
 
 void POSIX_OS_Interface::start_threads(void (*helper_core_main)(), char** /* argv[] */) {
   // first initialize the main core, always rank==0 for threads
+# if !Force_Direct_Squeak_Interpreter_Access
   threads[0] = pthread_self();
   pthread_key_create(&rank_key, NULL);
   pthread_setspecific(rank_key, (const void*)0);
+# endif
   
   Logical_Core::initialize_all_cores();
   

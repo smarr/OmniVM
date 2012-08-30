@@ -17,6 +17,10 @@
 
 #pragma mark Memory System
 
+# if Force_Direct_Timeout_Timer_List_Head_Access
+  Timeout_Timer_List_Head _timeout_head;
+# endif
+
 # if !Replicate_PThread_Memory_System
   Memory_System _memory_system;
   void Thread_Memory_Semantics::initialize_memory_system() {}
@@ -54,6 +58,7 @@
 # if Force_Direct_Squeak_Interpreter_Access
   Squeak_Interpreter _interpreter;
   void Thread_Memory_Semantics::initialize_interpreter() { }
+  void Thread_Memory_Semantics::initialize_local_interpreter() {}
 # else
   # if Use_ThreadLocals
     __thread Squeak_Interpreter* Thread_Memory_Semantics::interpreter = NULL;
@@ -124,7 +129,7 @@
 
 # if Use_ThreadLocals
   __thread Logical_Core* Thread_Memory_Semantics::_my_core = NULL;
-
+  
   void Thread_Memory_Semantics::initialize_logical_cores() {
     initialize_local_logical_core();
   }
@@ -133,6 +138,15 @@
     assert(_my_core != NULL);
     return _my_core;
   }
+# elif Force_Direct_Squeak_Interpreter_Access
+  Logical_Core Thread_Memory_Semantics::_my_core;
+  void Thread_Memory_Semantics::initialize_logical_cores() {
+    _my_core.initialize(0);
+  }
+  Logical_Core* Thread_Memory_Semantics::my_core() {
+    return &_my_core;
+  }
+  
 # else
   pthread_key_t Thread_Memory_Semantics::my_core_key = 0;
 
@@ -158,6 +172,8 @@ void Thread_Memory_Semantics::initialize_local_logical_core() {
 void Thread_Memory_Semantics::initialize_local_logical_core(int rank) {
 # if Use_ThreadLocals
   _my_core = &logical_cores[rank];
+# elif Force_Direct_Squeak_Interpreter_Access
+  // Do nothing, already done
 # else
   pthread_setspecific(my_core_key, &logical_cores[rank]);
 # endif // !Use_ThreadLocals
@@ -169,7 +185,7 @@ void Thread_Memory_Semantics::initialize_local_logical_core(int rank) {
 
 
 int Thread_Memory_Semantics::my_rank() {
-  assert(cores_are_initialized());
+  assert(Force_Direct_Squeak_Interpreter_Access || cores_are_initialized());
   return my_core()->rank();
 }
 

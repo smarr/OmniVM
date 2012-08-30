@@ -23,6 +23,9 @@ bool Scheduler_Mutex_Actions::is_held() {
 }
 
 void Scheduler_Mutex_Actions::acquire_action(const char* /* why */) {
+  if (Force_Direct_Squeak_Interpreter_Access)
+    return;
+  
   OS_Mutex_Interface* mutex = get_mutex();
 
   // spin and receive to avoid deadlock; other core may be trying to send US something
@@ -39,6 +42,9 @@ void Scheduler_Mutex_Actions::acquire_action(const char* /* why */) {
 }
 
 void Scheduler_Mutex_Actions::release_action(const char*) {
+  if (Force_Direct_Squeak_Interpreter_Access)
+    return;
+  
   OS_Mutex_Interface* mutex = get_mutex();
   if (tracking)  mutex->set_holder(-1);
   OS_Interface::abort_if_error("Scheduler_Mutex", mutex->unlock());

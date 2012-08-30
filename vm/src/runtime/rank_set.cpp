@@ -16,7 +16,8 @@
 
 void Rank_Set::unit_test() {
   Rank_Set rs;
-  assert_always_eq(capacity(), Max_Number_Of_Cores);
+  if (!Force_Direct_Squeak_Interpreter_Access)
+    assert_always_eq(capacity(), Max_Number_Of_Cores);
   rs.verify_includes_only();
 
   rs.add(17);

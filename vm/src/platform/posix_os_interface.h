@@ -70,7 +70,7 @@ public:
 # if Omit_PThread_Locks
   
   typedef int Mutex;
-  static inline void mutex_init(Mutex*, void*) {}
+  static inline void mutex_init(Mutex*, void* _ = NULL) {}
   static inline void mutex_destruct(Mutex*)    {}
   static inline int  mutex_lock(Mutex*)        { return 0; }
   static inline bool mutex_trylock(Mutex*)     { return false; }
@@ -201,8 +201,12 @@ public:
   
   static void start_threads  (void (*)(/* helper_core_main */), char* /* argv */[]);
   static void start_processes(void (*)(/* helper_core_main */), char* /* argv */[]) { fatal(); }
-    
+  
+# if Force_Direct_Squeak_Interpreter_Access
+  static inline int get_thread_rank()  { return 0; }
+# else
   static inline int get_thread_rank()  { return (int)pthread_getspecific(rank_key); }
+# endif
   
   static int abort_if_error(const char*, int); 
   
@@ -213,8 +217,13 @@ public:
 private:
   static void* pthread_thread_main(void* param);
   static int32_t       last_rank;  // needs to be accessed atomically (__sync_fetch_and_add)
+
+# if Force_Direct_Squeak_Interpreter_Access
+# else
   static pthread_key_t rank_key;
   static pthread_t     threads  [Max_Number_Of_Cores];
+# endif
+  
   static void create_threads(const size_t num_of_threads, void (*helper_core_main)());
 
   

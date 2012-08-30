@@ -89,6 +89,8 @@ public:
 private:
 # if Use_ThreadLocals
   static __thread Logical_Core* _my_core;
+# elif Force_Direct_Squeak_Interpreter_Access
+  static Logical_Core _my_core;
 # else
   static pthread_key_t my_core_key;
   
@@ -100,6 +102,8 @@ private:
 public:
 # if Use_ThreadLocals
   static inline bool cores_are_initialized() { return _my_core != NULL; }
+# elif Force_Direct_Squeak_Interpreter_Access
+  static inline bool cores_are_initialized() { return true; }
 # else
   static inline bool cores_are_initialized() { return my_core_key != 0; }
 # endif
@@ -186,7 +190,7 @@ class Timeout_Timer_List_Head;
   extern Timeout_Timer_List_Head _timeout_head;
 
   inline FORCE_INLINE Timeout_Timer_List_Head* The_Timeout_Timer_List_Head() {
-    return &_head;
+    return &_timeout_head;
   }
 # else
   # if Use_ThreadLocals
