@@ -483,10 +483,12 @@ void Object::do_all_oops_of_object(Oop_Closure* oc, bool do_checks) {
   
   if (Include_Domain_In_Object_Header) {
     Oop domain = domain_oop();
-    Oop old_domain = domain;
-    oc->value(&domain, (Object_p)this);
-    if (domain != old_domain) {
-      set_domain(domain);
+    if (Use_Object_Table || domain.bits() != 0) { // this is only to catch 0 during initialization when we run without object table
+      Oop old_domain = domain;
+      oc->value(&domain, (Object_p)this);
+      if (domain != old_domain) {
+        set_domain(domain);
+      }
     }
   }
 }
