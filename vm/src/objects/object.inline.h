@@ -14,7 +14,7 @@
 
 
 inline void Object::set_object_address_and_backpointer(Oop x  COMMA_DCL_ESB) {
-  if (Enforce_Backpointer || Use_Object_Table) {
+  if (Enforce_Backpointer | Use_Object_Table) {
     Safepoint_for_moving_objects::assert_held();
     The_Memory_System()->object_table->set_object_for(x, (Object_p)this  COMMA_USE_ESB);
     set_backpointer(x);
@@ -40,7 +40,7 @@ inline void Object::unmark_without_store_barrier() { baseHeader &= ~MarkBit; }
 
 
 inline void Object::set_backpointer_word(oop_int_t w) {
-  if (Enforce_Backpointer || Use_Object_Table) {
+  if (Enforce_Backpointer | Use_Object_Table) {
     oop_int_t* dst = backpointer_word();
     The_Memory_System()->store_enforcing_coherence(dst, w, (Object_p)this);
   }

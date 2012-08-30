@@ -27,12 +27,12 @@
 struct Preheader {
 public:
   
-# if Enforce_Backpointer || Use_Object_Table
+# if Enforce_Backpointer | Use_Object_Table
   oop_int_t backpointer; // must be first, for instance for free chuck this is set to give the length
 # endif
 
   oop_int_t* backpointer_word() {
-    # if Enforce_Backpointer || Use_Object_Table
+    # if Enforce_Backpointer | Use_Object_Table
       return &backpointer;
     # else
       return NULL;
@@ -93,7 +93,7 @@ public:
   
   void mark_all_preheader_words_free_for_debugging() {
     if (check_assertions) {
-      # if Enforce_Backpointer || Use_Object_Table
+      # if Enforce_Backpointer | Use_Object_Table
         backpointer = 0xe0e0e0e0 /* Oop::Illegals::free_extra_preheader_words, not used because of include dependencies */;
       # endif
       
@@ -108,7 +108,7 @@ public:
   }
 };
 
-# if Enforce_Backpointer || Use_Object_Table
+# if Enforce_Backpointer | Use_Object_Table
 static const int backpointer_oop_size  = 1;
 static const int backpointer_byte_size = sizeof(oop_int_t);
 # endif
