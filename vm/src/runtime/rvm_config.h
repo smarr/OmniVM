@@ -413,8 +413,10 @@
 # endif
 
 // Here we define whether we need to add a static preheader to ever object
-# define Has_Preheader (   Enforce_Backpointer || Use_Object_Table  \
-                        || Extra_Preheader_Word_Experiment)
+# define Has_Preheader (   Enforce_Backpointer              \
+                        || Use_Object_Table                 \
+                        || Extra_Preheader_Word_Experiment  \
+                        || Include_Domain_In_Object_Header)
 
 # ifndef Use_BufferedChannelDebug
 // If you turn this off, run on Mac, and run with Hammer_Safepoints with >2 cores, you can see the system break -- dmu 5/21/10
