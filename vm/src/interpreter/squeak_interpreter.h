@@ -68,6 +68,23 @@ public:
   
   u_char currentBytecode; // interp version is out of order
   bool   have_executed_currentBytecode;
+  
+  /** Bytecode dispatch facilities */
+  typedef void (Squeak_Interpreter::* bytecode_fn_t)(void);
+  # define DISPATCH_BYTECODE(bytecodeHandler)  (this->*(bytecodeHandler))()
+  bytecode_fn_t     enforced_dispatch_table[256];
+  bytecode_fn_t   unenforced_dispatch_table[256];
+  bytecode_fn_t            (*dispatch_table)[256];
+
+  void build_enforced_dispatch_table();
+  void build_unenforced_dispatch_table();
+  void build_dispatch_table() {
+    build_enforced_dispatch_table();
+    build_unenforced_dispatch_table();
+  }
+  
+  
+  
   oop_int_t interruptCheckCounter;
   static const int interruptCheckCounter_force_value = -0x8000000; // must be neg
   bool multicore_interrupt_check;
