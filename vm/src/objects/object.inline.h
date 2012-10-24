@@ -116,7 +116,7 @@ inline oop_int_t Object::fetchInteger(oop_int_t fieldIndex) {
   return x.checkedIntegerValue();
 }
 
-inline oop_int_t Object::fetchStackPointer() { // rcvr is a ContextObject
+inline oop_int_t Object::fetchStackPointer() const { // rcvr is a ContextObject
   Oop sp = fetchPointer_no_domain_read_barrier(Object_Indices::StackPointerIndex);
   return sp.is_int() ? sp.integerValue() : 0;
 }
@@ -281,7 +281,7 @@ inline Oop& Object::pointer_at(oop_int_t fieldIndex) const {
   return as_oop_p()[BaseHeaderSize / sizeof(Oop)  +  fieldIndex];
 }
 
-inline Oop  Object::fetchPointer(oop_int_t fieldIndex) {
+inline Oop  Object::fetchPointer(oop_int_t fieldIndex) const {
   /** OMNI no-opt: we will enforce the Omni semantics only on a 
                    bytecode level.
                    Every violation below that is considered a bug for the

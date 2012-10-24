@@ -184,23 +184,23 @@ public:
     else
       return NULL;
   }
-  static inline void  rvm_free_aligned_shared(void * mem) { free(mem); }
   
   static inline void* rvm_memalign_shared(OS_Heap, int al, int sz) { return rvm_memalign(al, sz); }
   
-  static inline int   mem_create_heap_if_on_Tilera(OS_Heap* heap, bool /* replicate */) {
-    heap = NULL; /* unused on POSIX */
-    return 0;
-  }
+  static inline void  rvm_free_aligned_shared(void * mem) { free(mem); }
 
   static inline void* malloc_uncacheable_shared(int alignment, int size) {
     OS_Heap heap;
     return rvm_memalign_shared(heap, alignment, size);
   }
-  
-  
-  static void start_threads  (void (*)(/* helper_core_main */), char* /* argv */[]);
-  static void start_processes(void (*)(/* helper_core_main */), char* /* argv */[]) { fatal(); }
+
+  static inline int   mem_create_heap_if_on_Tilera(OS_Heap* heap, bool /* replicate */) {
+    heap = NULL; /* unused on POSIX */
+    return 0;
+  }
+
+  static void start_threads  (void (* /* helper_core_main */)(), char* /* argv */[]);
+  static void start_processes(void (* /* helper_core_main */)(), char* /* argv */[]) { fatal(); }
   
 # if Force_Direct_Squeak_Interpreter_Access
   static inline int get_thread_rank()  { return 0; }

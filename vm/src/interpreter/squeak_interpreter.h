@@ -1737,7 +1737,12 @@ public:
   void assert_method_is_correct(bool will_be_fetched, const char* where) {
     if (Always_Check_Method_Is_Correct | check_assertions) check_method_is_correct(will_be_fetched, where);
   }
-  
+
+  void assert_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
+    if ((Always_Check_Method_Is_Correct | check_assertions) && process_is_scheduled_and_executing())
+      assert_always_method_is_correct_internalizing(will_be_fetched, where);
+  }
+
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
     if (process_is_scheduled_and_executing()) {
       Safepoint_Ability sa(false);
@@ -1747,12 +1752,6 @@ public:
       check_method_is_correct(will_be_fetched, where);
     }
   }
-  
-  void assert_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
-    if ((Always_Check_Method_Is_Correct | check_assertions) && process_is_scheduled_and_executing())
-      assert_always_method_is_correct_internalizing(will_be_fetched, where);
-  }
-  
   
   
   void undo_prefetch() {

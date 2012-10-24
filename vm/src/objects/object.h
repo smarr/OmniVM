@@ -470,7 +470,7 @@ public:
   int32& long32_at(oop_int_t fieldIndex);
 
   public:
-  inline Oop  fetchPointer(oop_int_t fieldIndex);
+  inline Oop  fetchPointer(oop_int_t fieldIndex) const;
   inline Oop  fetchPointer_no_domain_read_barrier(oop_int_t fieldIndex) const;
   
   inline void storePointer(oop_int_t fieldIndex, Oop oop);
@@ -541,7 +541,7 @@ public:
   };
 
 
-  inline oop_int_t fetchStackPointer(); // rcvr is a ContextObject
+  inline oop_int_t fetchStackPointer() const; // rcvr is a ContextObject
 
 
   Object_p instantiateSmallClass(oop_int_t sizeInBytes);
