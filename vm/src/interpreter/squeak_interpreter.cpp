@@ -426,7 +426,7 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
     switch (i) {
       case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
       case 10: case 11: case 12: case 13: case 14: case 15:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::pushReceiverVariableBytecode;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_pushReceiverVariableBytecode;
         break;
         
       case 16: case 17: case 18: case 19:
@@ -446,12 +446,12 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
       case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79:
       case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89:
       case 90: case 91: case 92: case 93: case 94: case 95:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::pushLiteralVariableBytecode;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_pushLiteralVariableBytecode;
         break;
         
       case 96: case 97: case 98: case 99:
       case 100: case 101: case 102: case 103:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::storeAndPopReceiverVariableBytecode;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_storeAndPopReceiverVariableBytecode;
         break;
         
       case 104: case 105: case 106: case 107: case 108: case 109:
@@ -475,13 +475,13 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
       case 125: enforced_dispatch_table[i] = &Squeak_Interpreter::returnTopFromBlock; break;
       case 126: enforced_dispatch_table[i] = &Squeak_Interpreter::unknownBytecode; break;
       case 127: enforced_dispatch_table[i] = &Squeak_Interpreter::unknownBytecode; break;
-      case 128: enforced_dispatch_table[i] = &Squeak_Interpreter::extendedPushBytecode; break;
-      case 129: enforced_dispatch_table[i] = &Squeak_Interpreter::extendedStoreBytecode; break;
-      case 130: enforced_dispatch_table[i] = &Squeak_Interpreter::extendedStoreAndPopBytecode; break;
-      case 131: enforced_dispatch_table[i] = &Squeak_Interpreter::singleExtendedSendBytecode; break;
-      case 132: enforced_dispatch_table[i] = &Squeak_Interpreter::doubleExtendedDoAnythingBytecode; break;
-      case 133: enforced_dispatch_table[i] = &Squeak_Interpreter::singleExtendedSuperBytecode; break;
-      case 134: enforced_dispatch_table[i] = &Squeak_Interpreter::secondExtendedSendBytecode; break;
+      case 128: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_extendedPushBytecode; break;
+      case 129: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_extendedStoreBytecode; break;
+      case 130: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_extendedStoreAndPopBytecode; break;
+      case 131: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_singleExtendedSendBytecode; break;
+      case 132: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_doubleExtendedDoAnythingBytecode; break;
+      case 133: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_singleExtendedSuperBytecode; break;
+      case 134: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_secondExtendedSendBytecode; break;
       case 135: enforced_dispatch_table[i] = &Squeak_Interpreter::popStackBytecode; break;
       case 136: enforced_dispatch_table[i] = &Squeak_Interpreter::duplicateTopBytecode; break;
       case 137: enforced_dispatch_table[i] = &Squeak_Interpreter::pushActiveContextBytecode; break;
@@ -504,7 +504,7 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
         break;
         
       case 152: case 153: case 154: case 155: case 156: case 157: case 158: case 159:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::shortConditionalJump;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_shortConditionalJump;
         break;
         
       case 160: case 161: case 162: case 163: case 164: case 165: case 166: case 167:
@@ -512,48 +512,48 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
         break;
         
       case 168: case 169: case 170: case 171:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::longJumpIfTrue;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_longJumpIfTrue;
         break;
         
       case 172: case 173: case 174: case 175:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::longJumpIfFalse;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_longJumpIfFalse;
         break;
         
         // sendArithmeticSelector
-      case 176: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAdd; break;
-      case 177: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimSubtract; break;
-      case 178: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimLessThan; break;
-      case 179: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimGreaterThan; break;
-      case 180: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimLessOrEqual; break;
-      case 181: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimGreaterOrEqual; break;
-      case 182: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimEqual; break;
-      case 183: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNotEqual; break;
-      case 184: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMultiply; break;
-      case 185: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDivide; break;
-      case 186: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMod; break;
-      case 187: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMakePoint; break;
-      case 188: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitShift; break;
-      case 189: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDiv; break;
-      case 190: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitAnd; break;
-      case 191: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitOr; break;
+      case 176: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimAdd; break;
+      case 177: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimSubtract; break;
+      case 178: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimLessThan; break;
+      case 179: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimGreaterThan; break;
+      case 180: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimLessOrEqual; break;
+      case 181: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimGreaterOrEqual; break;
+      case 182: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimEqual; break;
+      case 183: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimNotEqual; break;
+      case 184: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimMultiply; break;
+      case 185: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimDivide; break;
+      case 186: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimMod; break;
+      case 187: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimMakePoint; break;
+      case 188: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimBitShift; break;
+      case 189: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimDiv; break;
+      case 190: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimBitAnd; break;
+      case 191: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimBitOr; break;
         
         // sendCommonSelector
-      case 192: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAt; break;
-      case 193: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAtPut; break;
-      case 194: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimSize; break;
-      case 195: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNext; break;
-      case 196: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNextPut; break;
-      case 197: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAtEnd; break;
+      case 192: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimAt; break;
+      case 193: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimAtPut; break;
+      case 194: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimSize; break;
+      case 195: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimNext; break;
+      case 196: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimNextPut; break;
+      case 197: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimAtEnd; break;
       case 198: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimEquivalent; break;
-      case 199: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimClass; break;
-      case 200: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBlockCopy; break;
-      case 201: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimValue; break;
-      case 202: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimValueWithArg; break;
-      case 203: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDo; break;
-      case 204: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNew; break;
-      case 205: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNewWithArg; break;
-      case 206: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimPointX; break;
-      case 207: enforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimPointY; break;
+      case 199: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimClass; break;
+      case 200: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimBlockCopy; break;
+      case 201: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimValue; break;
+      case 202: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimValueWithArg; break;
+      case 203: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimDo; break;
+      case 204: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimNew; break;
+      case 205: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimNewWithArg; break;
+      case 206: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimPointX; break;
+      case 207: enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_bytecodePrimPointY; break;
         
       case 208: case 209:
       case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219:
@@ -561,7 +561,7 @@ void Squeak_Interpreter::build_enforced_dispatch_table() {
       case 230: case 231: case 232: case 233: case 234: case 235: case 236: case 237: case 238: case 239:
       case 240: case 241: case 242: case 243: case 244: case 245: case 246: case 247: case 248: case 249:
       case 250: case 251: case 252: case 253: case 254: case 255:
-        enforced_dispatch_table[i] = &Squeak_Interpreter::sendLiteralSelectorBytecode;
+        enforced_dispatch_table[i] = &Squeak_Interpreter::enforced_sendLiteralSelectorBytecode;
         break;
     }
   }
@@ -572,7 +572,7 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
     switch (i) {
       case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
       case 10: case 11: case 12: case 13: case 14: case 15:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::pushReceiverVariableBytecode;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_pushReceiverVariableBytecode;
         break;
         
       case 16: case 17: case 18: case 19:
@@ -592,12 +592,12 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
       case 70: case 71: case 72: case 73: case 74: case 75: case 76: case 77: case 78: case 79:
       case 80: case 81: case 82: case 83: case 84: case 85: case 86: case 87: case 88: case 89:
       case 90: case 91: case 92: case 93: case 94: case 95:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::pushLiteralVariableBytecode;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_pushLiteralVariableBytecode;
         break;
         
       case 96: case 97: case 98: case 99:
       case 100: case 101: case 102: case 103:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::storeAndPopReceiverVariableBytecode;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_storeAndPopReceiverVariableBytecode;
         break;
         
       case 104: case 105: case 106: case 107: case 108: case 109:
@@ -621,13 +621,13 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
       case 125: unenforced_dispatch_table[i] = &Squeak_Interpreter::returnTopFromBlock; break;
       case 126: unenforced_dispatch_table[i] = &Squeak_Interpreter::unknownBytecode; break;
       case 127: unenforced_dispatch_table[i] = &Squeak_Interpreter::unknownBytecode; break;
-      case 128: unenforced_dispatch_table[i] = &Squeak_Interpreter::extendedPushBytecode; break;
-      case 129: unenforced_dispatch_table[i] = &Squeak_Interpreter::extendedStoreBytecode; break;
-      case 130: unenforced_dispatch_table[i] = &Squeak_Interpreter::extendedStoreAndPopBytecode; break;
-      case 131: unenforced_dispatch_table[i] = &Squeak_Interpreter::singleExtendedSendBytecode; break;
-      case 132: unenforced_dispatch_table[i] = &Squeak_Interpreter::doubleExtendedDoAnythingBytecode; break;
-      case 133: unenforced_dispatch_table[i] = &Squeak_Interpreter::singleExtendedSuperBytecode; break;
-      case 134: unenforced_dispatch_table[i] = &Squeak_Interpreter::secondExtendedSendBytecode; break;
+      case 128: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_extendedPushBytecode; break;
+      case 129: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_extendedStoreBytecode; break;
+      case 130: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_extendedStoreAndPopBytecode; break;
+      case 131: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_singleExtendedSendBytecode; break;
+      case 132: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_doubleExtendedDoAnythingBytecode; break;
+      case 133: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_singleExtendedSuperBytecode; break;
+      case 134: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_secondExtendedSendBytecode; break;
       case 135: unenforced_dispatch_table[i] = &Squeak_Interpreter::popStackBytecode; break;
       case 136: unenforced_dispatch_table[i] = &Squeak_Interpreter::duplicateTopBytecode; break;
       case 137: unenforced_dispatch_table[i] = &Squeak_Interpreter::pushActiveContextBytecode; break;
@@ -650,7 +650,7 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
         break;
         
       case 152: case 153: case 154: case 155: case 156: case 157: case 158: case 159:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::shortConditionalJump;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_shortConditionalJump;
         break;
         
       case 160: case 161: case 162: case 163: case 164: case 165: case 166: case 167:
@@ -658,48 +658,48 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
         break;
         
       case 168: case 169: case 170: case 171:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::longJumpIfTrue;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_longJumpIfTrue;
         break;
         
       case 172: case 173: case 174: case 175:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::longJumpIfFalse;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_longJumpIfFalse;
         break;
         
         // sendArithmeticSelector
-      case 176: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAdd; break;
-      case 177: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimSubtract; break;
-      case 178: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimLessThan; break;
-      case 179: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimGreaterThan; break;
-      case 180: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimLessOrEqual; break;
-      case 181: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimGreaterOrEqual; break;
-      case 182: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimEqual; break;
-      case 183: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNotEqual; break;
-      case 184: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMultiply; break;
-      case 185: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDivide; break;
-      case 186: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMod; break;
-      case 187: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimMakePoint; break;
-      case 188: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitShift; break;
-      case 189: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDiv; break;
-      case 190: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitAnd; break;
-      case 191: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBitOr; break;
+      case 176: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimAdd; break;
+      case 177: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimSubtract; break;
+      case 178: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimLessThan; break;
+      case 179: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimGreaterThan; break;
+      case 180: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimLessOrEqual; break;
+      case 181: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimGreaterOrEqual; break;
+      case 182: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimEqual; break;
+      case 183: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimNotEqual; break;
+      case 184: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimMultiply; break;
+      case 185: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimDivide; break;
+      case 186: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimMod; break;
+      case 187: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimMakePoint; break;
+      case 188: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimBitShift; break;
+      case 189: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimDiv; break;
+      case 190: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimBitAnd; break;
+      case 191: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimBitOr; break;
         
         // sendCommonSelector
-      case 192: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAt; break;
-      case 193: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAtPut; break;
-      case 194: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimSize; break;
-      case 195: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNext; break;
-      case 196: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNextPut; break;
-      case 197: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimAtEnd; break;
+      case 192: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimAt; break;
+      case 193: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimAtPut; break;
+      case 194: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimSize; break;
+      case 195: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimNext; break;
+      case 196: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimNextPut; break;
+      case 197: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimAtEnd; break;
       case 198: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimEquivalent; break;
-      case 199: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimClass; break;
-      case 200: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimBlockCopy; break;
-      case 201: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimValue; break;
-      case 202: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimValueWithArg; break;
-      case 203: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimDo; break;
-      case 204: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNew; break;
-      case 205: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimNewWithArg; break;
-      case 206: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimPointX; break;
-      case 207: unenforced_dispatch_table[i] = &Squeak_Interpreter::bytecodePrimPointY; break;
+      case 199: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimClass; break;
+      case 200: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimBlockCopy; break;
+      case 201: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimValue; break;
+      case 202: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimValueWithArg; break;
+      case 203: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimDo; break;
+      case 204: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimNew; break;
+      case 205: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimNewWithArg; break;
+      case 206: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimPointX; break;
+      case 207: unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_bytecodePrimPointY; break;
         
       case 208: case 209:
       case 210: case 211: case 212: case 213: case 214: case 215: case 216: case 217: case 218: case 219:
@@ -707,7 +707,7 @@ void Squeak_Interpreter::build_unenforced_dispatch_table() {
       case 230: case 231: case 232: case 233: case 234: case 235: case 236: case 237: case 238: case 239:
       case 240: case 241: case 242: case 243: case 244: case 245: case 246: case 247: case 248: case 249:
       case 250: case 251: case 252: case 253: case 254: case 255:
-        unenforced_dispatch_table[i] = &Squeak_Interpreter::sendLiteralSelectorBytecode;
+        unenforced_dispatch_table[i] = &Squeak_Interpreter::unenforced_sendLiteralSelectorBytecode;
         break;
     }
   }
@@ -2029,11 +2029,11 @@ void Squeak_Interpreter::print_all_processes_in_scheduler(Printer* pr, bool prin
 
 
 
-void Squeak_Interpreter::commonAt(bool stringy) {
+void Squeak_Interpreter::prim_commonAt(bool stringy) {
   Oop rcvr = stackValue(1);
   
   bool normal_at = roots.messageSelector == specialSelector(16);
-  bool delegate = omni_requires_delegation(rcvr, normal_at
+  bool delegate = omni_requires_intercession(rcvr, normal_at
                                                   ? OstDomainSelector_Indices::PrimAt_On__Mask
                                                   : OstDomainSelector_Indices::PrimBasicAt_On__Mask);
   if (delegate) {
@@ -2085,12 +2085,11 @@ void Squeak_Interpreter::commonAt(bool stringy) {
   }
 }
 
-
-void Squeak_Interpreter::commonAtPut(bool stringy) {
+void Squeak_Interpreter::prim_commonAtPut(bool stringy) {
   Oop rcvr = stackValue(2);
   
   bool normal_atput = roots.messageSelector == specialSelector(17);
-  bool delegate = omni_requires_delegation(rcvr, normal_atput
+  bool delegate = omni_requires_intercession(rcvr, normal_atput
                                                     ? OstDomainSelector_Indices::PrimAt_On_Put__Mask
                                                     : OstDomainSelector_Indices::PrimBasicAt_On_Put__Mask);
   if (delegate) {
@@ -2134,8 +2133,6 @@ void Squeak_Interpreter::commonAtPut(bool stringy) {
   if (successFlag)
     popThenPush(get_argumentCount() + 1, value);
 }
-
-
 
 
 void Squeak_Interpreter::changeClass(Oop rcvr, Oop argClass, bool /* defer */) {
@@ -2187,7 +2184,7 @@ void Squeak_Interpreter::changeClass(Oop rcvr, Oop argClass, bool /* defer */) {
 }
 
 
-void Squeak_Interpreter::internalExecuteNewMethod() {
+void Squeak_Interpreter::enforced_internalExecuteNewMethod() {
   PERF_CNT(this, count_methods_executed());
   
   assert_stored_if_no_proc();
@@ -2196,7 +2193,7 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
       // "Internal return instvars"
       if (264 <= primitiveIndex) {
         Oop top = internalStackTop();
-        bool delegate = omni_requires_delegation(top, OstDomainSelector_Indices::ReadField_Of__Mask);
+        bool delegate = omni_requires_intercession(top, OstDomainSelector_Indices::ReadField_Of__Mask);
         if (delegate) {
           internalPop(1);
           omni_internal_read_field(top, primitiveIndex - 264);
@@ -2235,6 +2232,60 @@ void Squeak_Interpreter::internalExecuteNewMethod() {
         printUnbalancedStack(primitiveIndex, primitiveFunctionPointer);
     }
 
+    if (process_is_scheduled_and_executing())
+      internalizeExecutionState();
+    
+    if (successFlag)
+      return;
+  } // if (primitiveIndex  > 0)
+  // "if not primitive, or primitive failed, activate the method"
+  internalActivateNewMethod();
+  // "check for possible interrupts at each real send"
+  internalQuickCheckForInterrupts();
+}
+
+void Squeak_Interpreter::unenforced_internalExecuteNewMethod() {
+  PERF_CNT(this, count_methods_executed());
+  
+  assert_stored_if_no_proc();
+  if (primitiveIndex  > 0) {
+    if (255 < primitiveIndex  &&  primitiveIndex < 520) {
+      // "Internal return instvars"
+      if (264 <= primitiveIndex) {
+        Oop top = internalStackTop();
+        internalPopThenPush(1,
+                            top.as_object()->fetchPointer(primitiveIndex - 264));
+        return;
+      }
+      // "Internal return constants"
+      switch (primitiveIndex) {
+        case 256: return; // return self bytecode???
+        case 257: internalPopThenPush(1, roots.trueObj); return;
+        case 258: internalPopThenPush(1, roots.falseObj); return;
+        case 259: internalPopThenPush(1, roots.nilObj); return;
+        default:  internalPopThenPush(1, Oop::from_int(primitiveIndex - 261)); return;
+      }
+    }
+    externalizeExecutionState();
+    // "self primitiveResponse. <-replaced with  manually inlined code"
+    {
+      Safepoint_Ability sa(true);
+      int nArgs, delta, pi;
+      Oop pre_prim_active_context;
+      if (DoBalanceChecks) {
+        nArgs = get_argumentCount();
+        delta = stackPointer() - activeContext_obj()->as_oop_p();
+        pi = primitiveIndex; // perform prim can zero out primitiveIndex, compare with pi below (Squeak bug)
+        pre_prim_active_context = activeContext();
+      }
+      successFlag = true;
+      assert_stored_if_no_proc();
+      dispatchFunctionPointer(primitiveFunctionPointer, do_primitive_on_main); // "branch direct to prim function from address stored in mcache"
+      
+      if (DoBalanceChecks  && !balancedStackAfterPrimitive(delta, pi, nArgs, pre_prim_active_context))
+        printUnbalancedStack(primitiveIndex, primitiveFunctionPointer);
+    }
+    
     if (process_is_scheduled_and_executing())
       internalizeExecutionState();
     
@@ -3111,7 +3162,7 @@ void Squeak_Interpreter::internalCannotReturn(Oop resultObj, bool b1, bool b2, b
   internalPush(resultObj);
   roots.messageSelector = splObj(Special_Indices::SelectorCannotReturn);
   set_argumentCount(1);
-  normalSend();
+  unenforced_normalSend(); //OMNI TODO: this needs to variants, I think...
 }
 
 void Squeak_Interpreter::internalAboutToReturn(Oop resultObj, Oop aContext) {
@@ -3120,7 +3171,7 @@ void Squeak_Interpreter::internalAboutToReturn(Oop resultObj, Oop aContext) {
   internalPush(aContext);
   roots.messageSelector = splObj(Special_Indices::SelectorAboutToReturn);
   set_argumentCount( 2 );
-  normalSend();
+  unenforced_normalSend(); //OMNI TODO: this needs to variants, I think...
 }
 
 

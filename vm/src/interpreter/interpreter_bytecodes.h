@@ -15,11 +15,119 @@
 // included INTO THE MIDDLE of Squeak_Interpreter
 
 
-void pushReceiverVariableBytecode();
+void enforced_pushReceiverVariableBytecode();
+void enforced_pushLiteralVariableBytecode();
+void enforced_storeAndPopReceiverVariableBytecode();
+void enforced_extendedPushBytecode();
+void enforced_extendedStoreBytecode();
+void enforced_extendedStoreAndPopBytecode();
+void enforced_singleExtendedSendBytecode();
+void enforced_doubleExtendedDoAnythingBytecode();
+void enforced_secondExtendedSendBytecode();
+void enforced_singleExtendedSuperBytecode();
+
+void enforced_bytecodePrimAdd();
+void enforced_bytecodePrimSubtract();
+void enforced_bytecodePrimLessThan();
+void enforced_bytecodePrimGreaterThan();
+void enforced_bytecodePrimLessOrEqual();
+void enforced_bytecodePrimGreaterOrEqual();
+void enforced_bytecodePrimEqual();
+void enforced_bytecodePrimMultiply();
+void enforced_bytecodePrimDivide();
+void enforced_bytecodePrimMod();
+void enforced_bytecodePrimNotEqual();
+void enforced_bytecodePrimMakePoint();
+void enforced_bytecodePrimBitShift();
+void enforced_bytecodePrimDiv();
+void enforced_bytecodePrimBitAnd();
+void enforced_bytecodePrimBitOr();
+
+void enforced_bytecodePrimAt();
+void enforced_bytecodePrimAtPut();
+void enforced_bytecodePrimSize();
+void enforced_bytecodePrimNext();
+void enforced_bytecodePrimNextPut();
+void enforced_bytecodePrimAtEnd();
+void enforced_bytecodePrimClass();
+void enforced_bytecodePrimBlockCopy();
+
+void enforced_bytecodePrimValue();
+void enforced_bytecodePrimValueWithArg();
+void enforced_commonBytecodePrimValue(int, int);
+void enforced_bytecodePrimDo();
+void enforced_bytecodePrimNew();
+void enforced_bytecodePrimNewWithArg();
+void enforced_bytecodePrimPointX();
+void enforced_bytecodePrimPointY();
+
+void enforced_sendLiteralSelectorBytecode();
+
+void enforced_shortConditionalJump();
+void enforced_longJumpIfTrue();
+void enforced_longJumpIfFalse();
+
+
+
+
+void unenforced_pushReceiverVariableBytecode();
+void unenforced_pushLiteralVariableBytecode();
+void unenforced_storeAndPopReceiverVariableBytecode();
+void unenforced_extendedPushBytecode();
+void unenforced_extendedStoreBytecode();
+void unenforced_extendedStoreAndPopBytecode();
+void unenforced_singleExtendedSendBytecode();
+void unenforced_doubleExtendedDoAnythingBytecode();
+void unenforced_secondExtendedSendBytecode();
+void unenforced_singleExtendedSuperBytecode();
+
+void unenforced_bytecodePrimAdd();
+void unenforced_bytecodePrimSubtract();
+void unenforced_bytecodePrimLessThan();
+void unenforced_bytecodePrimGreaterThan();
+void unenforced_bytecodePrimLessOrEqual();
+void unenforced_bytecodePrimGreaterOrEqual();
+void unenforced_bytecodePrimEqual();
+void unenforced_bytecodePrimMultiply();
+void unenforced_bytecodePrimDivide();
+void unenforced_bytecodePrimMod();
+void unenforced_bytecodePrimNotEqual();
+void unenforced_bytecodePrimMakePoint();
+void unenforced_bytecodePrimBitShift();
+void unenforced_bytecodePrimDiv();
+void unenforced_bytecodePrimBitAnd();
+void unenforced_bytecodePrimBitOr();
+void unenforced_bytecodePrimAt();
+void unenforced_bytecodePrimAtPut();
+void unenforced_bytecodePrimSize();
+void unenforced_bytecodePrimNext();
+void unenforced_bytecodePrimNextPut();
+void unenforced_bytecodePrimAtEnd();
+void unenforced_bytecodePrimClass();
+void unenforced_bytecodePrimBlockCopy();
+
+void unenforced_bytecodePrimValue();
+void unenforced_bytecodePrimValueWithArg();
+void unenforced_commonBytecodePrimValue(int, int);
+void unenforced_bytecodePrimDo();
+void unenforced_bytecodePrimNew();
+void unenforced_bytecodePrimNewWithArg();
+void unenforced_bytecodePrimPointX();
+void unenforced_bytecodePrimPointY();
+
+void unenforced_sendLiteralSelectorBytecode();
+
+void unenforced_shortConditionalJump();
+void unenforced_longJumpIfTrue();
+void unenforced_longJumpIfFalse();
+
+
+
+
+
 void pushTemporaryVariableBytecode();
 void pushLiteralConstantBytecode();
-void pushLiteralVariableBytecode();
-void storeAndPopReceiverVariableBytecode();
+
 void storeAndPopTemporaryVariableBytecode();
 void pushReceiverBytecode();
 void pushConstantTrueBytecode();
@@ -36,23 +144,14 @@ void returnNil();
 void returnTopFromMethod();
 void returnTopFromBlock();
 void unknownBytecode();
-void extendedPushBytecode();
 
-void extendedStoreBytecode();
-void extendedStoreAndPopBytecode();
-void singleExtendedSendBytecode();
-void doubleExtendedDoAnythingBytecode();
-void singleExtendedSuperBytecode();
-void secondExtendedSendBytecode();
+
 void popStackBytecode();
 void duplicateTopBytecode();
 void pushActiveContextBytecode();
 void experimentalBytecode();
 void shortUnconditionalJump();
-void shortConditionalJump();
 void longUnconditionalJump();
-void longJumpIfTrue();
-void longJumpIfFalse();
 
 # if Include_Closure_Support
   void pushNewArrayBytecode();
@@ -67,46 +166,10 @@ void longJumpIfFalse();
 # endif
 
 
-void bytecodePrimAdd();
-void bytecodePrimSubtract();
-void bytecodePrimLessThan();
-void bytecodePrimGreaterThan();
-void bytecodePrimLessOrEqual();
-void bytecodePrimGreaterOrEqual();
-void bytecodePrimEqual();
-void bytecodePrimNotEqual();
-void bytecodePrimMultiply();
-void bytecodePrimDivide();
-void bytecodePrimMod();
-void bytecodePrimMakePoint();
-void bytecodePrimBitShift();
-void bytecodePrimDiv();
-void bytecodePrimBitAnd();
-void bytecodePrimBitOr();
 
-void bytecodePrimAt();
-void bytecodePrimAtPut();
-void bytecodePrimSize();
-void bytecodePrimNext();
-void bytecodePrimNextPut();
-void bytecodePrimAtEnd();
+
+
 void bytecodePrimEquivalent();
-void bytecodePrimClass();
-void bytecodePrimBlockCopy();
-void bytecodePrimValue();
-void bytecodePrimValueWithArg();
-void commonBytecodePrimValue(int, int);
-void bytecodePrimDo();
-void bytecodePrimNew();
-void bytecodePrimNewWithArg();
-void bytecodePrimPointX();
-void bytecodePrimPointY();
-
-void sendLiteralSelectorBytecode();
-
-
-
-
 
 int pushReceiverVariableBytecode_literal_index(u_char*)  { return -1; }
 int pushTemporaryVariableBytecode_literal_index(u_char*)  { return -1; }

@@ -829,7 +829,7 @@ public:
   Oop modify_send_for_preheader_word(Oop rcvr);
 #endif
 
-  void normalSend() {
+  void enforced_normalSend() {
     /*
      "Send a message, starting lookup with the receiver's class."
      "Assume: messageSelector and get_argumentCount() have been set, and that
@@ -855,12 +855,58 @@ public:
            &&     roots.lkupClass.as_object()->my_heap_contains_me()
            &&     roots.lkupClass != roots.nilObj);
 
-    commonSend();
+    enforced_commonSend();
+  }
+  
+  void unenforced_normalSend() {
+    /*
+     "Send a message, starting lookup with the receiver's class."
+     "Assume: messageSelector and get_argumentCount() have been set, and that
+     the receiver and arguments have been pushed onto the stack,"
+     "Note: This method is inlined into the interpreter dispatch loop."
+     */
+    Oop rcvr = internalStackValue(get_argumentCount());
+    
+#if Extra_Preheader_Word_Experiment 
+    if (rcvr.is_mem() 
+        && Oop::from_bits(rcvr.as_object()->get_extra_preheader_word()) != Oop::from_int(0) 
+        && roots.messageSelector != roots.extra_preheader_word_selector
+        && roots.extra_preheader_word_selector != roots.nilObj
+        && !roots.messageSelector.as_object()->starts_with_string("perform") // an escape!
+        ) 
+      rcvr = modify_send_for_preheader_word(rcvr);
+#endif
+    
+    roots.receiverClass = roots.lkupClass = rcvr.fetchClass();
+    
+    assert(  roots.lkupClass.verify_oop()
+           &&     roots.lkupClass.is_mem()
+           &&     roots.lkupClass.as_object()->my_heap_contains_me()
+           &&     roots.lkupClass != roots.nilObj);
+    
+    unenforced_commonSend();
   }
 
 
+  void unenforced_superclassSend() {
+    /*
+     "Send a message to self, starting lookup with the superclass of the class
+     containing the currently executing method."
+     "Assume: messageSelector and get_argumentCount() have been set, and that 
+     the receiver and arguments have been pushed onto the stack,"
+     */
+    Oop       rcvr = internalStackValue(get_argumentCount());
+    Oop  lkupClass = method_obj()->methodClass().as_object()->superclass();
+    assert(lkupClass.verify_oop());
+    
+    roots.lkupClass     = lkupClass;
+    roots.receiverClass = rcvr.fetchClass();
 
-  void superclassSend() {
+    unenforced_commonSend();
+  }
+
+
+  void enforced_superclassSend() {
     /*
      "Send a message to self, starting lookup with the superclass of the class
       containing the currently executing method."
@@ -871,7 +917,7 @@ public:
     Oop  lkupClass = method_obj()->methodClass().as_object()->superclass();
     assert(lkupClass.verify_oop());
 
-    bool  delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
+    bool  delegate = omni_requires_intercession(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
     if (delegate) {
       omni_request_execution_in_lookup_class(lkupClass);
     }
@@ -879,7 +925,7 @@ public:
       roots.lkupClass     = lkupClass;
       roots.receiverClass = rcvr.fetchClass();
     }
-    commonSend();
+    enforced_commonSend();
   }
 
   inline void debugCommonSend() {
@@ -924,7 +970,7 @@ public:
   }
 
 
-  void commonSend() {
+  void unenforced_commonSend() {
     /*
      "Send a message, starting lookup with the receiver's class."
      "Assume: messageSelector and get_argumentCount() have been set, and that
@@ -935,7 +981,23 @@ public:
     debugCommonSend();
 
     internalFindNewMethod();
-    internalExecuteNewMethod();
+    unenforced_internalExecuteNewMethod();
+    if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
+      fetchNextBytecode();
+  }
+  
+  void enforced_commonSend() {
+    /*
+     "Send a message, starting lookup with the receiver's class."
+     "Assume: messageSelector and get_argumentCount() have been set, and that
+     the receiver and arguments have been pushed onto the stack,"
+     "Note: This method is inlined into the interpreter dispatch loop."
+     */
+    
+    debugCommonSend();
+    
+    internalFindNewMethod();
+    enforced_internalExecuteNewMethod();
     if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
       fetchNextBytecode();
   }
@@ -960,7 +1022,9 @@ public:
   }
 
 
-  void internalExecuteNewMethod();
+  void   enforced_internalExecuteNewMethod();
+  void unenforced_internalExecuteNewMethod();
+  
 
   void internalActivateNewMethod();
 
@@ -1087,11 +1151,7 @@ public:
     else return true;
   }
   
-  inline bool omni_requires_delegation(Oop rcvr, oop_int_t selector_mask) const {
-    // Delegation is only necessary for execution in the base level.
-    if (executes_on_metalevel())
-      return false;
-    
+  inline bool omni_requires_intercession(Oop rcvr, oop_int_t selector_mask) const {
     // Nothing to do if the receiver is an int or garbage.
     if (rcvr.is_int() /* || rcvr == Oop::from_bits(Oop::Illegals::allocated) */)
       return false;
@@ -1354,7 +1414,7 @@ public:
     currentBytecode = byteAtPointer(localIP());
     if (Check_Prefetch)  have_executed_currentBytecode = false;
   }
-  void jumpIfFalseBy(int offset) {
+  void enforced_jumpIfFalseBy(int offset) {
     Oop b = internalStackTop();
     if (b == roots.falseObj)
       jump(offset);
@@ -1363,12 +1423,28 @@ public:
     else {
       roots.messageSelector = splObj(Special_Indices::SelectorMustBeBoolean);
       set_argumentCount(0);
-      normalSend();
+      enforced_normalSend();
       return;
     }
     internalPop(1);
   }
-  void jumpIfTrueBy(int offset) {
+  
+  void unenforced_jumpIfFalseBy(int offset) {
+    Oop b = internalStackTop();
+    if (b == roots.falseObj)
+      jump(offset);
+    else if (b == roots.trueObj)
+      fetchNextBytecode();
+    else {
+      roots.messageSelector = splObj(Special_Indices::SelectorMustBeBoolean);
+      set_argumentCount(0);
+      unenforced_normalSend();
+      return;
+    }
+    internalPop(1);
+  }
+  
+  void unenforced_jumpIfTrueBy(int offset) {
     Oop b = internalStackTop();
     if (b == roots.trueObj)
       jump(offset);
@@ -1377,11 +1453,26 @@ public:
     else {
       roots.messageSelector = splObj(Special_Indices::SelectorMustBeBoolean);
       set_argumentCount(0);
-      normalSend();
+      unenforced_normalSend();
       return;
     }
     internalPop(1);
   }
+  void enforced_jumpIfTrueBy(int offset) {
+    Oop b = internalStackTop();
+    if (b == roots.trueObj)
+      jump(offset);
+    else if (b == roots.falseObj)
+      fetchNextBytecode();
+    else {
+      roots.messageSelector = splObj(Special_Indices::SelectorMustBeBoolean);
+      set_argumentCount(0);
+      enforced_normalSend();
+      return;
+    }
+    internalPop(1);
+  }
+  
   u_char byteAtPointer(u_char* p) { return *p; }
   void checkForInterrupts(bool is_safe_to_process_events = true);
 
@@ -1516,9 +1607,8 @@ public:
     success(x->fetchClass() == klass);
   }
 
-  void commonAt(bool);
-  void commonAtPut(bool);
-
+  void prim_commonAt(bool);
+  void prim_commonAtPut(bool);
 
 
   Oop  stObjectAt(Object_p a, oop_int_t index);

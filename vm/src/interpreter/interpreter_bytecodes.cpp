@@ -14,15 +14,11 @@
 
 #include "headers.h"
 
-void Squeak_Interpreter::pushReceiverVariableBytecode() {
-  if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::ReadField_Of__Mask)) {
-    omni_internal_read_field(roots.receiver, currentBytecode & 0xf);
-  }
-  else {
-    fetchNextBytecode();
-    pushReceiverVariable(prevBytecode & 0xf);
-  }
+void Squeak_Interpreter::unenforced_pushReceiverVariableBytecode() {
+  fetchNextBytecode();
+  pushReceiverVariable(prevBytecode & 0xf);
 }
+
 void Squeak_Interpreter::pushTemporaryVariableBytecode() {
   fetchNextBytecode();
   pushTemporaryVariable(prevBytecode & 0xf);
@@ -31,35 +27,18 @@ void Squeak_Interpreter::pushLiteralConstantBytecode() {
   fetchNextBytecode();
   pushLiteralConstant(prevBytecode & 0x1f);
 }
-void Squeak_Interpreter::pushLiteralVariableBytecode() {
-  if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::ReadLiteral__Mask))
-    omni_internal_read_literal(currentBytecode & 0x1f);
-  else {
-    fetchNextBytecode();
-    pushLiteralVariable(prevBytecode & 0x1f);
-  }
+
+void Squeak_Interpreter::unenforced_pushLiteralVariableBytecode() {
+  fetchNextBytecode();
+  pushLiteralVariable(prevBytecode & 0x1f);
 }
 
-void Squeak_Interpreter::storeAndPopReceiverVariableBytecode() {
-  if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
-    Oop value  = internalStackTop();
-    
-    // REM: we might pop the Receiver (ReceiverIndex) here
-    //      that should be ok, because, I hope, the next time we need it
-    //      is when we return, and then we push it back
-    //      and it is not deleted, just not protected by the stack
-    //      pointer anymore.
-    Oop newTop = internalStackValue(1);
-    internalPop(2);
-    
-    omni_internal_write_field(roots.receiver, currentBytecode & 7, value, newTop);
-  }
-  else {
-    fetchNextBytecode();
-    // could watch for suspended context change here
-    receiver_obj()->storePointer(prevBytecode & 7, internalStackTop());
-    internalPop(1);
-  }
+
+void Squeak_Interpreter::unenforced_storeAndPopReceiverVariableBytecode() {
+  fetchNextBytecode();
+  // could watch for suspended context change here
+  receiver_obj()->storePointer(prevBytecode & 7, internalStackTop());
+  internalPop(1);
 }
 
 void Squeak_Interpreter::storeAndPopTemporaryVariableBytecode() {
@@ -67,7 +46,6 @@ void Squeak_Interpreter::storeAndPopTemporaryVariableBytecode() {
   assert(_localHomeContext != roots.nilObj.as_object());
 	localHomeContext()->storePointerIntoContext((prevBytecode & 7) + Object_Indices::TempFrameStart, internalStackTop());
 	internalPop(1);
-
 }
 void Squeak_Interpreter::pushReceiverBytecode() {
   fetchNextBytecode();
@@ -128,232 +106,114 @@ void Squeak_Interpreter::unknownBytecode() {
   fatal("unknown bytecode");
 }
 
-void Squeak_Interpreter::extendedPushBytecode() {
+
+void Squeak_Interpreter::unenforced_extendedPushBytecode() {
   u_char descriptor = fetchByte();
   fetchNextBytecode();
   int i = descriptor & 0x3f;
   switch ((descriptor >> 6) & 3) {
-    case 0: {
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::ReadField_Of__Mask))
-        omni_internal_read_field(roots.receiver, i);
-      else
-        pushReceiverVariable(i);
-      break;
-    }
+    case 0: pushReceiverVariable(i);  break;
     case 1: pushTemporaryVariable(i); break;
     case 2: pushLiteralConstant(i); break;
-    case 3: {
-      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::ReadLiteral__Mask))
-        omni_internal_read_literal(i);
-      else
-        pushLiteralVariable(i);
-      break;
-    }
+    case 3: pushLiteralVariable(i); break;
   }
 }
 
-void Squeak_Interpreter::extendedStoreBytecode() {
+void Squeak_Interpreter::unenforced_extendedStoreBytecode() {
   u_char d = fetchByte();
-  
+  fetchNextBytecode();
   u_char vi = d & 63;
   switch ((d >> 6) & 3) {
-    case 0: {
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
-        Oop value = internalStackTop();
-        internalPop(1);
-        omni_internal_write_field(roots.receiver, vi, value);
-      }
-      else {
-        fetchNextBytecode();
-        // could watch for suspended context change here
-        receiver_obj()->storePointer(vi, internalStackTop());
-      }
+    case 0:
+      // could watch for suspended context change here
+      receiver_obj()->storePointer(vi, internalStackTop());
       break;
-    }
     case 1:
-      fetchNextBytecode();
       localHomeContext()->storePointerIntoContext(
-                                                vi + Object_Indices::TempFrameStart, internalStackTop());
+                             vi + Object_Indices::TempFrameStart, internalStackTop());
       break;
     case 2:
-      fetchNextBytecode();
       fatal("illegal store");
-    case 3: {
-      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::Write_ToLiteral__Mask)) {
-        Oop val = internalStackTop();
-        internalPop(1);
-        omni_internal_write_literal(literal(vi), val);
-      }
-      else {
-        fetchNextBytecode();
-        literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
-      }
+    case 3:
+      literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
       break;
-    }
   }
 }
 
-void Squeak_Interpreter::extendedStoreAndPopBytecode() {
-  u_char d = fetchByte();
-  
-  u_char vi = d & 63;
-  switch ((d >> 6) & 3) {
-    case 0: {
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
-        Oop value  = internalStackTop();
-        Oop newTop = internalStackValue(1);
-        internalPop(2);
-        omni_internal_write_field(roots.receiver, vi, value, newTop);
-        return; 
-      }
-      else {
-        fetchNextBytecode();
-        // could watch for suspended context change here
-        receiver_obj()->storePointer(vi, internalStackTop());
-      }
-      break;
-    }
-    case 1:
-      fetchNextBytecode();
-      localHomeContext()->storePointerIntoContext(
-                                                  vi + Object_Indices::TempFrameStart, internalStackTop());
-      break;
-    case 2:
-      fetchNextBytecode();
-      fatal("illegal store");
-    case 3: {
-      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::Write_ToLiteral__Mask)) {
-        Oop val    = internalStackTop();
-        Oop newTop = internalStackValue(1);        
-        internalPop(2);
-        omni_internal_write_literal(literal(vi), val, newTop);
-        return;
-      }
-      else {
-        fetchNextBytecode();
-        literal(vi).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
-      }
-      break;
-    }
-  }
+void Squeak_Interpreter::unenforced_extendedStoreAndPopBytecode() {
+  unenforced_extendedStoreBytecode();
   internalPop(1);
 }
-void Squeak_Interpreter::singleExtendedSendBytecode() {
-  // OMNI TODO: we need here also the usual omni_requires_delegation check, no?
-  //            be careful, the use of perform:withArguments:inSuperclass: causes
-  //            this bytecode to be used to, will probably end up in recursion
-  //            we really need a clear meta-reflection handling :(
-  
+
+void Squeak_Interpreter::unenforced_singleExtendedSendBytecode() {
   u_char d = fetchByte();
   roots.messageSelector = literal(d & 0x1f);
   set_argumentCount( d >> 5 );
-  
-  Oop rcvr = internalStackValue(get_argumentCount());
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  if (delegate)
-    omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
-void Squeak_Interpreter::doubleExtendedDoAnythingBytecode() {
+
+void Squeak_Interpreter::unenforced_doubleExtendedDoAnythingBytecode() {
   /*
    "Replaces the Blue Book double-extended send [132], in which the first byte 
-    was wasted on 8 bits of argument count.
-    Here we use 3 bits for the operation sub-type (opType),  and the remaining
-    5 bits for argument count where needed.
-    The last byte give access to 256 instVars or literals.
-    See also secondExtendedSendBytecode"
+   was wasted on 8 bits of argument count.
+   Here we use 3 bits for the operation sub-type (opType),  and the remaining
+   5 bits for argument count where needed.
+   The last byte give access to 256 instVars or literals.
+   See also secondExtendedSendBytecode"
    */
   u_char b2 = fetchByte();
   u_char b3 = fetchByte();
   switch (b2 >> 5) {
-    case 0: {
+    case 0:
       roots.messageSelector = literal(b3);
-      set_argumentCount( b2 & 31 );
-      
-      Oop rcvr = internalStackValue(get_argumentCount());
-      bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-      if (delegate)
-        omni_request_execution();
-      
-      normalSend();
+      set_argumentCount( b2 & 31 );      
+      unenforced_normalSend();
       break;
-    }
     case 1:
       roots.messageSelector = literal(b3);
       set_argumentCount( b2 & 31);
-      superclassSend();
+      unenforced_superclassSend();
       break;
-    case 2: {
+    case 2:
       fetchNextBytecode();
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::ReadField_Of__Mask))
-        omni_internal_read_field(roots.receiver, b3);
-      else
-        pushReceiverVariable(b3);
+      pushReceiverVariable(b3);
       break;
-    }
     case 3:
       fetchNextBytecode();
       pushLiteralConstant(b3);
       break;
-    case 4: {
-      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::ReadLiteral__Mask))
-        omni_internal_read_literal(b3);
-      else {
-        fetchNextBytecode();
-        pushLiteralVariable(b3);
-      }
+    case 4:
+      fetchNextBytecode();
+      pushLiteralVariable(b3);
       break;
-    }
     case 5:
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
-        Oop top = internalStackTop();
-        internalPop(1);
-        omni_internal_write_field(roots.receiver, b3, top);
-      }
-      else {
-        fetchNextBytecode();
-        // could watch for suspended context change here
-        receiver_obj()->storePointer(b3, internalStackTop());
-      }
+      fetchNextBytecode();
+      // could watch for suspended context change here
+      receiver_obj()->storePointer(b3, internalStackTop());
       break;
     case 6: {
-      if (omni_requires_delegation(roots.receiver, OstDomainSelector_Indices::WriteToFieldMask)) {
-        Oop top    = internalStackTop();
-        Oop newTop = internalStackValue(1);
-        internalPop(2);
-        omni_internal_write_field(roots.receiver, b3, top, newTop);
-      }
-      else {
-        fetchNextBytecode();
-        Oop top = internalStackTop();
-        internalPop(1);
-        // could watch for suspended context change here
-        receiver_obj()->storePointer(b3, top);
-      }
+      fetchNextBytecode();
+      Oop top = internalStackTop();
+      internalPop(1);
+      // could watch for suspended context change here
+      receiver_obj()->storePointer(b3, top);
       break;
     }
-    case 7: {
-      if (omni_requires_delegation_for_literals(OstDomainSelector_Indices::Write_ToLiteral__Mask)) {
-        Oop val = internalStackTop();
-        internalPop(1);
-        omni_internal_write_literal(literal(b3), val);
-      }
-      else {
-        fetchNextBytecode();
-        literal(b3).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
-      }
+    case 7:
+      fetchNextBytecode();
+      literal(b3).as_object()->storePointer(Object_Indices::ValueIndex, internalStackTop());
       break;
-    }
   }
 }
-void Squeak_Interpreter::singleExtendedSuperBytecode() {
+
+void Squeak_Interpreter::unenforced_singleExtendedSuperBytecode() {
   u_char d = fetchByte();
   roots.messageSelector = literal(d & 0x1f);
   set_argumentCount( d >> 5 );
-  superclassSend();
+  unenforced_superclassSend();
 }
 
-void Squeak_Interpreter::secondExtendedSendBytecode() {
+void Squeak_Interpreter::unenforced_secondExtendedSendBytecode() {
   /*
    This replaces the Blue Book double-extended super-send [134],
    which is subsumed by the new double-extended do-anything [132].
@@ -365,14 +225,7 @@ void Squeak_Interpreter::secondExtendedSendBytecode() {
   set_argumentCount( descriptor >> 6 );
   assert (!internalStackValue(get_argumentCount()).is_mem()
           || The_Memory_System()->object_table->probably_contains((void*)internalStackValue(get_argumentCount()).bits()));
-
-  Oop rcvr = internalStackValue(get_argumentCount());
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  if (delegate)
-    omni_request_execution();
-
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
 void Squeak_Interpreter::popStackBytecode() { fetchNextBytecode(); internalPop(1); }
@@ -391,7 +244,7 @@ void Squeak_Interpreter::experimentalBytecode() {
   unimplemented();
 }
 void Squeak_Interpreter::shortUnconditionalJump() { jump((currentBytecode & 7) + 1); }
-void Squeak_Interpreter::shortConditionalJump()   { jumpIfFalseBy((currentBytecode & 7) + 1); }
+void Squeak_Interpreter::unenforced_shortConditionalJump()   { unenforced_jumpIfFalseBy((currentBytecode & 7) + 1); }
 
 
 void Squeak_Interpreter::longUnconditionalJump() {
@@ -401,11 +254,11 @@ void Squeak_Interpreter::longUnconditionalJump() {
     internalQuickCheckForInterrupts();
   fetchNextBytecode();
 }
-void Squeak_Interpreter::longJumpIfTrue() {
-  jumpIfTrueBy(long_cond_jump_offset());
+void Squeak_Interpreter::unenforced_longJumpIfTrue() {
+  unenforced_jumpIfTrueBy(long_cond_jump_offset());
 }
-void Squeak_Interpreter::longJumpIfFalse() {
-  jumpIfFalseBy(long_cond_jump_offset());
+void Squeak_Interpreter::unenforced_longJumpIfFalse() {
+  unenforced_jumpIfFalseBy(long_cond_jump_offset());
 }
 
 
@@ -670,7 +523,7 @@ void Squeak_Interpreter::omni_commonSend(Oop lookupClass) {
 void Squeak_Interpreter::omni_commonInternalSend() {
   Safepoint_Ability sa(false);
   internalFindNewMethod();
-  internalExecuteNewMethod();
+  unenforced_internalExecuteNewMethod();
   
   if (process_is_scheduled_and_executing()) // xxxxxxx predicate only needed to satisfy assertions?
     fetchNextBytecode();
@@ -871,11 +724,9 @@ void Squeak_Interpreter::omni_internal_write_literal(Oop lit, Oop value, Oop new
 }
 
 
-void Squeak_Interpreter::bytecodePrimAdd() {
+void Squeak_Interpreter::unenforced_bytecodePrimAdd() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
-
-  bool delegate = false;  // OMNI: optimized the integer case by defering test
 
   if (areIntegers(rcvr, arg)) {
     oop_int_t r = rcvr.integerValue() + arg.integerValue();
@@ -886,36 +737,25 @@ void Squeak_Interpreter::bytecodePrimAdd() {
     }
   }
   else {
-    delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-
-    if (!delegate) {
-      successFlag = true;
-      externalizeExecutionState();
-      {
-        Safepoint_Ability sa(true);
-        primitiveFloatAdd(rcvr, arg);
-      }
-      internalizeExecutionState();
-      if (successFlag) {
-        fetchNextBytecode();
-        return;
-      }
+    successFlag = true;
+    externalizeExecutionState();
+    {
+      Safepoint_Ability sa(true);
+      primitiveFloatAdd(rcvr, arg);
+    }
+    internalizeExecutionState();
+    if (successFlag) {
+      fetchNextBytecode();
+      return;
     }
   }
-  
   roots.messageSelector = specialSelector(0);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimSubtract() {
+void Squeak_Interpreter::unenforced_bytecodePrimSubtract() {
   Oop rcvr = internalStackValue(1);
-  
-  bool delegate = false;  // OMNI: optimized the integer case by defering test
-  
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     oop_int_t r = rcvr.integerValue() - arg.integerValue();
@@ -926,36 +766,27 @@ void Squeak_Interpreter::bytecodePrimSubtract() {
     }
   }
   else {
-    delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-    
-    if (!delegate) {
-      successFlag = true;
-      externalizeExecutionState();
-      {
-        Safepoint_Ability sa(true);
-        primitiveFloatSubtract(rcvr, arg);
-      }
-      internalizeExecutionState();
-      if (successFlag) {
-        fetchNextBytecode();
-        return;
-      }
+    successFlag = true;
+    externalizeExecutionState();
+    {
+      Safepoint_Ability sa(true);
+      primitiveFloatSubtract(rcvr, arg);
+    }
+    internalizeExecutionState();
+    if (successFlag) {
+      fetchNextBytecode();
+      return;
     }
   }
-  
   roots.messageSelector = specialSelector(1);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimMultiply() {
+void Squeak_Interpreter::unenforced_bytecodePrimMultiply() {
   Oop rcvr = internalStackValue(1);
-  
-  bool delegate = false;
-  
   Oop arg  = internalStackValue(0);
+  
   if (areIntegers(rcvr, arg)) {
     oop_int_t ri = rcvr.integerValue();
     oop_int_t ai = arg.integerValue();
@@ -967,37 +798,25 @@ void Squeak_Interpreter::bytecodePrimMultiply() {
     }
   }
   else {
-    delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-    
-    if (!delegate) {
-      successFlag = true;
-      externalizeExecutionState();
-      {
-        Safepoint_Ability sa(true);
-        primitiveFloatMultiply(rcvr, arg);
-      }
-      internalizeExecutionState();
-      if (successFlag) {
-        fetchNextBytecode();
-        return;
-      }
+    successFlag = true;
+    externalizeExecutionState();
+    {
+      Safepoint_Ability sa(true);
+      primitiveFloatMultiply(rcvr, arg);
     }
-  }
-  
+    internalizeExecutionState();
+    if (successFlag) {
+      fetchNextBytecode();
+      return;
+    }
+  }  
   roots.messageSelector = specialSelector(8);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
-
-void Squeak_Interpreter::bytecodePrimDivide() {
+void Squeak_Interpreter::unenforced_bytecodePrimDivide() {
   Oop rcvr = internalStackValue(1);
-  
-  bool delegate = false;
-  
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     oop_int_t ri = rcvr.integerValue();
@@ -1012,142 +831,106 @@ void Squeak_Interpreter::bytecodePrimDivide() {
     }
   }
   else {
-    delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-    
-    if (!delegate) {
-      successFlag = true;
-      externalizeExecutionState();
-      {
-        Safepoint_Ability sa(true);
-        primitiveFloatDivide(rcvr, arg);
-      }
-      internalizeExecutionState();
-      if (successFlag) {
-        fetchNextBytecode();
-        return;
-      }
+    successFlag = true;
+    externalizeExecutionState();
+    {
+      Safepoint_Ability sa(true);
+      primitiveFloatDivide(rcvr, arg);
+    }
+    internalizeExecutionState();
+    if (successFlag) {
+      fetchNextBytecode();
+      return;
     }
   }
-  
   roots.messageSelector = specialSelector(9);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimMod() {
-  Oop rcvr = internalStackValue(1);
-
+void Squeak_Interpreter::unenforced_bytecodePrimMod() {
   successFlag = true;
-  int mod = doPrimitiveMod(rcvr, internalStackValue(0));
+  int mod = doPrimitiveMod(internalStackValue(1), internalStackValue(0));
   if (successFlag) {
     internalPopThenPush(2, Oop::from_int(mod));
     fetchNextBytecode();
     return;
   }
-
   roots.messageSelector = specialSelector(10);
   set_argumentCount(1);
-  
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimLessThan() {
+void Squeak_Interpreter::unenforced_bytecodePrimLessThan() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr.integerValue() < arg.integerValue());
     return;
   }
-  successFlag = true;
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
-  if (!delegate) {
+  else {
+    successFlag = true;
     bool aBool = primitiveFloatLess(rcvr, arg);
     if (successFlag) {
       booleanCheat(aBool);
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(2);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-
-void Squeak_Interpreter::bytecodePrimGreaterThan() {
+void Squeak_Interpreter::unenforced_bytecodePrimGreaterThan() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr.integerValue() > arg.integerValue());
     return;
   }
-  
-  successFlag = true;
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
-  if (!delegate) {
+  else {
+    successFlag = true;
     bool aBool = primitiveFloatGreater(rcvr, arg);
     if (successFlag) {
       booleanCheat(aBool);
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(3);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
 
-void Squeak_Interpreter::bytecodePrimLessOrEqual() {
+void Squeak_Interpreter::unenforced_bytecodePrimLessOrEqual() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr.integerValue() <= arg.integerValue());
     return;
   }
-  successFlag = true;
-    
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  if (!delegate) {
+  else {  
+	successFlag = true;
     bool aBool = !primitiveFloatGreater(rcvr, arg);
     if (successFlag) {
       booleanCheat(aBool);
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(4);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
 
-void Squeak_Interpreter::bytecodePrimGreaterOrEqual() {
+void Squeak_Interpreter::unenforced_bytecodePrimGreaterOrEqual() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr.integerValue() >= arg.integerValue());
     return;
   }
-
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
-  if (!delegate) {
+  else {
     successFlag = true;
     bool aBool = !primitiveFloatLess(rcvr, arg);
     if (successFlag) {
@@ -1155,25 +938,19 @@ void Squeak_Interpreter::bytecodePrimGreaterOrEqual() {
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(5);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimEqual() {
+void Squeak_Interpreter::unenforced_bytecodePrimEqual() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr == arg);
     return;
   }
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
-  if (!delegate) {
+  else {
     successFlag = true;
     bool aBool = primitiveFloatEqual(rcvr, arg);
     if (successFlag) {
@@ -1181,25 +958,19 @@ void Squeak_Interpreter::bytecodePrimEqual() {
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(6);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimNotEqual() {
+void Squeak_Interpreter::unenforced_bytecodePrimNotEqual() {
   Oop rcvr = internalStackValue(1);
   Oop arg  = internalStackValue(0);
   if (areIntegers(rcvr, arg)) {
     booleanCheat(rcvr != arg);
     return;
   }
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
-  if (!delegate) {
+  else {
     successFlag = true;
     bool aBool = !primitiveFloatEqual(rcvr, arg);
     if (successFlag) {
@@ -1207,20 +978,12 @@ void Squeak_Interpreter::bytecodePrimNotEqual() {
       return;
     }
   }
-  
   roots.messageSelector = specialSelector(7);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimMakePoint() {
-  // OMNI: this one is somehow special, only if it fails it is going to do
-  //       a real message change, otherwise it is just going to store two
-  //       references, or ints into a pointer object...
-  //       What could be checked here is whether the point class allows
-  //       sync exec, but I am not going to check that here...
+void Squeak_Interpreter::unenforced_bytecodePrimMakePoint() {
   successFlag = true;
   externalizeExecutionState();
   {
@@ -1231,21 +994,13 @@ void Squeak_Interpreter::bytecodePrimMakePoint() {
   if (successFlag) {
     fetchNextBytecode();
     return;
-  }
-  
-  Oop rcvr = internalStackValue(1);
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask); 
-  
+  }  
   roots.messageSelector = specialSelector(11);
   set_argumentCount(1);
-  
-  if (delegate) omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
 
-
-void Squeak_Interpreter::bytecodePrimBitShift() {
+void Squeak_Interpreter::unenforced_bytecodePrimBitShift() {
   successFlag = true;
   externalizeExecutionState();
   {
@@ -1257,19 +1012,11 @@ void Squeak_Interpreter::bytecodePrimBitShift() {
     fetchNextBytecode();
     return;
   }
-    
   roots.messageSelector = specialSelector(12);
   set_argumentCount(1);
-  
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
-
-
-void Squeak_Interpreter::bytecodePrimDiv() {
+void Squeak_Interpreter::unenforced_bytecodePrimDiv() {
   successFlag = true;
   int32 quotient = doPrimitiveDiv(internalStackValue(1), internalStackValue(0));
   if (successFlag) {
@@ -1277,19 +1024,11 @@ void Squeak_Interpreter::bytecodePrimDiv() {
     fetchNextBytecode();
     return;
   }
-  
   roots.messageSelector = specialSelector(13);
   set_argumentCount(1);
-  
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
-
-
-void Squeak_Interpreter::bytecodePrimBitAnd() {
+void Squeak_Interpreter::unenforced_bytecodePrimBitAnd() {
   successFlag = true;
   externalizeExecutionState();
   {
@@ -1303,14 +1042,9 @@ void Squeak_Interpreter::bytecodePrimBitAnd() {
   }
   roots.messageSelector = specialSelector(14);
   set_argumentCount(1);
-
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
-void Squeak_Interpreter::bytecodePrimBitOr() {
+void Squeak_Interpreter::unenforced_bytecodePrimBitOr() {
   successFlag = true;
   externalizeExecutionState();
   {
@@ -1324,31 +1058,16 @@ void Squeak_Interpreter::bytecodePrimBitOr() {
   }
   roots.messageSelector = specialSelector(15);
   set_argumentCount(1);
-
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimAt() {
+void Squeak_Interpreter::unenforced_bytecodePrimAt() {
   Oop index = internalStackTop();
   Oop rcvr = internalStackValue(1);
-  
-  bool delegateExec = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
   successFlag = rcvr.is_mem() && index.is_int();
-  if (!delegateExec && successFlag) {
+  if (successFlag) {
     At_Cache::Entry* e = atCache.get_entry(rcvr, false);
     if (e->matches(rcvr)) {
-      // now, we are sure that it is a primitive, and we can delegate it directly to the domain
-      bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On__Mask);
-      if (delegatePrim) {
-        omni_internal_request_primitive_at(The_OstDomain.prim_at_on());
-        return;
-      }
-      
       Oop result = commonVariableAt(rcvr, index.integerValue(), e, true);
       if (successFlag) {
         fetchNextBytecode();
@@ -1359,28 +1078,17 @@ void Squeak_Interpreter::bytecodePrimAt() {
   }
   roots.messageSelector = specialSelector(16);
   set_argumentCount(1);
-  
-  if (delegateExec) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimAtPut() {
+void Squeak_Interpreter::unenforced_bytecodePrimAtPut() {
   Oop value = internalStackTop();
   Oop index = internalStackValue(1);
   Oop rcvr  = internalStackValue(2);
-  
-  bool delegateExec = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
   successFlag = rcvr.is_mem() && index.is_int();
-  if (!delegateExec && successFlag) {    
+  if (successFlag) {
     At_Cache::Entry* e = atCache.get_entry(rcvr, true);
     if (e->matches(rcvr)) {
-      bool delegatePrim = omni_requires_delegation(rcvr, OstDomainSelector_Indices::PrimAt_On_Put__Mask);
-      if (delegatePrim) {
-        omni_internal_request_primitive_atPut(The_OstDomain.prim_at_put_on());
-        return;
-      }
-      
       commonVariableAtPut(rcvr, index.integerValue(), value, e);
       if (successFlag) {
         fetchNextBytecode();
@@ -1389,91 +1097,47 @@ void Squeak_Interpreter::bytecodePrimAtPut() {
       }
     }
   }
-  
   roots.messageSelector = specialSelector(17);
   set_argumentCount( 2 );
-  
-  if (delegateExec) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-
-void Squeak_Interpreter::bytecodePrimSize() {
+void Squeak_Interpreter::unenforced_bytecodePrimSize() {
   roots.messageSelector = specialSelector(18);
   set_argumentCount(0);
-  
-  Oop rcvr = internalStackTop();
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
-
-
-void Squeak_Interpreter::bytecodePrimNext() {
+void Squeak_Interpreter::unenforced_bytecodePrimNext() {
   roots.messageSelector = specialSelector(19);
   set_argumentCount(0);
-  
-  Oop rcvr = internalStackTop();
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
-
-
-void Squeak_Interpreter::bytecodePrimNextPut() {
+void Squeak_Interpreter::unenforced_bytecodePrimNextPut() {
   roots.messageSelector = specialSelector(20);
   set_argumentCount(1);
-  
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
 
 
-void Squeak_Interpreter::bytecodePrimAtEnd() {
+void Squeak_Interpreter::unenforced_bytecodePrimAtEnd() {
   roots.messageSelector = specialSelector(21);
   set_argumentCount(0);
-  
-  Oop rcvr = internalStackTop();
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
-
-
 void Squeak_Interpreter::bytecodePrimEquivalent() {
   booleanCheat(internalStackValue(1) == internalStackValue(0));
 }
 
-
-void Squeak_Interpreter::bytecodePrimClass() {  
-  Oop rcvr = internalStackTop();
-  
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask)) {
-    set_argumentCount(0);
-    roots.messageSelector = specialSelector(23);
-    omni_request_execution();
-    normalSend();
-    return;
-  }
-  
-  internalPopThenPush(1, rcvr.fetchClass());
+void Squeak_Interpreter::unenforced_bytecodePrimClass() {
+  internalPopThenPush(1, internalStackTop().fetchClass());
   fetchNextBytecode();
 }
 
-
-void Squeak_Interpreter::bytecodePrimBlockCopy() {
+void Squeak_Interpreter::unenforced_bytecodePrimBlockCopy() {
   Oop rcvr = internalStackValue(1);
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
   successFlag = true;
   success(rcvr.as_object()->hasContextHeader());
-  if (!delegate && successFlag) {
+  if (successFlag) {
     externalizeExecutionState();
     {
       Safepoint_Ability sa(true);
@@ -1481,33 +1145,20 @@ void Squeak_Interpreter::bytecodePrimBlockCopy() {
     }
     internalizeExecutionState();
   }
-  if (delegate || !successFlag) {
+  if (!successFlag) {
     roots.messageSelector = specialSelector(24);
     set_argumentCount(1);
-    
-    if (delegate) omni_request_execution();
-    normalSend();
+    unenforced_normalSend();
     return;
   }
   fetchNextBytecode();
 }
 
 
-void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) {
+void Squeak_Interpreter::unenforced_commonBytecodePrimValue(int nargs, int selector_index) {
   Oop block = localSP()[-nargs];
   successFlag = true;
   set_argumentCount(nargs);
-  
-  // OMNI this looks like a slow operation, so try to fail fast
-  //      usually we try to do the normal path first, like integer handling
-  if (omni_requires_delegation(block, OstDomainSelector_Indices::RequestExecutionMask)) {
-    roots.messageSelector = specialSelector(selector_index);
-    omni_request_execution();
-    normalSend();
-    return;
-  }
-
-  
   Oop klass = block.fetchClass();
   bool classOK = true;
   
@@ -1531,77 +1182,51 @@ void Squeak_Interpreter::commonBytecodePrimValue(int nargs, int selector_index) 
     fetchNextBytecode();
   else {
     roots.messageSelector = specialSelector(selector_index);
-    normalSend();
+    unenforced_normalSend();
   }  
 }
 
-void Squeak_Interpreter::bytecodePrimValue() {
-  commonBytecodePrimValue(0, 25);
+void Squeak_Interpreter::unenforced_bytecodePrimValue() {
+  unenforced_commonBytecodePrimValue(0, 25);
 }
 
-void Squeak_Interpreter::bytecodePrimValueWithArg() {
-  commonBytecodePrimValue(1, 26);
+void Squeak_Interpreter::unenforced_bytecodePrimValueWithArg() {
+  unenforced_commonBytecodePrimValue(1, 26);
 }
 
-void Squeak_Interpreter::bytecodePrimDo() {
+void Squeak_Interpreter::unenforced_bytecodePrimDo() {
   roots.messageSelector = specialSelector(27);
   set_argumentCount(1);
-  
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-  
-  normalSend();
+  unenforced_normalSend();
 }
-void Squeak_Interpreter::bytecodePrimNew() {
+void Squeak_Interpreter::unenforced_bytecodePrimNew() {
   roots.messageSelector = specialSelector(28);
   set_argumentCount(0);
-
-  Oop rcvr = internalStackTop();
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
-void Squeak_Interpreter::bytecodePrimNewWithArg() {
+void Squeak_Interpreter::unenforced_bytecodePrimNewWithArg() {
   roots.messageSelector = specialSelector(29);
   set_argumentCount(1);
-  
-  Oop rcvr = internalStackValue(1);
-  if (omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask))
-    omni_request_execution();
-
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimPointX() {
+void Squeak_Interpreter::unenforced_bytecodePrimPointX() {
   successFlag = true;
   Oop rcvr = internalStackTop();
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask); 
-  
-  if (!delegate) {
-    assertClass(rcvr, splObj(Special_Indices::ClassPoint));
-    if (successFlag) {
-      internalPopThenPush(1, rcvr.as_object()->fetchPointer(Object_Indices::XIndex));
-      fetchNextBytecode();
-      return;
-    }
+  assertClass(rcvr, splObj(Special_Indices::ClassPoint));
+  if (successFlag) {
+    internalPopThenPush(1, rcvr.as_object()->fetchPointer(Object_Indices::XIndex));
+    fetchNextBytecode();
+    return;
   }
-  
   roots.messageSelector = specialSelector(30);
   set_argumentCount(0);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
-void Squeak_Interpreter::bytecodePrimPointY() {
+void Squeak_Interpreter::unenforced_bytecodePrimPointY() {
   successFlag = true;
   Oop rcvr = internalStackTop();
-
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  
   assertClass(rcvr, splObj(Special_Indices::ClassPoint));
   if (successFlag) {
     internalPopThenPush(1, rcvr.as_object()->fetchPointer(Object_Indices::YIndex));
@@ -1610,13 +1235,11 @@ void Squeak_Interpreter::bytecodePrimPointY() {
   }
   roots.messageSelector = specialSelector(31);
   set_argumentCount(0);
-  
-  if (delegate) omni_request_execution();
-  normalSend();
+  unenforced_normalSend();
 }
 
 
-void Squeak_Interpreter::sendLiteralSelectorBytecode() {
+void Squeak_Interpreter::unenforced_sendLiteralSelectorBytecode() {
 	// "Can use any of the first 16 literals for the selector and pass up to 2 arguments."
   assert(method_obj()->isCompiledMethod());
 	roots.messageSelector = literal(currentBytecode & 0xf);
@@ -1633,16 +1256,8 @@ void Squeak_Interpreter::sendLiteralSelectorBytecode() {
     OS_Interface::abort();
   }
   assert(roots.messageSelector.is_mem());
-  
-  int arg_count = ((currentBytecode >> 4) & 3) - 1 ;
-	set_argumentCount(arg_count);
-  
-  Oop rcvr = internalStackValue(arg_count);
-  
-  bool delegate = omni_requires_delegation(rcvr, OstDomainSelector_Indices::RequestExecutionMask);
-  if (delegate)
-    omni_request_execution();
-  normalSend();
+  set_argumentCount(((currentBytecode >> 4) & 3) - 1);
+  unenforced_normalSend();
 }
 
 # if Include_Closure_Support
