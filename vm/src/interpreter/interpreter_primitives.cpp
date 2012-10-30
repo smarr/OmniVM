@@ -349,10 +349,12 @@ void Squeak_Interpreter::primitiveClone() {
   if (x.is_int())
     return;
   
-  bool delegate = omni_requires_intercession(x, OstDomainSelector_Indices::PrimShallowCopy__Mask);
-  if (delegate) {
-    omni_request_primitive_clone();
-    return;
+  if (executes_on_baselevel()) {
+    bool delegate = omni_requires_intercession(x, OstDomainSelector_Indices::PrimShallowCopy__Mask);
+    if (delegate) {
+      omni_request_primitive_clone();
+      return;
+    }
   }
   
   Oop nc = x.as_object()->clone();
@@ -1115,10 +1117,12 @@ void Squeak_Interpreter::primitiveInputWord() {
 void Squeak_Interpreter::primitiveInstVarAt() {
   Oop rcvr = stackValue(1);
 
-  bool delegate = omni_requires_intercession(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On__Mask);
-  if (delegate) {
-    omni_request_primitive_at(The_OstDomain.prim_inst_var_at_on());
-    return;
+  if (executes_on_baselevel()) {
+    bool delegate = omni_requires_intercession(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On__Mask);
+    if (delegate) {
+      omni_request_primitive_at(The_OstDomain.prim_inst_var_at_on());
+      return;
+    }
   }
   
   
@@ -1144,10 +1148,13 @@ void Squeak_Interpreter::primitiveInstVarAt() {
 }
 void Squeak_Interpreter::primitiveInstVarAtPut() {
   Oop rcvr = stackValue(2);
-  bool delegate = omni_requires_intercession(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On_Put__Mask);
-  if (delegate) {
-    omni_request_primitive_atPut(The_OstDomain.prim_inst_var_at_put_on());
-    return;
+
+  if (executes_on_baselevel()) {
+    bool delegate = omni_requires_intercession(rcvr, OstDomainSelector_Indices::PrimInstVarAt_On_Put__Mask);
+    if (delegate) {
+      omni_request_primitive_atPut(The_OstDomain.prim_inst_var_at_put_on());
+      return;
+    }
   }
   
   Oop newValue = stackTop();
@@ -1234,7 +1241,7 @@ void Squeak_Interpreter::primitiveInvokeObjectAsMethod() {
   // STEFAN: add my exec barrier code here
 # warning TODO: what is going on here exactly? what do we need to do here? don't think this has been tested or carefully thought through yet, STEFAN 2011-11-10
 # warning TODO: verify that this here is the correct reviever, since there are two here
-  if (omni_requires_intercession(runReceiver, OstDomainSelector_Indices::RequestExecutionMask)) {
+  if (executes_on_baselevel() && omni_requires_intercession(runReceiver, OstDomainSelector_Indices::RequestExecutionMask)) {
     fatal("Not yet implemented. Should raise an exception and survive...");
   }
   
@@ -1380,12 +1387,15 @@ void Squeak_Interpreter::primitiveLoadInstVar() {
     return;
   }
   
-  bool delegate = omni_requires_intercession(r, OstDomainSelector_Indices::ReadField_Of__Mask);
-  if (delegate) {
-    omni_read_field(r, primitiveIndex - 264);
+  if (executes_on_baselevel()) {
+    bool delegate = omni_requires_intercession(r, OstDomainSelector_Indices::ReadField_Of__Mask);
+    if (delegate) {
+      omni_read_field(r, primitiveIndex - 264);
+      return;
+    }
   }
-  else
-    push(r.as_object()->fetchPointer(primitiveIndex - 264));
+
+  push(r.as_object()->fetchPointer(primitiveIndex - 264));
 } 
 
 
@@ -1541,10 +1551,12 @@ void Squeak_Interpreter::primitiveNext() {
   Oop stream = stackTop();
   if (!stream.is_mem()) { primitiveFail(); return; }
   
-  bool delagate = omni_requires_intercession(stream, OstDomainSelector_Indices::PrimNext__Mask);
-  if (delagate) {
-    omni_request_primitive_next();
-    return;
+  if (executes_on_baselevel()) {
+    bool delagate = omni_requires_intercession(stream, OstDomainSelector_Indices::PrimNext__Mask);
+    if (delagate) {
+      omni_request_primitive_next();
+      return;
+    }
   }
   
   Object_p so = stream.as_object();
@@ -1597,10 +1609,12 @@ void Squeak_Interpreter::primitiveNextPut() {
   Oop value = stackTop();
   Oop stream = stackValue(1);
   
-  bool delagate = omni_requires_intercession(stream, OstDomainSelector_Indices::PrimNext_Put__Mask);
-  if (delagate) {
-    omni_request_primitive_nextPut();
-    return;
+  if (executes_on_baselevel()) {
+    bool delagate = omni_requires_intercession(stream, OstDomainSelector_Indices::PrimNext_Put__Mask);
+    if (delagate) {
+      omni_request_primitive_nextPut();
+      return;
+    }
   }
   
   Object_p so;
@@ -1748,7 +1762,7 @@ void Squeak_Interpreter::primitivePerform() {
       the _executes_on_baselevel flag and the actual context frame.
       the use of baselevelPerform leads to that inconsistency,
       and helps us here to avoid the recursion. */
-  if (_executes_on_baselevel && activeContext_obj()->domain_execute_on_baselevel()) {
+  if (executes_on_baselevel() && activeContext_obj()->domain_execute_on_baselevel()) {
     bool delegate = omni_requires_intercession(newReceiver, OstDomainSelector_Indices::RequestExecutionMask);
     if (delegate) {
       omni_request_execution();
@@ -2185,10 +2199,12 @@ void Squeak_Interpreter::primitiveStringAtPut() {
 void Squeak_Interpreter::primitiveStringReplace() {
   Oop array = stackValue(4);
   
-  bool delagate = omni_requires_intercession(array, OstDomainSelector_Indices::PrimReplaceFrom_To_With_StartingAt_On__Mask);
-  if (delagate) {
-    omni_request_primitive_replaceFromToWithStartingAt();
-    return;
+  if (executes_on_baselevel()) {
+    bool delagate = omni_requires_intercession(array, OstDomainSelector_Indices::PrimReplaceFrom_To_With_StartingAt_On__Mask);
+    if (delagate) {
+      omni_request_primitive_replaceFromToWithStartingAt();
+      return;
+    }
   }
   
   oop_int_t start = stackIntegerValue(3);

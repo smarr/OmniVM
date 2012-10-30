@@ -3766,10 +3766,12 @@ bool Squeak_Interpreter::getNextEvent_any_platform(void* p) {
 }
 
 void Squeak_Interpreter::switch_to_baselevel() {
+  dispatch_table = &enforced_dispatch_table;
   _executes_on_baselevel = true;
   _activeContext_obj->set_domain_execute_on_baselevel();
 }
 void Squeak_Interpreter::switch_to_metalevel() {
+  dispatch_table = &unenforced_dispatch_table;
   _executes_on_baselevel = false;
   _activeContext_obj->set_domain_execute_on_metalevel();
 }
