@@ -1826,7 +1826,6 @@ void Squeak_Interpreter::primitivePushFalse() {
   push(roots.falseObj);
 }
 void Squeak_Interpreter::primitivePushMinusOne() {
-  untested();
   popStack();
   push(Oop::from_int(-1));
 }
@@ -1846,12 +1845,10 @@ void Squeak_Interpreter::primitivePushTrue() {
   push(roots.trueObj);
 }
 void Squeak_Interpreter::primitivePushTwo() {
-  untested();
   popStack();
   push(Oop::from_int(2));
 }
 void Squeak_Interpreter::primitivePushZero() {
-  untested();
   popStack();
   push(Oop::from_int(0));
 }
