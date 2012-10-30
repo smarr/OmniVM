@@ -439,6 +439,7 @@ OBJS = \
   FilePlugin.o \
   FloatArrayPlugin.o \
   interpreter_bytecodes.o \
+  interpreter_enforced_bytecodes.o \
   interpreter_primitives.o \
   LargeIntegers.o \
   Matrix2x3Plugin.o \

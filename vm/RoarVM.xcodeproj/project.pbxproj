@@ -87,6 +87,7 @@
 		0A2785A6128DC2B700336BDE /* logical_core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A2784C4128DBF7400336BDE /* logical_core.cpp */; };
 		0A2785E4128DC3A000336BDE /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A2785E3128DC3A000336BDE /* CoreFoundation.framework */; };
 		0A2785EE128DC42800336BDE /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A2785ED128DC42800336BDE /* CoreServices.framework */; };
+		0A337812163A24CD007C147E /* interpreter_enforced_bytecodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0A337811163A24CD007C147E /* interpreter_enforced_bytecodes.cpp */; };
 		0A4D824B135C51D500CD74D8 /* sqNamedPrims.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A4D8249135C51D500CD74D8 /* sqNamedPrims.c */; };
 		0A4D824C135C51D500CD74D8 /* sqNamedPrims.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A4D8249135C51D500CD74D8 /* sqNamedPrims.c */; };
 		0A4D824D135C51D500CD74D8 /* sqVirtualMachine.c in Sources */ = {isa = PBXBuildFile; fileRef = 0A4D824A135C51D500CD74D8 /* sqVirtualMachine.c */; };
@@ -439,6 +440,7 @@
 		0A2785E3128DC3A000336BDE /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		0A2785ED128DC42800336BDE /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		0A322559150F964E005323DF /* ostdomain_selector_indices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ostdomain_selector_indices.h; sourceTree = "<group>"; };
+		0A337811163A24CD007C147E /* interpreter_enforced_bytecodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = interpreter_enforced_bytecodes.cpp; sourceTree = "<group>"; };
 		0A3FB13514D99C7E0050F39C /* gtest-all.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "gtest-all.cc"; path = "googletest/src/gtest-all.cc"; sourceTree = SOURCE_ROOT; };
 		0A4D8249135C51D500CD74D8 /* sqNamedPrims.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqNamedPrims.c; sourceTree = "<group>"; };
 		0A4D824A135C51D500CD74D8 /* sqVirtualMachine.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = sqVirtualMachine.c; sourceTree = "<group>"; };
@@ -877,6 +879,7 @@
 				0A278472128DBF7400336BDE /* primitive_table.h */,
 				0A278473128DBF7400336BDE /* squeak_interpreter.cpp */,
 				0A278474128DBF7400336BDE /* squeak_interpreter.h */,
+				0A337811163A24CD007C147E /* interpreter_enforced_bytecodes.cpp */,
 			);
 			name = interpreter;
 			path = src/interpreter;
@@ -1404,6 +1407,7 @@
 				0A94A2A61428B8EF0022D6B6 /* domain_info.cpp in Sources */,
 				0AA3513C150B6BCA00E9433F /* ostdomain.cpp in Sources */,
 				0A0FFBF21532062B00B5B10C /* sqUnixFile.c in Sources */,
+				0A337812163A24CD007C147E /* interpreter_enforced_bytecodes.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
