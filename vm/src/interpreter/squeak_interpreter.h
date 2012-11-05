@@ -105,7 +105,7 @@ public:
   
   inline bool suppress_context_switching() const {
     // the current implementation of Omni is not robust to context changes
-    if (!indicated_exec_level_consistent() || _executes_on_baselevel)
+    if (!indicated_exec_level_consistent() || executes_on_baselevel())
       return true;
     
     if (Include_Debugging_Code)
@@ -295,7 +295,7 @@ public:
   
   void set_domain_and_execution_level_on_new_context(Object_p ctx) const {
     ctx->set_domain(_localDomain);
-    if (_executes_on_baselevel)
+    if (executes_on_baselevel())
       ctx->set_domain_execute_on_baselevel();
     else
       ctx->set_domain_execute_on_metalevel();
