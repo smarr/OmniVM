@@ -64,7 +64,18 @@ public:
   Oop*    stackPointer()       const { assert_external(); return _stackPointer; }
   
   void set_instructionPointer(u_char* x) { registers_unstored(); uninternalized(); _instructionPointer = x; }
-  void set_stackPointer(Oop* x)          { registers_unstored(); uninternalized(); _stackPointer = x; }
+  void set_stackPointer(Oop* x) { 
+    registers_unstored();
+    uninternalized();
+    
+//    if (check_assertions) {
+//      Oop* const receiver = &_activeContext_obj->pointer_at(Object_Indices::ReceiverIndex);
+//      assert_always(x > receiver); /// the stack pointer should never be as low as the receiver
+//    }
+    
+    _stackPointer = x;
+  }
+  
   
   u_char currentBytecode; // interp version is out of order
   bool   have_executed_currentBytecode;
@@ -257,7 +268,17 @@ public:
   
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
-  void set_localSP(Oop* x)              { _localSP = x;          registers_unstored(); unexternalized(); }
+  void set_localSP(Oop* x) {
+//    if (check_assertions) {
+//      Oop* const receiver = &_activeContext_obj->pointer_at(Object_Indices::ReceiverIndex);
+//      assert_always(x > receiver); /// the stack pointer should never be as low as the receiver
+//    }
+    
+    _localSP = x;
+    registers_unstored();
+    unexternalized();
+  }
+  
 //  void set_localHomeContext(Object_p x) { _localHomeContext = x; registers_unstored(); unexternalized(); }
   void set_localDomain(Object_p x)      { _localDomain = x; registers_unstored(); unexternalized(); }
   
