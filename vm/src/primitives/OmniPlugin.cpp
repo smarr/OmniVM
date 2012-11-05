@@ -85,18 +85,6 @@ static int primitiveSetDomain() {
   return 0;
 }
 
-/** {{{ ONOMirror class>>#switchToBaseLevel }}} */
-static int primitiveSwitchToBaseLevel() {
-  The_Squeak_Interpreter()->switch_to_baselevel();
-  return 0;
-}
-
-/** {{{ ONOMirror class>>#switchToMetaLevel }}} */
-static int primitiveSwitchToMetaLevel() {
-  The_Squeak_Interpreter()->switch_to_metalevel();
-  return 0;
-}
-
 /** {{{ ONOMirror class>>#executesOnBaseLevel }}} */
 static int primitiveExecutesOnBaseLevel() {
   Squeak_Interpreter* const interp = The_Squeak_Interpreter();
@@ -196,10 +184,7 @@ static int setInterpreter(struct VirtualMachine* /* anInterpreter */) {
 void* OmniPlugin_exports[][3] = {
   {(void*) "OmniPlugin", (void*)"primitiveGetDomain", (void*)primitiveGetDomain},
   {(void*) "OmniPlugin", (void*)"primitiveSetDomain", (void*)primitiveSetDomain},
-  
-  {(void*) "OmniPlugin", (void*)"primitiveSwitchToBaseLevel", (void*)primitiveSwitchToBaseLevel},
-  {(void*) "OmniPlugin", (void*)"primitiveSwitchToMetaLevel", (void*)primitiveSwitchToMetaLevel},
-  
+    
   {(void*) "OmniPlugin", (void*)"primitiveExecutesOnMetaLevel", (void*)primitiveExecutesOnMetaLevel},
   {(void*) "OmniPlugin", (void*)"primitiveExecutesOnBaseLevel", (void*)primitiveExecutesOnBaseLevel},
   

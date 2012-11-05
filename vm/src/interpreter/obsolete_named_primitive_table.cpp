@@ -149,8 +149,6 @@ Obsolete_Named_Primitive_Table::entry Obsolete_Named_Primitive_Table::contents[]
   /* Project-Omni-related primitives */
   { "primitiveGetDomain",             "OmniPlugin", "primitiveGetDomain",            false },
   { "primitiveSetDomain",             "OmniPlugin", "primitiveSetDomain",            false },
-  { "primitiveSwitchToBaseLevel",     "OmniPlugin", "primitiveSwitchToBaseLevel",    false },
-  { "primitiveSwitchToMetaLevel",     "OmniPlugin", "primitiveSwitchToMetaLevel",    false },
   { "primitiveExecutesOnBaseLevel",   "OmniPlugin", "primitiveExecutesOnBaseLevel",  false },
   { "primitiveExecutesOnMetaLevel",   "OmniPlugin", "primitiveExecutesOnMetaLevel",  false },
   { "primitiveEvaluateOnBaseLevel",   "OmniPlugin", "primitiveEvaluateOnBaseLevel",  false },
