@@ -2032,15 +2032,17 @@ void Squeak_Interpreter::print_all_processes_in_scheduler(Printer* pr, bool prin
 void Squeak_Interpreter::prim_commonAt(bool stringy) {
   Oop rcvr = stackValue(1);
   
-  bool normal_at = roots.messageSelector == specialSelector(16);
-  bool delegate = omni_requires_intercession(rcvr, normal_at
-                                                  ? OstDomainSelector_Indices::PrimAt_On__Mask
-                                                  : OstDomainSelector_Indices::PrimBasicAt_On__Mask);
-  if (delegate) {
-    omni_request_primitive_at(normal_at
-                                ? The_OstDomain.prim_at_on()
-                                : The_OstDomain.prim_basic_at_on());
-    return;
+  if (executes_on_baselevel()) {
+    bool normal_at = roots.messageSelector == specialSelector(16);
+    bool delegate = omni_requires_intercession(rcvr, normal_at
+                                                    ? OstDomainSelector_Indices::PrimAt_On__Mask
+                                                    : OstDomainSelector_Indices::PrimBasicAt_On__Mask);
+    if (delegate) {
+      omni_request_primitive_at(normal_at
+                                  ? The_OstDomain.prim_at_on()
+                                  : The_OstDomain.prim_basic_at_on());
+      return;
+    }
   }
 
   
@@ -2087,16 +2089,18 @@ void Squeak_Interpreter::prim_commonAt(bool stringy) {
 
 void Squeak_Interpreter::prim_commonAtPut(bool stringy) {
   Oop rcvr = stackValue(2);
-  
-  bool normal_atput = roots.messageSelector == specialSelector(17);
-  bool delegate = omni_requires_intercession(rcvr, normal_atput
-                                                    ? OstDomainSelector_Indices::PrimAt_On_Put__Mask
-                                                    : OstDomainSelector_Indices::PrimBasicAt_On_Put__Mask);
-  if (delegate) {
-    omni_request_primitive_atPut(normal_atput
-                                  ? The_OstDomain.prim_at_put_on()
-                                  : The_OstDomain.prim_basic_at_put_on());
-    return;
+
+  if (executes_on_baselevel()) {
+    bool normal_atput = roots.messageSelector == specialSelector(17);
+    bool delegate = omni_requires_intercession(rcvr, normal_atput
+                                                      ? OstDomainSelector_Indices::PrimAt_On_Put__Mask
+                                                      : OstDomainSelector_Indices::PrimBasicAt_On_Put__Mask);
+    if (delegate) {
+      omni_request_primitive_atPut(normal_atput
+                                    ? The_OstDomain.prim_at_put_on()
+                                    : The_OstDomain.prim_basic_at_put_on());
+      return;
+    }
   }
 
   
