@@ -30,7 +30,10 @@ class Oop
 {
 private:
   oop_int_t _bits;
-  Oop(oop_int_t b) { this->_bits = b; }
+  Oop(oop_int_t b) {
+    this->_bits = b; 
+    // assert(is_int() || is_illegal() || (_bits & 2) == 0); // We have that assumption in the OmniVM
+  }
 
  public:
   class Illegals {
