@@ -70,7 +70,7 @@ Squeak_Interpreter::Squeak_Interpreter()
   suppress_context_switch_for_debugging = false;
   
   _localDomain = NULL;
-  _executes_on_baselevel = false;
+  _executes_on_baselevel = STANDARD_OFFSET;
 }
 
 
@@ -3771,25 +3771,13 @@ bool Squeak_Interpreter::getNextEvent_any_platform(void* p) {
 
 void Squeak_Interpreter::switch_to_baselevel() {
   dispatch_table = &enforced_dispatch_table;
-  _executes_on_baselevel = true;
+  _executes_on_baselevel = ENFORCEMENT_OFFSET;
   _activeContext_obj->set_domain_execute_on_baselevel();
 }
 void Squeak_Interpreter::switch_to_metalevel() {
   dispatch_table = &unenforced_dispatch_table;
-  _executes_on_baselevel = false;
+  _executes_on_baselevel = STANDARD_OFFSET;
   _activeContext_obj->set_domain_execute_on_metalevel();
 }
 
-void Squeak_Interpreter::indicate_switch_to_baselevel() {
-  _executes_on_baselevel = true;
-}
-void Squeak_Interpreter::indicate_switch_to_metalevel() {
-  _executes_on_baselevel = false;
-}
-
-// Check whether the current context indicates the same as is indicated
-// in the interpreter.
-bool Squeak_Interpreter::indicated_exec_level_consistent() const {
-  return _executes_on_baselevel == _activeContext_obj->domain_execute_on_baselevel();
-}
 

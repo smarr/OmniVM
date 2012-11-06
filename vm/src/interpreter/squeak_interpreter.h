@@ -89,6 +89,9 @@ public:
 
   void build_enforced_dispatch_table();
   void build_unenforced_dispatch_table();
+  # define STANDARD_OFFSET                       0
+  # define ENFORCEMENT_OFFSET                  256
+
   void build_dispatch_table() {
     build_enforced_dispatch_table();
     build_unenforced_dispatch_table();
@@ -240,7 +243,7 @@ private:
 
   bool I_am_running;
 
-  bool      _executes_on_baselevel;
+  int _executes_on_baselevel;
   
 public:
   void remember_to_move_mutated_read_mostly_object(Oop x);
@@ -263,8 +266,8 @@ public:
   Oop*     localSP()          const { assert_internal(); return _localSP; }
   Object_p localHomeContext() const { assert_internal(); return _localHomeContext; }
   inline Object_p localDomain()           const { assert_internal(); return _localDomain; }
-  inline bool     executes_on_baselevel() const { return  _executes_on_baselevel; }
-  inline bool     executes_on_metalevel() const { return !_executes_on_baselevel; }
+  inline bool     executes_on_baselevel() const { return _executes_on_baselevel != STANDARD_OFFSET; }
+  inline bool     executes_on_metalevel() const { return _executes_on_baselevel == STANDARD_OFFSET; }
   
   
   void set_localIP(u_char* x)           { _localIP = x;          registers_unstored(); unexternalized(); }
@@ -289,9 +292,18 @@ public:
       but does not change the context frame's flag.
       It is for instance used for the implementation of the baselevelPerform
       primitives. */
-  void indicate_switch_to_baselevel();
-  void indicate_switch_to_metalevel();
-  bool indicated_exec_level_consistent() const;
+  inline void indicate_switch_to_baselevel() {
+    _executes_on_baselevel = ENFORCEMENT_OFFSET;
+  }
+  inline void indicate_switch_to_metalevel() {
+    _executes_on_baselevel = STANDARD_OFFSET;
+  }
+
+  // Check whether the current context indicates the same as is indicated
+  // in the interpreter.
+  inline bool indicated_exec_level_consistent() const {
+    return executes_on_baselevel() == _activeContext_obj->domain_execute_on_baselevel();
+  }
   
   void set_domain_and_execution_level_on_new_context(Object_p ctx) const {
     ctx->set_domain(_localDomain);
@@ -646,7 +658,7 @@ public:
     _localSP =       stackPointer();
     _localHomeContext = theHomeContext_obj();
     _localDomain      = _activeContext_obj->domain();
-    _executes_on_baselevel = _activeContext_obj->domain_execute_on_baselevel();
+    _executes_on_baselevel = _activeContext_obj->domain_execute_on_baselevel() ? ENFORCEMENT_OFFSET : STANDARD_OFFSET;
     
     assert(_activeContext_obj->domain_oop() != Oop::from_bits(0));
     if (check_assertions)
@@ -1669,11 +1681,11 @@ public:
       }
       successFlag = true;
       // make sure the right exec level is indicated
-      bool old_on_base = _executes_on_baselevel;
+      int old_on_base = _executes_on_baselevel;
       oop_int_t methodHeader = newMethod_obj()->methodHeader();
       bool omniMetaExit = methodHeader & Object_Indices::OmniMetaExit_FlagBit_Mask;
       if (omniMetaExit)
-        _executes_on_baselevel = false;
+        _executes_on_baselevel = STANDARD_OFFSET;
       
       dispatchFunctionPointer(primitiveFunctionPointer, do_primitive_on_main);
       
@@ -1857,7 +1869,7 @@ public:
   void assert_always_method_is_correct_internalizing(bool will_be_fetched, const char* where) {
     if (process_is_scheduled_and_executing()) {
       Safepoint_Ability sa(false);
-      bool correct_exec_level = _executes_on_baselevel;
+      int correct_exec_level = _executes_on_baselevel;
       internalizeExecutionState();
       _executes_on_baselevel = correct_exec_level; // work around this in debug mode (REM: we use _executes_on_baselevel to indicate transient changes for baselevelPerform)
       check_method_is_correct(will_be_fetched, where);
