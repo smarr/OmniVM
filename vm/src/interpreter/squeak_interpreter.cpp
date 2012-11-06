@@ -1167,7 +1167,7 @@ Oop* Squeak_Interpreter::initialize_context(Object_p nco, oop_int_t methodHeader
   assert(nco->domain_oop().bits() != 0 /* NULL */);
   nco->set_domain(_localDomain);
   
-  if (omniMetaExit || executes_on_baselevel())
+  if (omniMetaExit || !executes_on_baselevel())
     nco->set_domain_execute_on_metalevel();
   else
     nco->set_domain_execute_on_baselevel();
