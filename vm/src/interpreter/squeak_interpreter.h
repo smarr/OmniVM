@@ -83,18 +83,18 @@ public:
   /** Bytecode dispatch facilities */
   typedef void (Squeak_Interpreter::* bytecode_fn_t)(void);
   # define DISPATCH_BYTECODE(bytecodeHandler)  (this->*(bytecodeHandler))()
-  bytecode_fn_t     enforced_dispatch_table[256];
-  bytecode_fn_t   unenforced_dispatch_table[256];
-  bytecode_fn_t            (*dispatch_table)[256];
 
-  void build_enforced_dispatch_table();
-  void build_unenforced_dispatch_table();
   # define STANDARD_OFFSET                       0
   # define ENFORCEMENT_OFFSET                  256
 
+  bytecode_fn_t   dispatch_table[512];
+  
+
+  void build_enforced_dispatch_table(size_t);
+  void build_unenforced_dispatch_table(size_t);
   void build_dispatch_table() {
-    build_enforced_dispatch_table();
-    build_unenforced_dispatch_table();
+    build_unenforced_dispatch_table(STANDARD_OFFSET);
+    build_enforced_dispatch_table(ENFORCEMENT_OFFSET);
   }
   
   
@@ -762,7 +762,13 @@ public:
     return *localIP();
   }
 
-  void dispatch(u_char currentByte);
+  
+  inline void dispatch(u_char currentByte) {
+    if (Check_Prefetch)  have_executed_currentBytecode = true;
+    
+    DISPATCH_BYTECODE(dispatch_table[_executes_on_baselevel | currentByte]);
+  }
+  
   void printBC(u_char, Printer*);
   static const char* bytecode_name(u_char bc);
 
@@ -1243,7 +1249,7 @@ public:
   inline void omni_set_domain_for_new_object(Object_p obj) {
     if (executes_on_baselevel() && _localDomain->as_oop() != roots.nilObj) {
       Oop domain_for_new_obj = The_OstDomain.get_domain_for_new_objects(_localDomain->as_oop());
-      assert_eq(_localDomain->as_oop().bits(), domain_for_new_obj.bits(), "should be equal");
+      // assert_eq(_localDomain->as_oop().bits(), domain_for_new_obj.bits(), "should be equal");
       obj->set_domain(domain_for_new_obj);
     }
     else
