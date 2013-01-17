@@ -14,46 +14,51 @@ Requirements:
 
 Compilation:
 
-In the standard case, calling ./configure ; make in the build directory
-should be sufficient to compile the rvm executable::
-
+In the standard case, calling `./configure ; make` in the build directory
+should be sufficient to compile the rvm executable:
+```sh
   $ cd vm/build
   $ ./configure
   $ make
+```
 
-Compilation for Debugging::
-
+Compilation for Debugging:
+```sh
   $ cd vm/build
   $ ./configure --debug
   $ make
-
+```
 
 Usage
 -----
 
-The OmniVM executable supports the following command-line interface::
+The OmniVM executable supports the following command-line interface:
 
+```
   ./omnivm [options] <image-file> [app-params]
   
  [options]       optional command-line parameters as detailed below 
  <image-file>    a relative path to a Smalltalk image
  [app-params]    parameters given the application executed by the OmniVM
+```
 
-Command-line Parameters::
+Command-line Parameters:
 
+```
  -headless       initializes the OmniVM with a dummy display to avoid opening
                  an X11 session, useful for command-line applications or
                  benchmarks
                
  -min_heap_MB N  sets the lower limit for the overall heap size
-                 
+```
 
 Preparing a Smalltalk Image
 '''''''''''''''''''''''''''
 
-The OmniVM has been developed with a `Pharo 1.4`_ image. Prebuilt images can
-be downloaded from the `Omni project page`_. To load the code into a fresh
-Pharo image evaluate the following expression in a workspace:
+The OmniVM has been developed with a [Pharo 1.4][pharo-download] image.
+Prebuilt images can be downloaded from the [Omni project page][omni-project].
+To load the code into a fresh Pharo image evaluate the following expression in
+a workspace:
 
 ```Smalltalk
 Gofer new
@@ -77,5 +82,5 @@ Gofer new
 ```
 
 
-.. _Pharo 1.4:         http://www.pharo-project.org/pharo-download/release-1-4
-.. _Omni project page: http://www.stefan-marr.de/research/omni/
+[pharo-download]: http://www.pharo-project.org/pharo-download/release-1-4
+[omni-project]:   http://www.stefan-marr.de/research/omni/

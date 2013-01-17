@@ -17,7 +17,7 @@ http://www.stefan-marr.de/research/omni/
 Install and Use
 ---------------
 
-Please see the INSTALL.rst file for installation instructions. In addition to
+Please see the INSTALL.md file for installation instructions. In addition to
 the OmniVM, you will need the corresponding Smalltalk code, which is listed
 there as well.
 
