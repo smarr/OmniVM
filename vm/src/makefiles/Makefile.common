@@ -623,7 +623,7 @@ test-image: $(EXECUTABLE)
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: CL-Benchmarks
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: AmbientTalkST-Benchmarks
 	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: OmniST-Benchmarks
-																				 
+	$(AT)./$(EXECUTABLE) -headless ../../../images/benchmarks/pharo-omni.image SubunitRunner runPackage: LRSTM-Benchmarks
 
 clean:
 	rm -f *.o $(EXECUTABLE) rvm-test libgtest.a $(TEST_OBJS)
