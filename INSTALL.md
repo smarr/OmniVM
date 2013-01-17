@@ -3,6 +3,7 @@ Installation and Usage Instructions for the OmniVM
 
 This file briefly describes how to compile and use the OmniVM.
 
+
 Installation
 ------------
 
@@ -29,6 +30,7 @@ Compilation for Debugging:
   $ make
 ```
 
+
 Usage
 -----
 
@@ -52,8 +54,9 @@ Command-line Parameters:
  -min_heap_MB N  sets the lower limit for the overall heap size
 ```
 
+
 Preparing a Smalltalk Image
-'''''''''''''''''''''''''''
+---------------------------
 
 The OmniVM has been developed with a [Pharo 1.4][pharo-download] image.
 Prebuilt images can be downloaded from the [Omni project page][omni-project].
